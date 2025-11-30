@@ -38,8 +38,13 @@ owo/
 - **Projet**: `1042152308482`
 
 ### Firebase
-- **Project ID**: `1042152308482`
-- **Configuration**: Voir fichiers `.env.local`
+- **Project ID**: `owo-631ab`
+- **API Key**: `AIzaSyCHL0m44l-XMkJznGE214toOvxdYzN5i6g`
+- **Auth Domain**: `owo-631ab.firebaseapp.com`
+- **Storage Bucket**: `owo-631ab.firebasestorage.app`
+- **Messaging Sender ID**: `647650316598`
+- **App ID**: `1:647650316598:web:77c5a5f6c240387a61e397`
+- **Measurement ID**: `G-1SJPF2FKSQ`
 
 ## 🚀 Utilisation dans le Code
 
