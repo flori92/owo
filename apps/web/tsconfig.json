@@ -16,11 +16,13 @@
 		"rootDirs": [".", "./.react-router/types"],
 		"baseUrl": ".",
 		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
 		"verbatimModuleSyntax": true,
 		"noEmit": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"strict": true,
+		"forceConsistentCasingInFileNames": true,
 		"paths": {
 			"@/*": ["./src/*"]
 		}
