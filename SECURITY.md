@@ -38,13 +38,13 @@ owo/
 - **Projet**: `1042152308482`
 
 ### Firebase
-- **Project ID**: `owo-631ab`
-- **API Key**: `AIzaSyCHL0m44l-XMkJznGE214toOvxdYzN5i6g`
-- **Auth Domain**: `owo-631ab.firebaseapp.com`
-- **Storage Bucket**: `owo-631ab.firebasestorage.app`
+- **Project ID**: `owo`
+- **API Key**: `AIzaSyBCbYFiWrnSlNvL_8XoAky6ZshsKnlxHQ0`
+- **Auth Domain**: `owo.firebaseapp.com`
+- **Storage Bucket**: `owo.appspot.com`
 - **Messaging Sender ID**: `647650316598`
-- **App ID**: `1:647650316598:web:77c5a5f6c240387a61e397`
-- **Measurement ID**: `G-1SJPF2FKSQ`
+- **App ID**: `1:647650316598:web:abc123def456`
+- **Measurement ID**: `G-XXXXXXXXXX`
 
 ## 🚀 Utilisation dans le Code
 
