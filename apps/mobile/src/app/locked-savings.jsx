@@ -221,12 +221,32 @@ export default function LockedSavingsScreen() {
       return;
     }
 
-    // En mode démo, on accepte n'importe quel PIN
-    if (isEmergency && unlockPin !== "1234") {
-      Alert.alert("Info démo", "En mode démo, utilisez le PIN: 1234");
+    // En mode démo, on accepte n'importe quel PIN de 4+ caractères
+    if (isEmergency && unlockPin.length < 4) {
+      Alert.alert("Erreur", "Le PIN doit contenir au moins 4 caractères");
       return;
     }
 
+    // Confirmation avant déblocage d'urgence
+    if (isEmergency) {
+      Alert.alert(
+        "⚠️ Déblocage d'urgence",
+        `Êtes-vous sûr de vouloir débloquer "${saving.title}" avant la date prévue ?\n\nMontant : ${saving.amount?.toLocaleString() || 0} FCFA\nDate prévue : ${formatDate(saving.unlock_date)}`,
+        [
+          { text: "Annuler", style: "cancel" },
+          {
+            text: "Confirmer",
+            style: "destructive",
+            onPress: () => performUnlock(saving, true),
+          },
+        ]
+      );
+    } else {
+      performUnlock(saving, false);
+    }
+  };
+
+  const performUnlock = (saving, isEmergency) => {
     setUnlocking(true);
     
     setTimeout(() => {
@@ -245,10 +265,11 @@ export default function LockedSavingsScreen() {
       setUnlocking(false);
       
       Alert.alert(
-        "Succès",
-        isEmergency
-          ? "Épargne débloquée en urgence!\n\n(Mode démo : données non persistées)"
-          : "Épargne débloquée avec succès!\n\n(Mode démo : données non persistées)"
+        "🎉 Épargne débloquée !",
+        `Votre épargne "${saving.title}" a été débloquée.\n\n` +
+        `💰 Montant disponible : ${saving.amount?.toLocaleString() || 0} FCFA\n` +
+        (isEmergency ? "⚠️ Déblocage anticipé (urgence)\n\n" : "") +
+        "(Mode démo : données non persistées)"
       );
     }, 500);
   };
