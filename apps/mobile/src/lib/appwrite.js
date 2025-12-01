@@ -3,6 +3,7 @@ import { Client, Account, Databases, Storage, Functions } from 'appwrite';
 // Configuration Appwrite
 const APPWRITE_ENDPOINT = process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT || 'https://fra.cloud.appwrite.io/v1';
 const APPWRITE_PROJECT_ID = process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID || '6915ff850039f714e80a';
+const APPWRITE_API_KEY = process.env.EXPO_PUBLIC_APPWRITE_API_KEY;
 
 // IDs des collections (à créer dans Appwrite)
 export const DATABASE_ID = 'owo_database';
