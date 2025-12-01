@@ -129,48 +129,48 @@ export default function Index() {
         </View>
       </View>
 
-      {/* Features Section */}
+      {/* Features Section - Centré verticalement */}
       <View
         style={{
           flex: 1,
           paddingHorizontal: 24,
-          paddingTop: 24,
+          justifyContent: "center",
         }}
       >
         <Text
           style={{
             fontFamily: "Inter_600SemiBold",
-            fontSize: 18,
+            fontSize: 20,
             color: "#1A202C",
             textAlign: "center",
-            marginBottom: 32,
+            marginBottom: 28,
           }}
         >
           Pourquoi choisir owo! ?
         </Text>
 
-        {/* Feature List - Compact */}
-        <View style={{ gap: 16, marginBottom: 24 }}>
+        {/* Feature List */}
+        <View style={{ gap: 20, marginBottom: 32 }}>
           {/* Feature 1 - Sécurité */}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                backgroundColor: "#20B2AA15",
+                width: 52,
+                height: 52,
+                borderRadius: 14,
+                backgroundColor: "#20B2AA18",
                 justifyContent: "center",
                 alignItems: "center",
-                marginRight: 12,
+                marginRight: 14,
               }}
             >
-              <Shield size={22} color="#20B2AA" strokeWidth={1.5} />
+              <Shield size={26} color="#20B2AA" strokeWidth={1.5} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 15, color: "#1A202C" }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: "#1A202C", marginBottom: 2 }}>
                 Sécurité maximale
               </Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#64748B" }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#64748B", lineHeight: 18 }}>
                 Chiffrement et authentification biométrique
               </Text>
             </View>
@@ -180,23 +180,23 @@ export default function Index() {
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                backgroundColor: "#10B98115",
+                width: 52,
+                height: 52,
+                borderRadius: 14,
+                backgroundColor: "#10B98118",
                 justifyContent: "center",
                 alignItems: "center",
-                marginRight: 12,
+                marginRight: 14,
               }}
             >
-              <Banknote size={22} color="#10B981" strokeWidth={1.5} />
+              <Banknote size={26} color="#10B981" strokeWidth={1.5} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 15, color: "#1A202C" }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: "#1A202C", marginBottom: 2 }}>
                 Transferts instantanés
               </Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#64748B" }}>
-                Envoyez et recevez 24h/24, 7j/7
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#64748B", lineHeight: 18 }}>
+                Envoyez et recevez de l'argent 24h/24
               </Text>
             </View>
           </View>
@@ -205,23 +205,23 @@ export default function Index() {
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                backgroundColor: "#F5920015",
+                width: 52,
+                height: 52,
+                borderRadius: 14,
+                backgroundColor: "#F5920018",
                 justifyContent: "center",
                 alignItems: "center",
-                marginRight: 12,
+                marginRight: 14,
               }}
             >
-              <Globe size={22} color="#F59200" strokeWidth={1.5} />
+              <Globe size={26} color="#F59200" strokeWidth={1.5} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 15, color: "#1A202C" }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: "#1A202C", marginBottom: 2 }}>
                 Afrique ↔ Europe
               </Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#64748B" }}>
-                Sans frais cachés
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#64748B", lineHeight: 18 }}>
+                Transferts sans frais cachés
               </Text>
             </View>
           </View>
@@ -230,34 +230,34 @@ export default function Index() {
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                backgroundColor: "#8B5CF615",
+                width: 52,
+                height: 52,
+                borderRadius: 14,
+                backgroundColor: "#8B5CF618",
                 justifyContent: "center",
                 alignItems: "center",
-                marginRight: 12,
+                marginRight: 14,
               }}
             >
-              <Fingerprint size={22} color="#8B5CF6" strokeWidth={1.5} />
+              <Fingerprint size={26} color="#8B5CF6" strokeWidth={1.5} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 15, color: "#1A202C" }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: "#1A202C", marginBottom: 2 }}>
                 Tout-en-un
               </Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#64748B" }}>
-                Cagnottes, épargne, carte virtuelle, Mobile Money
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#64748B", lineHeight: 18 }}>
+                Cagnottes, épargne, carte, Mobile Money
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Start Button - redirige directement vers l'app pour l'étape 1 */}
+        {/* Start Button */}
         <TouchableOpacity
           style={{
             backgroundColor: theme.colors.primary,
             borderRadius: 16,
-            paddingVertical: 18,
+            paddingVertical: 16,
             paddingHorizontal: 24,
             flexDirection: "row",
             alignItems: "center",
@@ -269,7 +269,6 @@ export default function Index() {
             elevation: 4,
           }}
           onPress={() => {
-            // Étape 1 : on entre directement dans l'app, sans flux d'auth web
             router.push("/(tabs)");
           }}
           activeOpacity={0.8}
