@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,8 +16,8 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
-import { Users, Search, ArrowRight, QrCode } from "lucide-react-native";
-import { router } from "expo-router";
+import { Users, Search, ArrowRight, QrCode, Camera } from "lucide-react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
 import ScreenContainer from "@/components/ScreenContainer";
 import HeaderBar from "@/components/HeaderBar";
@@ -25,6 +25,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { IS_DEMO_MODE, getDemoMessage } from "@/config/appConfig";
 
 export default function JoinGroupSavingScreen() {
+  const { code: initialCode } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
 
@@ -35,9 +36,18 @@ export default function JoinGroupSavingScreen() {
     Inter_700Bold,
   });
 
-  const [inviteCode, setInviteCode] = useState("");
+  const [inviteCode, setInviteCode] = useState(initialCode || "");
   const [searching, setSearching] = useState(false);
   const [foundSaving, setFoundSaving] = useState(null);
+
+  // Si un code est passé en paramètre, lancer la recherche automatiquement
+  useEffect(() => {
+    if (initialCode) {
+      setInviteCode(initialCode);
+      // Petit délai pour que l'UI se charge
+      setTimeout(() => searchSaving(), 500);
+    }
+  }, [initialCode]);
 
   // Cagnottes démo disponibles pour rejoindre
   const demoSavings = {
@@ -233,10 +243,10 @@ export default function JoinGroupSavingScreen() {
                 autoCorrect={false}
               />
               <TouchableOpacity
-                onPress={() => Alert.alert("Scanner QR", "Fonctionnalité à venir")}
+                onPress={() => router.push("/qr-scanner?mode=cagnotte")}
                 style={{ padding: 8 }}
               >
-                <QrCode size={24} color={theme.colors.textSecondary} strokeWidth={1.5} />
+                <Camera size={24} color={theme.colors.primary} strokeWidth={1.5} />
               </TouchableOpacity>
             </View>
           </View>
