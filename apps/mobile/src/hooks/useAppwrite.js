@@ -5,6 +5,10 @@ import {
   getTransactions,
   getNotifications,
   getProfile,
+  createAccount as appwriteCreateAccount,
+  login as appwriteLogin,
+  loginWithGoogle as appwriteLoginWithGoogle,
+  loginWithApple as appwriteLoginWithApple,
   logout as appwriteLogout,
 } from '@/lib/appwrite';
 
@@ -32,7 +36,7 @@ export function useAppwriteAuth() {
   // Créer un compte
   const createAccount = useCallback(async (email, password, name) => {
     try {
-      const result = await appwriteService.createAccount(email, password, name);
+      const result = await appwriteCreateAccount(email, password, name);
       if (result.success) {
         // Forcer le rafraîchissement de l'utilisateur
         await checkAuth();
@@ -47,7 +51,7 @@ export function useAppwriteAuth() {
   // Connexion avec Google
   const loginWithGoogle = useCallback(async () => {
     try {
-      const result = await appwriteService.loginWithGoogle();
+      const result = await appwriteLoginWithGoogle();
       if (result.success) {
         await checkAuth();
       }
@@ -61,7 +65,7 @@ export function useAppwriteAuth() {
   // Connexion avec Apple
   const loginWithApple = useCallback(async () => {
     try {
-      const result = await appwriteService.loginWithApple();
+      const result = await appwriteLoginWithApple();
       if (result.success) {
         await checkAuth();
       }
@@ -80,6 +84,19 @@ export function useAppwriteAuth() {
     await appwriteLogout();
     setUser(null);
   }, []);
+
+  const login = useCallback(async (email, password) => {
+    try {
+      const result = await appwriteLogin(email, password);
+      if (result.success) {
+        await checkAuth();
+      }
+      return result;
+    } catch (error) {
+      console.error('Erreur connexion:', error);
+      return { success: false, error: error.message };
+    }
+  }, [checkAuth]);
 
   return {
     user,
