@@ -82,11 +82,11 @@
     "zustand": "5.0.3"
   },
   "devDependencies": {
-    "@types/react": "~19.0.10",
+    "@types/react": "~19.1.10",
     "autoprefixer": "10.4.20",
     "patch-package": "^8.0.0",
     "postcss": "8.5.2",
-    "typescript": "~5.8.3"
+    "typescript": "~5.9.2"
   },
   "private": true
 }
