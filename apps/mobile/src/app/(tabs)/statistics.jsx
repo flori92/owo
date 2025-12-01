@@ -57,52 +57,79 @@ export default function StatisticsScreen() {
     { key: "year", label: "Cette année" },
   ];
 
-  // Fetch statistics data
-  const fetchStatistics = async (period = selectedPeriod) => {
-    try {
-      const response = await fetch(
-        `/api/statistics?userId=1&period=${period}`,
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setStatisticsData(data);
-      } else {
-        console.error("Failed to fetch statistics");
-        setStatisticsData(null);
-      }
-    } catch (error) {
-      console.error("Error fetching statistics:", error);
-      setStatisticsData(null);
-    }
+  // Mode démo : données mock pour les statistiques
+  const getMockStatistics = (period) => {
+    const multiplier = period === "week" ? 0.25 : period === "month" ? 1 : period === "quarter" ? 3 : 12;
+    return {
+      totalIncome: Math.round(450000 * multiplier),
+      totalExpenses: Math.round(320000 * multiplier),
+      savingsRate: 28.9,
+      transactionCount: Math.round(45 * multiplier),
+      topCategories: [
+        { name: "Alimentation", amount: Math.round(85000 * multiplier), percentage: 26.5, color: "#FF6B6B" },
+        { name: "Transport", amount: Math.round(65000 * multiplier), percentage: 20.3, color: "#4ECDC4" },
+        { name: "Logement", amount: Math.round(95000 * multiplier), percentage: 29.7, color: "#45B7D1" },
+        { name: "Loisirs", amount: Math.round(45000 * multiplier), percentage: 14.1, color: "#96CEB4" },
+        { name: "Autres", amount: Math.round(30000 * multiplier), percentage: 9.4, color: "#DDA0DD" },
+      ],
+      monthlyTrend: [
+        { month: "Jan", income: 420000, expenses: 310000 },
+        { month: "Fév", income: 380000, expenses: 290000 },
+        { month: "Mar", income: 450000, expenses: 320000 },
+        { month: "Avr", income: 410000, expenses: 350000 },
+        { month: "Mai", income: 480000, expenses: 300000 },
+        { month: "Juin", income: 450000, expenses: 320000 },
+      ],
+      comparison: {
+        incomeChange: 12.5,
+        expenseChange: -5.2,
+        savingsChange: 8.3,
+      },
+    };
   };
 
-  // Generate AI insights
+  // Mode démo : insights IA simulés
+  const getMockInsights = () => [
+    {
+      id: 1,
+      type: "savings",
+      title: "Excellent taux d'épargne !",
+      description: "Vous épargnez 28.9% de vos revenus ce mois-ci, c'est au-dessus de la moyenne recommandée de 20%.",
+      icon: "trending-up",
+      color: "#4ECDC4",
+    },
+    {
+      id: 2,
+      type: "expense",
+      title: "Dépenses alimentaires stables",
+      description: "Vos dépenses en alimentation sont restées constantes. Continuez ainsi !",
+      icon: "check",
+      color: "#45B7D1",
+    },
+    {
+      id: 3,
+      type: "tip",
+      title: "Conseil personnalisé",
+      description: "En réduisant vos dépenses de transport de 10%, vous pourriez économiser 6 500 FCFA/mois.",
+      icon: "lightbulb",
+      color: "#FFD93D",
+    },
+  ];
+
+  // Fetch statistics data (mode démo)
+  const fetchStatistics = async (period = selectedPeriod) => {
+    // Simuler un délai réseau
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setStatisticsData(getMockStatistics(period));
+  };
+
+  // Generate AI insights (mode démo)
   const generateAiInsights = async () => {
     setIsGeneratingInsights(true);
-    try {
-      const response = await fetch("/api/ai/insights", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: 1,
-          period: selectedPeriod,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setAiInsights(data.insights || []);
-      }
-    } catch (error) {
-      console.error("Error generating AI insights:", error);
-    } finally {
-      setIsGeneratingInsights(false);
-    }
+    // Simuler un délai de génération IA
+    await new Promise(resolve => setTimeout(resolve, 800));
+    setAiInsights(getMockInsights());
+    setIsGeneratingInsights(false);
   };
 
   // Initial load

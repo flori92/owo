@@ -98,9 +98,33 @@ export default function LockedSavingsScreen() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
+  const [targetAmount, setTargetAmount] = useState(""); // Objectif cible
   const [unlockDate, setUnlockDate] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState(null); // Durée prédéfinie
   const [emergencyPin, setEmergencyPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState(""); // Confirmation PIN
   const [creating, setCreating] = useState(false);
+
+  // Durées prédéfinies
+  const durations = [
+    { label: "3 mois", months: 3 },
+    { label: "6 mois", months: 6 },
+    { label: "1 an", months: 12 },
+    { label: "2 ans", months: 24 },
+    { label: "Personnalisé", months: null },
+  ];
+
+  // Calculer la date de déblocage selon la durée
+  const setDuration = (months) => {
+    setSelectedDuration(months);
+    if (months) {
+      const date = new Date();
+      date.setMonth(date.getMonth() + months);
+      setUnlockDate(date.toISOString().split("T")[0]);
+    } else {
+      setUnlockDate("");
+    }
+  };
 
   // Unlock modal states
   const [unlockModalVisible, setUnlockModalVisible] = useState(false);
@@ -116,26 +140,47 @@ export default function LockedSavingsScreen() {
 
   // Mode démo : création locale
   const createLockedSaving = () => {
-    if (!title.trim() || !amount || !unlockDate) {
-      Alert.alert("Erreur", "Titre, montant et date de déblocage requis");
+    if (!title.trim() || !unlockDate) {
+      Alert.alert("Erreur", "Titre et durée de blocage requis");
+      return;
+    }
+
+    // Vérifier qu'au moins un montant est renseigné
+    if (!amount && !targetAmount) {
+      Alert.alert("Erreur", "Renseignez un montant initial ou un objectif cible");
       return;
     }
 
     // Vérifier la date
-    const targetDate = new Date(unlockDate);
-    if (targetDate <= new Date()) {
+    const unlockDateObj = new Date(unlockDate);
+    if (unlockDateObj <= new Date()) {
       Alert.alert("Erreur", "La date de déblocage doit être dans le futur");
+      return;
+    }
+
+    // Vérifier la confirmation du PIN
+    if (emergencyPin && emergencyPin !== confirmPin) {
+      Alert.alert("Erreur", "Les codes PIN ne correspondent pas");
+      return;
+    }
+
+    if (emergencyPin && emergencyPin.length < 4) {
+      Alert.alert("Erreur", "Le PIN doit contenir au moins 4 caractères");
       return;
     }
 
     setCreating(true);
     
     setTimeout(() => {
+      const initialAmount = parseFloat(amount) || 0;
+      const target = parseFloat(targetAmount) || initialAmount;
+      
       const newSaving = {
         id: `demo-locked-${Date.now()}`,
         title: title.trim(),
         description: description.trim(),
-        amount: parseFloat(amount),
+        amount: initialAmount,
+        target_amount: target,
         currency: "FCFA",
         unlock_date: unlockDate,
         is_unlocked: false,
@@ -147,7 +192,14 @@ export default function LockedSavingsScreen() {
       setCreateModalVisible(false);
       resetForm();
       setCreating(false);
-      Alert.alert("Succès", "Épargne bloquée créée avec succès!\n\n(Mode démo : données non persistées)");
+      Alert.alert(
+        "🎉 Épargne créée !",
+        `Votre épargne "${title}" a été créée avec succès.\n\n` +
+        `💰 Montant initial : ${initialAmount.toLocaleString()} FCFA\n` +
+        `🎯 Objectif : ${target.toLocaleString()} FCFA\n` +
+        `📅 Déblocage : ${formatDate(unlockDate)}\n\n` +
+        `(Mode démo : données non persistées)`
+      );
     }, 500);
   };
 
@@ -155,8 +207,11 @@ export default function LockedSavingsScreen() {
     setTitle("");
     setDescription("");
     setAmount("");
+    setTargetAmount("");
     setUnlockDate("");
+    setSelectedDuration(null);
     setEmergencyPin("");
+    setConfirmPin("");
   };
 
   // Mode démo : déblocage local
@@ -658,7 +713,7 @@ export default function LockedSavingsScreen() {
                 />
               </View>
 
-              {/* Montant */}
+              {/* Objectif cible */}
               <View>
                 <Text
                   style={{
@@ -668,7 +723,48 @@ export default function LockedSavingsScreen() {
                     marginBottom: 8,
                   }}
                 >
-                  Montant à bloquer *
+                  🎯 Objectif à atteindre *
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: theme.colors.elevated,
+                    borderRadius: 12,
+                    padding: 16,
+                    fontSize: 20,
+                    fontWeight: "700",
+                    color: theme.colors.text,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                  }}
+                  value={targetAmount}
+                  onChangeText={setTargetAmount}
+                  placeholder="500000"
+                  placeholderTextColor={theme.colors.textSecondary}
+                  keyboardType="numeric"
+                />
+                <Text
+                  style={{
+                    fontFamily: "Inter_400Regular",
+                    fontSize: 12,
+                    color: theme.colors.textSecondary,
+                    marginTop: 4,
+                  }}
+                >
+                  Montant que vous souhaitez économiser (FCFA)
+                </Text>
+              </View>
+
+              {/* Montant initial */}
+              <View>
+                <Text
+                  style={{
+                    fontFamily: "Inter_500Medium",
+                    fontSize: 16,
+                    color: theme.colors.text,
+                    marginBottom: 8,
+                  }}
+                >
+                  💰 Montant initial (optionnel)
                 </Text>
                 <TextInput
                   style={{
@@ -694,61 +790,164 @@ export default function LockedSavingsScreen() {
                     marginTop: 4,
                   }}
                 >
-                  Montant en FCFA
+                  Premier versement pour démarrer l'épargne
                 </Text>
               </View>
 
-              {/* Date de déblocage */}
+              {/* Durée de blocage */}
               <View>
                 <Text
                   style={{
                     fontFamily: "Inter_500Medium",
                     fontSize: 16,
                     color: theme.colors.text,
-                    marginBottom: 8,
+                    marginBottom: 12,
                   }}
                 >
-                  Date de déblocage *
+                  ⏱️ Durée de blocage *
                 </Text>
-                <TextInput
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+                  {durations.map((duration) => (
+                    <TouchableOpacity
+                      key={duration.label}
+                      onPress={() => setDuration(duration.months)}
+                      style={{
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        backgroundColor: selectedDuration === duration.months
+                          ? theme.colors.primary
+                          : theme.colors.elevated,
+                        borderWidth: 1,
+                        borderColor: selectedDuration === duration.months
+                          ? theme.colors.primary
+                          : theme.colors.border,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: "Inter_500Medium",
+                          fontSize: 14,
+                          color: selectedDuration === duration.months
+                            ? "#FFFFFF"
+                            : theme.colors.text,
+                        }}
+                      >
+                        {duration.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Date personnalisée (si "Personnalisé" sélectionné) */}
+              {selectedDuration === null && (
+                <View>
+                  <Text
+                    style={{
+                      fontFamily: "Inter_500Medium",
+                      fontSize: 16,
+                      color: theme.colors.text,
+                      marginBottom: 8,
+                    }}
+                  >
+                    📅 Date de déblocage
+                  </Text>
+                  <TextInput
+                    style={{
+                      backgroundColor: theme.colors.elevated,
+                      borderRadius: 12,
+                      padding: 16,
+                      fontSize: 16,
+                      color: theme.colors.text,
+                      borderWidth: 1,
+                      borderColor: theme.colors.border,
+                    }}
+                    value={unlockDate}
+                    onChangeText={setUnlockDate}
+                    placeholder="2025-12-31"
+                    placeholderTextColor={theme.colors.textSecondary}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: "Inter_400Regular",
+                      fontSize: 12,
+                      color: theme.colors.textSecondary,
+                      marginTop: 4,
+                    }}
+                  >
+                    Format: AAAA-MM-JJ
+                  </Text>
+                </View>
+              )}
+
+              {/* Affichage de la date calculée */}
+              {selectedDuration && unlockDate && (
+                <View
                   style={{
-                    backgroundColor: theme.colors.elevated,
+                    backgroundColor: `${theme.colors.success}15`,
                     borderRadius: 12,
                     padding: 16,
-                    fontSize: 16,
-                    color: theme.colors.text,
-                    borderWidth: 1,
-                    borderColor: theme.colors.border,
+                    flexDirection: "row",
+                    alignItems: "center",
                   }}
-                  value={unlockDate}
-                  onChangeText={setUnlockDate}
-                  placeholder="2025-12-31"
-                  placeholderTextColor={theme.colors.textSecondary}
-                />
+                >
+                  <Calendar size={20} color={theme.colors.success} strokeWidth={1.5} />
+                  <View style={{ marginLeft: 12 }}>
+                    <Text
+                      style={{
+                        fontFamily: "Inter_400Regular",
+                        fontSize: 12,
+                        color: theme.colors.textSecondary,
+                      }}
+                    >
+                      Déblocage prévu le
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: "Inter_600SemiBold",
+                        fontSize: 16,
+                        color: theme.colors.success,
+                      }}
+                    >
+                      {formatDate(unlockDate)}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {/* Section PIN d'urgence */}
+              <View
+                style={{
+                  backgroundColor: `${theme.colors.accent}10`,
+                  borderRadius: 16,
+                  padding: 16,
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+                  <Key size={20} color={theme.colors.accent} strokeWidth={1.5} />
+                  <Text
+                    style={{
+                      fontFamily: "Inter_600SemiBold",
+                      fontSize: 16,
+                      color: theme.colors.text,
+                      marginLeft: 10,
+                    }}
+                  >
+                    PIN d'urgence (optionnel)
+                  </Text>
+                </View>
                 <Text
                   style={{
                     fontFamily: "Inter_400Regular",
-                    fontSize: 12,
+                    fontSize: 13,
                     color: theme.colors.textSecondary,
-                    marginTop: 4,
+                    marginBottom: 16,
                   }}
                 >
-                  Format: YYYY-MM-DD
+                  Définissez un code secret pour débloquer votre épargne en cas d'urgence absolue avant la date prévue.
                 </Text>
-              </View>
-
-              {/* PIN d'urgence */}
-              <View>
-                <Text
-                  style={{
-                    fontFamily: "Inter_500Medium",
-                    fontSize: 16,
-                    color: theme.colors.text,
-                    marginBottom: 8,
-                  }}
-                >
-                  PIN d'urgence (optionnel)
-                </Text>
+                
                 <TextInput
                   style={{
                     backgroundColor: theme.colors.elevated,
@@ -758,24 +957,57 @@ export default function LockedSavingsScreen() {
                     color: theme.colors.text,
                     borderWidth: 1,
                     borderColor: theme.colors.border,
+                    marginBottom: 12,
                   }}
                   value={emergencyPin}
                   onChangeText={setEmergencyPin}
-                  placeholder="Code à 4-8 caractères"
+                  placeholder="Créer un PIN (4-8 caractères)"
                   placeholderTextColor={theme.colors.textSecondary}
                   secureTextEntry
                   maxLength={8}
                 />
-                <Text
-                  style={{
-                    fontFamily: "Inter_400Regular",
-                    fontSize: 12,
-                    color: theme.colors.textSecondary,
-                    marginTop: 4,
-                  }}
-                >
-                  Permet de débloquer en cas d'extrême urgence avant la date
-                </Text>
+                
+                {emergencyPin.length > 0 && (
+                  <TextInput
+                    style={{
+                      backgroundColor: theme.colors.elevated,
+                      borderRadius: 12,
+                      padding: 16,
+                      fontSize: 16,
+                      color: theme.colors.text,
+                      borderWidth: 1,
+                      borderColor: confirmPin === emergencyPin && confirmPin.length > 0
+                        ? theme.colors.success
+                        : theme.colors.border,
+                    }}
+                    value={confirmPin}
+                    onChangeText={setConfirmPin}
+                    placeholder="Confirmer le PIN"
+                    placeholderTextColor={theme.colors.textSecondary}
+                    secureTextEntry
+                    maxLength={8}
+                  />
+                )}
+                
+                {emergencyPin.length > 0 && confirmPin.length > 0 && (
+                  <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+                    {confirmPin === emergencyPin ? (
+                      <>
+                        <CheckCircle size={16} color={theme.colors.success} strokeWidth={2} />
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: theme.colors.success, marginLeft: 6 }}>
+                          PIN confirmé
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle size={16} color={theme.colors.error} strokeWidth={2} />
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: theme.colors.error, marginLeft: 6 }}>
+                          Les PIN ne correspondent pas
+                        </Text>
+                      </>
+                    )}
+                  </View>
+                )}
               </View>
             </View>
           </ScrollView>
