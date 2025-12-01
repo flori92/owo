@@ -27,7 +27,7 @@ export default function SplashScreen({ onAnimationComplete }) {
       <StatusBar style="light" backgroundColor={theme.colors.primary} />
       <Video
         ref={videoRef}
-        source={require('../assets/images/splash.mp4')}
+        source={require('../../assets/images/splash.mp4')}
         style={{ flex: 1 }}
         resizeMode={ResizeMode.COVER}
         shouldPlay
