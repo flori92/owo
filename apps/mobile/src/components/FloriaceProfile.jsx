@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useTheme } from '@/utils/useTheme';
+import { Wallet, Briefcase } from 'lucide-react-native';
 import { 
   getCurrentUser,
   getWallets,
@@ -94,21 +95,27 @@ export function FloriaceProfile() {
         marginBottom: 20 
       }}>
         <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>
-          👤 Floriace FAVI
+          Floriace FAVI
         </Text>
         <Text style={{ color: 'white', opacity: 0.9, marginTop: 5 }}>
           {user?.email || 'florifavi@gmail.com'}
         </Text>
-        <Text style={{ color: 'white', fontSize: 20, fontWeight: '600', marginTop: 10 }}>
-          💰 {totalBalance.toLocaleString()} FCFA
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+          <Wallet size={20} color="white" />
+          <Text style={{ color: 'white', fontSize: 20, fontWeight: '600', marginLeft: 8 }}>
+            {totalBalance.toLocaleString()} FCFA
+          </Text>
+        </View>
       </View>
 
       {/* Wallets */}
       <View style={{ marginBottom: 20 }}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: theme.colors.text }}>
-          👛 Portefeuilles
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+          <Briefcase size={18} color={theme.colors.text} />
+          <Text style={{ fontSize: 18, fontWeight: 'bold', marginLeft: 8, color: theme.colors.text }}>
+            Portefeuilles
+          </Text>
+        </View>
         {wallets.map((wallet, index) => (
           <View key={index} style={{
             backgroundColor: theme.colors.cardBackground,

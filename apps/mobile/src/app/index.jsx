@@ -1,5 +1,12 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+import {
+  Shield,
+  Banknote,
+  Globe,
+  ArrowRight,
+  User,
+} from "lucide-react-native";
 import { Redirect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -140,7 +147,7 @@ export default function Index() {
                 marginRight: 14,
               }}
             >
-              <Text style={{ fontSize: 24, color: "#20B2AA" }}>🛡️</Text>
+              <Shield size={26} color="#20B2AA" strokeWidth={1.5} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 16, fontWeight: "600", color: "#1A202C", marginBottom: 2 }}>
@@ -164,7 +171,7 @@ export default function Index() {
                 marginRight: 14,
               }}
             >
-              <Text style={{ fontSize: 24, color: "#10B981" }}>💰</Text>
+              <Banknote size={26} color="#10B981" strokeWidth={1.5} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 16, fontWeight: "600", color: "#1A202C", marginBottom: 2 }}>
@@ -188,12 +195,9 @@ export default function Index() {
                 marginRight: 14,
               }}
             >
-              <Text style={{ fontSize: 24, color: "#3B82F6" }}>��</Text>
+              <Globe size={26} color="#3B82F6" strokeWidth={1.5} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 16, fontWeight: "600", color: "#1A202C", marginBottom: 2 }}>
-                Accès mondial
-              </Text>
               <Text style={{ fontSize: 13, fontWeight: "400", color: "#64748B", lineHeight: 18 }}>
                 Utilisez owo! partout dans le monde
               </Text>
@@ -224,7 +228,7 @@ export default function Index() {
             >
               Se connecter
             </Text>
-            <Text style={{ fontSize: 18, color: "#FFFFFF" }}>→</Text>
+            <ArrowRight size={18} color="#FFFFFF" strokeWidth={2} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -241,7 +245,7 @@ export default function Index() {
             }}
             onPress={() => router.push("/auth/register")}
           >
-            <Text style={{ fontSize: 18, color: theme.colors.primary }}>👆</Text>
+            <User size={18} color={theme.colors.primary} strokeWidth={2} />
             <Text
               style={{
                 color: theme.colors.primary,
