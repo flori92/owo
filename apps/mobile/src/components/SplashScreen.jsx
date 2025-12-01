@@ -11,11 +11,11 @@ export default function SplashScreen({ onAnimationComplete }) {
   const videoRef = useRef(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  // Durée maximale du splash (2.5 secondes)
+  // Durée maximale du splash (3 secondes)
   useEffect(() => {
     const timeout = setTimeout(() => {
       triggerFadeOut();
-    }, 2500);
+    }, 3000);
 
     return () => clearTimeout(timeout);
   }, []);
@@ -51,8 +51,8 @@ export default function SplashScreen({ onAnimationComplete }) {
         ref={videoRef}
         source={require('../../assets/images/splash.mp4')}
         style={{ 
-          width: width * 0.7,  // 70% de la largeur
-          height: height * 0.5, // 50% de la hauteur
+          width: width * 0.85,  // 85% de la largeur
+          height: height * 0.6, // 60% de la hauteur
         }}
         resizeMode={ResizeMode.CONTAIN}
         shouldPlay
