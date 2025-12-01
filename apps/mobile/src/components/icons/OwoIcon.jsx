@@ -30,7 +30,7 @@ export function OwoIcon({ size = 80, color = '#FFFFFF' }) {
       {/* Decorative elements */}
       <Circle cx="25" cy="70" r="2" fill={color} opacity="0.6" />
       <Circle cx="75" cy="70" r="2" fill={color} opacity="0.6" />
-      <Circle cx="50" cy="75" r="2" fill={color} opacity="0.6} />
+      <Circle cx="50" cy="75" r="2" fill={color} opacity="0.6" />
     </Svg>
   );
 }
