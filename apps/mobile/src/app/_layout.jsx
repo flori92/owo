@@ -60,11 +60,10 @@ export default function RootLayout() {
           <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
             <Stack.Screen name="index" />
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="transaction-details" />
-            <Stack.Screen name="add-transaction" />
             <Stack.Screen name="payment-integration" />
-            <Stack.Screen name="insights" />
-            <Stack.Screen name="budget-setup" />
+            <Stack.Screen name="group-savings" />
+            <Stack.Screen name="locked-savings" />
+            <Stack.Screen name="notifications" />
           </Stack>
           <AuthModal />
         </GestureHandlerRootView>

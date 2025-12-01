@@ -1,6 +1,8 @@
 {
   "expo": {
     "name": "owo!",
+    "slug": "owo",
+    "scheme": "owo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -76,7 +78,6 @@
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "owner": "floriace",
-    "slug": "owo"
+    "owner": "floriace"
   }
 }
