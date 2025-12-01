@@ -325,7 +325,7 @@ export default function Index() {
           </View>
         </View>
 
-        {/* Auth Button */}
+        {/* Start Button - redirige directement vers l'app pour l'étape 1 */}
         <TouchableOpacity
           style={{
             backgroundColor: theme.colors.primary,
@@ -342,8 +342,8 @@ export default function Index() {
             elevation: 4,
           }}
           onPress={() => {
-            // Ouvre le modal d'authentification
-            signIn();
+            // Étape 1 : on entre directement dans l'app, sans flux d'auth web
+            router.push("/(tabs)");
           }}
           activeOpacity={0.8}
         >

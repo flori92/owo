@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Bell, Settings } from "lucide-react-native";
 import { router } from "expo-router";
 
@@ -19,39 +19,28 @@ export function DashboardHeader({
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        {/* Logo Owo! miniature */}
+        {/* Logo carré officiel owo! */}
         <View
           style={{
-            flexDirection: "row",
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            backgroundColor: "#FFFFFF",
+            justifyContent: "center",
             alignItems: "center",
             marginRight: 12,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 6,
+            elevation: 3,
+            overflow: "hidden",
           }}
         >
-          <View
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: theme.colors.gold,
-              marginRight: 2,
-            }}
-          />
-          <View
-            style={{
-              width: 12,
-              height: 2,
-              backgroundColor: theme.colors.primary,
-              borderRadius: 1,
-              marginRight: 2,
-            }}
-          />
-          <View
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: theme.colors.gold,
-            }}
+          <Image
+            source={require("../../../assets/images/icon.png")}
+            style={{ width: 40, height: 40 }}
+            resizeMode="cover"
           />
         </View>
 
@@ -64,7 +53,8 @@ export function DashboardHeader({
               marginBottom: 2,
             }}
           >
-            owo!
+            <Text style={{ color: theme.colors.primary }}>owo</Text>
+            <Text style={{ color: theme.colors.gold }}>!</Text>
           </Text>
           <Text
             style={{

@@ -68,9 +68,10 @@ export default function DashboardScreen() {
   };
 
   // Créer l'objet balance pour les composants
+  // On s'appuie directement sur les helpers du contexte pour avoir des totaux cohérents
   const balance = {
     ...balances,
-    totalEUR: getTotalEUR() - balances.europeanBanks.total - balances.virtualCard.balance,
+    totalEUR: getTotalEUR(),
     total: getTotalFCFA(),
   };
 

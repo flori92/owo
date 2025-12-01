@@ -55,14 +55,24 @@ export const useAuth = () => {
  * This hook will automatically open the authentication modal if the user is not authenticated.
  */
 export const useRequireAuth = (options) => {
-  const { isAuthenticated, isReady } = useAuth();
-  const { open } = useAuthModal();
+  // Étape 1 : désactivation temporaire de l'auth obligatoire.
+  // On ne force plus l'ouverture du modal d'authentification afin de pouvoir
+  // naviguer dans l'application sans backend d'auth opérationnel.
+  // La logique originale est laissée en commentaire pour réactivation ultérieure.
 
+  // const { isAuthenticated, isReady } = useAuth();
+  // const { open } = useAuthModal();
+  //
+  // useEffect(() => {
+  //   if (!isAuthenticated && isReady) {
+  //     open({ mode: options?.mode });
+  //   }
+  // }, [isAuthenticated, open, options?.mode, isReady]);
+
+  // Hook neutre pour l'instant
   useEffect(() => {
-    if (!isAuthenticated && isReady) {
-      open({ mode: options?.mode });
-    }
-  }, [isAuthenticated, open, options?.mode, isReady]);
+    // no-op
+  }, []);
 };
 
 export default useAuth;

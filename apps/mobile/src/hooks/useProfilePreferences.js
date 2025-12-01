@@ -12,20 +12,32 @@ export function useProfilePreferences(initialProfile) {
     initialProfile?.dark_mode_enabled ?? false,
   );
 
-  const updatePreference = async (key, value) => {
-    try {
-      const response = await fetch("/api/user-profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [key]: value }),
-      });
-
-      if (response.ok) {
-        Alert.alert("Succès", "Préférence mise à jour");
-      }
-    } catch (error) {
-      console.error("Erreur mise à jour préférence:", error);
+  // Mode démo : mise à jour locale uniquement (pas d'appel API)
+  const updatePreference = (key, value) => {
+    // Mettre à jour l'état local correspondant
+    switch (key) {
+      case "notifications_enabled":
+        setNotificationsEnabled(value);
+        break;
+      case "biometric_enabled":
+        setBiometricEnabled(value);
+        break;
+      case "dark_mode_enabled":
+        setDarkModeEnabled(value);
+        break;
     }
+    
+    // Feedback visuel
+    const labels = {
+      notifications_enabled: value ? "Notifications activées" : "Notifications désactivées",
+      biometric_enabled: value ? "Biométrie activée" : "Biométrie désactivée",
+      dark_mode_enabled: value ? "Mode sombre activé" : "Mode clair activé",
+    };
+    
+    Alert.alert(
+      "Préférence mise à jour",
+      `${labels[key] || "Paramètre modifié"}\n\n(Mode démo : changement local uniquement)`
+    );
   };
 
   return {

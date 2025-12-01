@@ -49,8 +49,47 @@ export default function LockedSavingsScreen() {
     Inter_700Bold,
   });
 
-  const [lockedSavings, setLockedSavings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Mode démo offline : données mock initiales
+  const mockLockedSavings = [
+    {
+      id: "demo-locked-1",
+      title: "Achat voiture",
+      description: "Économies pour une Toyota Corolla",
+      amount: 500000,
+      currency: "FCFA",
+      unlock_date: "2025-06-30",
+      is_unlocked: false,
+      emergency_pin_hash: "demo-pin",
+      created_at: "2024-11-01",
+    },
+    {
+      id: "demo-locked-2",
+      title: "Fonds d'urgence",
+      description: "Réserve de sécurité familiale",
+      amount: 200000,
+      currency: "FCFA",
+      unlock_date: "2025-12-31",
+      is_unlocked: false,
+      emergency_pin_hash: null,
+      created_at: "2024-10-15",
+    },
+    {
+      id: "demo-locked-3",
+      title: "Études enfants",
+      description: "Frais de scolarité 2024",
+      amount: 150000,
+      currency: "FCFA",
+      unlock_date: "2024-09-01",
+      is_unlocked: true,
+      unlock_reason: "mature",
+      unlocked_at: "2024-09-01",
+      emergency_pin_hash: "demo-pin",
+      created_at: "2024-01-15",
+    },
+  ];
+
+  const [lockedSavings, setLockedSavings] = useState(mockLockedSavings);
+  const [loading, setLoading] = useState(false); // Pas de chargement en mode démo
   const [refreshing, setRefreshing] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
 
@@ -68,36 +107,14 @@ export default function LockedSavingsScreen() {
   const [unlockPin, setUnlockPin] = useState("");
   const [unlocking, setUnlocking] = useState(false);
 
-  useEffect(() => {
-    loadLockedSavings();
-  }, []);
-
-  const loadLockedSavings = async (showLoader = true) => {
-    try {
-      if (showLoader) setLoading(true);
-
-      const response = await fetch("/api/locked-savings");
-      if (response.ok) {
-        const data = await response.json();
-        setLockedSavings(data.lockedSavings || []);
-      } else {
-        Alert.alert("Erreur", "Impossible de charger les épargnes bloquées");
-      }
-    } catch (error) {
-      console.error("Erreur chargement épargnes bloquées:", error);
-      Alert.alert("Erreur", "Erreur réseau");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
+  // Mode démo : pas d'appel API
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    loadLockedSavings(false);
+    setTimeout(() => setRefreshing(false), 500);
   }, []);
 
-  const createLockedSaving = async () => {
+  // Mode démo : création locale
+  const createLockedSaving = () => {
     if (!title.trim() || !amount || !unlockDate) {
       Alert.alert("Erreur", "Titre, montant et date de déblocage requis");
       return;
@@ -111,38 +128,26 @@ export default function LockedSavingsScreen() {
     }
 
     setCreating(true);
-    try {
-      const response = await fetch("/api/locked-savings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title.trim(),
-          description: description.trim(),
-          amount: parseFloat(amount),
-          unlock_date: unlockDate,
-          emergency_pin: emergencyPin || undefined,
-        }),
-      });
+    
+    setTimeout(() => {
+      const newSaving = {
+        id: `demo-locked-${Date.now()}`,
+        title: title.trim(),
+        description: description.trim(),
+        amount: parseFloat(amount),
+        currency: "FCFA",
+        unlock_date: unlockDate,
+        is_unlocked: false,
+        emergency_pin_hash: emergencyPin ? "demo-pin" : null,
+        created_at: new Date().toISOString(),
+      };
 
-      if (response.ok) {
-        const data = await response.json();
-        setLockedSavings((prev) => [data.lockedSaving, ...prev]);
-        setCreateModalVisible(false);
-        resetForm();
-        Alert.alert("Succès", "Épargne bloquée créée avec succès!");
-      } else {
-        const error = await response.json();
-        Alert.alert(
-          "Erreur",
-          error.error || "Impossible de créer l'épargne bloquée",
-        );
-      }
-    } catch (error) {
-      console.error("Erreur création épargne bloquée:", error);
-      Alert.alert("Erreur", "Erreur réseau");
-    } finally {
+      setLockedSavings((prev) => [newSaving, ...prev]);
+      setCreateModalVisible(false);
+      resetForm();
       setCreating(false);
-    }
+      Alert.alert("Succès", "Épargne bloquée créée avec succès!\n\n(Mode démo : données non persistées)");
+    }, 500);
   };
 
   const resetForm = () => {
@@ -153,42 +158,43 @@ export default function LockedSavingsScreen() {
     setEmergencyPin("");
   };
 
-  const attemptUnlock = async (saving, isEmergency = false) => {
+  // Mode démo : déblocage local
+  const attemptUnlock = (saving, isEmergency = false) => {
     if (isEmergency && !unlockPin.trim()) {
       Alert.alert("Erreur", "PIN d'urgence requis");
       return;
     }
 
-    setUnlocking(true);
-    try {
-      const response = await fetch("/api/locked-savings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: saving.id,
-          action: isEmergency ? "unlock_emergency" : "unlock_mature",
-          emergency_pin: isEmergency ? unlockPin : undefined,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setLockedSavings((prev) =>
-          prev.map((s) => (s.id === saving.id ? data.lockedSaving : s)),
-        );
-        setUnlockModalVisible(false);
-        setUnlockPin("");
-        Alert.alert("Succès", data.message);
-      } else {
-        const error = await response.json();
-        Alert.alert("Erreur", error.error || "Impossible de débloquer");
-      }
-    } catch (error) {
-      console.error("Erreur déblocage:", error);
-      Alert.alert("Erreur", "Erreur réseau");
-    } finally {
-      setUnlocking(false);
+    // En mode démo, on accepte n'importe quel PIN
+    if (isEmergency && unlockPin !== "1234") {
+      Alert.alert("Info démo", "En mode démo, utilisez le PIN: 1234");
+      return;
     }
+
+    setUnlocking(true);
+    
+    setTimeout(() => {
+      const updatedSaving = {
+        ...saving,
+        is_unlocked: true,
+        unlock_reason: isEmergency ? "emergency" : "mature",
+        unlocked_at: new Date().toISOString(),
+      };
+
+      setLockedSavings((prev) =>
+        prev.map((s) => (s.id === saving.id ? updatedSaving : s)),
+      );
+      setUnlockModalVisible(false);
+      setUnlockPin("");
+      setUnlocking(false);
+      
+      Alert.alert(
+        "Succès",
+        isEmergency
+          ? "Épargne débloquée en urgence!\n\n(Mode démo : données non persistées)"
+          : "Épargne débloquée avec succès!\n\n(Mode démo : données non persistées)"
+      );
+    }, 500);
   };
 
   const openUnlockModal = (saving) => {

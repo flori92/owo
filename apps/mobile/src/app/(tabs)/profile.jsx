@@ -143,7 +143,9 @@ export default function ProfileScreen() {
     setLanguageModalVisible,
   });
 
-  if (!fontsLoaded || userLoading || loading) {
+  // Étape 1 : on n'empêche pas l'affichage du profil si les données backend
+  // ne sont pas encore disponibles. On se contente d'attendre les fontes.
+  if (!fontsLoaded) {
     return <LoadingScreen />;
   }
 

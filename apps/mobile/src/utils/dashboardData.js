@@ -47,16 +47,16 @@ export const getMockTransactions = (theme) => [
 
 export const getQuickStats = (theme) => [
   {
-    title: "Économies ce mois",
+    title: "Taux d'épargne ce mois",
     value: "15 250 FCFA",
     icon: "PiggyBank",
     color: theme.colors.accent,
-    change: "+12%",
+    change: "+12 % vs mois dernier",
     sparkle: true,
   },
   {
-    title: "Change EUR↔FCFA",
-    value: "655.96",
+    title: "Taux EUR ↔ FCFA",
+    value: "655,96",
     icon: "Repeat",
     color: theme.colors.primary,
     change: "Taux actuel",
@@ -64,10 +64,10 @@ export const getQuickStats = (theme) => [
   },
   {
     title: "Carte virtuelle owo!",
-    value: "Active",
+    value: "Solde en temps réel",
     icon: "CreditCard",
     color: theme.colors.success,
-    change: "Visa Européenne",
+    change: "Visa européenne activée",
     sparkle: true,
   },
 ];

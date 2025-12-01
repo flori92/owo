@@ -39,6 +39,7 @@ import {
   Wallet,
 } from "lucide-react-native";
 import { useTheme } from "@/utils/useTheme";
+import useUser from "@/utils/auth/useUser";
 import { useBalance } from "@/contexts/BalanceContext";
 import ScreenContainer from "@/components/ScreenContainer";
 import HeaderBar from "@/components/HeaderBar";
@@ -53,6 +54,7 @@ export default function VirtualCardScreen() {
   const theme = useTheme();
   const flipAnim = useRef(new Animated.Value(0)).current;
   const { balances, rechargeVirtualCard } = useBalance();
+  const { data: user } = useUser();
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -65,10 +67,17 @@ export default function VirtualCardScreen() {
   const [isCardFrozen, setIsCardFrozen] = useState(false);
   const [isCardFlipped, setIsCardFlipped] = useState(false);
 
-  // Mock card data avec nouvelle identité Owo!
+  // Déterminer le nom du titulaire à partir de l'utilisateur connecté
+  const getCardHolderName = () => {
+    if (user?.name) return user.name.toUpperCase();
+    if (user?.email) return user.email.split("@")[0].toUpperCase();
+    return "UTILISATEUR OWO!";
+  };
+
+  // Mock card data avec identité Owo! et nom dynamique
   const cardData = {
     cardNumber: "5258 1234 5678 9012",
-    cardHolder: "JEAN KOUADIO",
+    cardHolder: getCardHolderName(),
     expiryDate: "12/28",
     cvv: "123",
     provider: "owo! Visa",

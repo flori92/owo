@@ -50,8 +50,38 @@ export default function GroupSavingsScreen() {
     Inter_700Bold,
   });
 
-  const [groupSavings, setGroupSavings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Mode démo offline : données mock initiales
+  const mockGroupSavings = [
+    {
+      id: "demo-1",
+      title: "Voyage à Abidjan",
+      description: "Vacances en famille pour Noël 2025",
+      current_amount: 125000,
+      target_amount: 250000,
+      currency: "FCFA",
+      member_count: 4,
+      target_date: "2025-12-20",
+      invite_code: "OWO-ABIDJAN",
+      is_completed: false,
+      is_private: false,
+    },
+    {
+      id: "demo-2",
+      title: "Cadeau anniversaire Maman",
+      description: "Surprise pour ses 60 ans",
+      current_amount: 75000,
+      target_amount: 100000,
+      currency: "FCFA",
+      member_count: 3,
+      target_date: "2025-03-15",
+      invite_code: "OWO-MAMAN60",
+      is_completed: false,
+      is_private: true,
+    },
+  ];
+
+  const [groupSavings, setGroupSavings] = useState(mockGroupSavings);
+  const [loading, setLoading] = useState(false); // Pas de chargement en mode démo
   const [refreshing, setRefreshing] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
 
@@ -63,71 +93,44 @@ export default function GroupSavingsScreen() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    loadGroupSavings();
-  }, []);
-
-  const loadGroupSavings = async (showLoader = true) => {
-    try {
-      if (showLoader) setLoading(true);
-
-      const response = await fetch("/api/group-savings");
-      if (response.ok) {
-        const data = await response.json();
-        setGroupSavings(data.groupSavings || []);
-      } else {
-        Alert.alert("Erreur", "Impossible de charger les cagnottes");
-      }
-    } catch (error) {
-      console.error("Erreur chargement cagnottes:", error);
-      Alert.alert("Erreur", "Erreur réseau");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
+  // Mode démo : pas d'appel API
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    loadGroupSavings(false);
+    // Simuler un refresh
+    setTimeout(() => setRefreshing(false), 500);
   }, []);
 
-  const createGroupSaving = async () => {
+  // Mode démo : création locale
+  const createGroupSaving = () => {
     if (!title.trim() || !targetAmount) {
       Alert.alert("Erreur", "Titre et montant cible requis");
       return;
     }
 
     setCreating(true);
-    try {
-      const response = await fetch("/api/group-savings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title.trim(),
-          description: description.trim(),
-          target_amount: parseFloat(targetAmount),
-          target_date: targetDate || null,
-          is_private: isPrivate,
-        }),
-      });
+    
+    // Simuler un délai de création
+    setTimeout(() => {
+      const newSaving = {
+        id: `demo-${Date.now()}`,
+        title: title.trim(),
+        description: description.trim(),
+        current_amount: 0,
+        target_amount: parseFloat(targetAmount),
+        currency: "FCFA",
+        member_count: 1,
+        target_date: targetDate || null,
+        invite_code: `OWO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+        is_completed: false,
+        is_private: isPrivate,
+      };
 
-      if (response.ok) {
-        const data = await response.json();
-        setGroupSavings((prev) => [data.groupSaving, ...prev]);
-        setCreateModalVisible(false);
-        resetForm();
-        Alert.alert("Succès", "Cagnotte créée avec succès!");
-      } else {
-        const error = await response.json();
-        Alert.alert("Erreur", error.error || "Impossible de créer la cagnotte");
-      }
-    } catch (error) {
-      console.error("Erreur création cagnotte:", error);
-      Alert.alert("Erreur", "Erreur réseau");
-    } finally {
+      setGroupSavings((prev) => [newSaving, ...prev]);
+      setCreateModalVisible(false);
+      resetForm();
       setCreating(false);
-    }
+      Alert.alert("Succès", "Cagnotte créée avec succès!\n\n(Mode démo : données non persistées)");
+    }, 500);
   };
 
   const resetForm = () => {

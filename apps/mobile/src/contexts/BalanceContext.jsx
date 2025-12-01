@@ -48,13 +48,14 @@ export function BalanceProvider({ children, theme }) {
         );
     }, [balances.mobileMoneyAccounts]);
 
-    // Calculer le total en EUR
+    // Calculer le total en EUR (comptes uniquement : Mobile Money + banques européennes)
+    // La carte virtuelle est considérée comme un portefeuille séparé.
     const getTotalEUR = useCallback(() => {
         const mobileMoneyEUR = getTotalMobileMoneyFCFA() / EXCHANGE_RATE;
-        return mobileMoneyEUR + balances.europeanBanks.total + balances.virtualCard.balance;
-    }, [balances, getTotalMobileMoneyFCFA]);
+        return mobileMoneyEUR + balances.europeanBanks.total;
+    }, [balances.europeanBanks.total, getTotalMobileMoneyFCFA]);
 
-    // Calculer l'équivalent total en FCFA
+    // Calculer l'équivalent total en FCFA pour les comptes (hors carte virtuelle)
     const getTotalFCFA = useCallback(() => {
         const totalEUR = getTotalEUR();
         return Math.round(totalEUR * EXCHANGE_RATE);
