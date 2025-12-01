@@ -103,6 +103,18 @@ export default function TabLayout() {
           href: null, // Hidden from tab bar, accessible via router.push()
         }}
       />
+      <Tabs.Screen
+        name="send-money"
+        options={{
+          href: null, // Hidden from tab bar, accessible via router.push()
+        }}
+      />
+      <Tabs.Screen
+        name="request-money"
+        options={{
+          href: null, // Hidden from tab bar, accessible via router.push()
+        }}
+      />
     </Tabs>
   );
 }

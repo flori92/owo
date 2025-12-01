@@ -20,6 +20,7 @@ import { getMockTransactions, getQuickStats } from "@/utils/dashboardData";
 import { DashboardHeader } from "@/components/Dashboard/DashboardHeader";
 import { BalanceOverview } from "@/components/Dashboard/BalanceOverview";
 import { AccountsSection } from "@/components/Dashboard/AccountsSection";
+import { QuickActionsSection } from "@/components/Dashboard/QuickActionsSection";
 import { QuickStatsSection } from "@/components/Dashboard/QuickStatsSection";
 import { RecentTransactionsSection } from "@/components/Dashboard/RecentTransactionsSection";
 
@@ -110,6 +111,8 @@ export default function DashboardScreen() {
           balance={balance}
           balanceVisible={balanceVisible}
         />
+
+        <QuickActionsSection theme={theme} />
 
         <QuickStatsSection theme={theme} stats={quickStats} />
 
