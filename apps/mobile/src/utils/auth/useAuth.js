@@ -18,15 +18,33 @@ export const useAuth = () => {
   const { isOpen, close, open } = useAuthModal();
 
   const initiate = useCallback(() => {
-    SecureStore.getItemAsync(authKey).then((auth) => {
-      useAuthStore.setState({
-        auth: auth ? JSON.parse(auth) : null,
-        isReady: true,
+    SecureStore.getItemAsync(authKey)
+      .then((auth) => {
+        try {
+          useAuthStore.setState({
+            auth: auth ? JSON.parse(auth) : null,
+            isReady: true,
+          });
+        } catch (error) {
+          console.log('Auth parse error, using null:', error);
+          useAuthStore.setState({
+            auth: null,
+            isReady: true,
+          });
+        }
+      })
+      .catch((error) => {
+        console.log('Auth storage error, using null:', error);
+        useAuthStore.setState({
+          auth: null,
+          isReady: true,
+        });
       });
-    });
   }, []);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    initiate();
+  }, [initiate]);
 
   const signIn = useCallback(() => {
     open({ mode: 'signin' });
