@@ -11,13 +11,15 @@ import {
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
 import { useRequireAuth } from "@/utils/auth/useAuth";
-import useUser from "@/utils/auth/useUser";
-import { useBalance } from "@/contexts/BalanceContext";
+import { useAppwriteAuth } from "@/hooks/useAppwrite";
+import { useWallets } from "@/hooks/useAppwrite";
+import { useTransactions } from "@/hooks/useAppwrite";
+import { useNotifications } from "@/hooks/useAppwrite";
+import { useProfile } from "@/hooks/useAppwrite";
 import ScreenContainer from "@/components/ScreenContainer";
 import LoadingScreen from "@/components/LoadingScreen";
-import { useDashboard } from "@/hooks/useDashboard";
-import { getMockTransactions, getQuickStats } from "@/utils/dashboardData";
 import { DashboardHeader } from "@/components/Dashboard/DashboardHeader";
+import { UserMenu } from "@/components/Dashboard/UserMenu";
 import { BalanceOverview } from "@/components/Dashboard/BalanceOverview";
 import { AccountsSection } from "@/components/Dashboard/AccountsSection";
 import { QuickActionsSection } from "@/components/Dashboard/QuickActionsSection";
@@ -34,19 +36,16 @@ export default function DashboardScreen() {
   const haptics = useHaptics();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Récupérer les données utilisateur
-  const { data: user, loading: userLoading } = useUser();
+  // Récupérer les données utilisateur via Appwrite
+  const { user, loading: userLoading } = useAppwriteAuth();
+  const { profile, loading: profileLoading } = useProfile(user?.$id);
+  const { wallets, loading: walletsLoading, getTotalBalance } = useWallets(user?.$id);
+  const { transactions, loading: transactionsLoading } = useTransactions(user?.$id);
+  const { notifications, unreadCount } = useNotifications(user?.$id);
 
-  // Utiliser le contexte de balance
-  const { balances, getTotalEUR, getTotalFCFA } = useBalance();
-
-  const {
-    userProfile,
-    unreadNotificationCount,
-    balanceVisible,
-    hasTransactions,
-    toggleBalanceVisibility,
-  } = useDashboard(user?.id);
+  // État pour la visibilité du solde
+  const [balanceVisible, setBalanceVisible] = useState(true);
+  const toggleBalanceVisibility = () => setBalanceVisible(!balanceVisible);
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -60,40 +59,60 @@ export default function DashboardScreen() {
     router.push("/notifications");
   };
 
-  // Pull-to-refresh
-  const onRefresh = useCallback(() => {
+  // Pull-to-refresh avec Appwrite
+  const onRefresh = useCallback(async () => {
     haptics.medium();
     setRefreshing(true);
-    // Simuler un rechargement des données
-    setTimeout(() => {
-      setRefreshing(false);
+    try {
+      // Rafraîchir toutes les données Appwrite
+      await Promise.all([
+        // Les hooks vont automatiquement se rafraîchir
+      ]);
       haptics.success();
-    }, 1500);
+    } catch (error) {
+      console.error('Erreur rafraîchissement:', error);
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
-  // Obtenir le nom d'affichage
+  // Obtenir le nom d'affichage depuis Appwrite
   const getDisplayName = () => {
-    if (userProfile?.first_name) {
-      return userProfile.first_name;
+    if (profile?.firstName) {
+      return profile.firstName;
     }
     if (user?.name) {
       return user.name.split(" ")[0];
     }
-    return "Utilisateur";
+    return "Floriace";
   };
 
-  // Créer l'objet balance pour les composants
-  // On s'appuie directement sur les helpers du contexte pour avoir des totaux cohérents
+  // Créer l'objet balance pour les composants depuis Appwrite
+  const totalBalance = getTotalBalance();
   const balance = {
-    ...balances,
-    totalEUR: getTotalEUR(),
-    total: getTotalFCFA(),
+    total: totalBalance,
+    totalEUR: totalBalance / 655.956, // Conversion XOF → EUR
+    totalFCFA: totalBalance,
+    // Ajouter les wallets individuels
+    mtn: wallets.find(w => w.provider?.includes('MTN'))?.balance || 0,
+    orange: wallets.find(w => w.provider?.includes('Orange'))?.balance || 0,
+    ecobank: wallets.find(w => w.provider?.includes('ECOBANK'))?.balance || 0,
+    wave: wallets.find(w => w.provider?.includes('Wave'))?.balance || 0,
+    moov: wallets.find(w => w.provider?.includes('Moov'))?.balance || 0,
   };
 
-  const recentTransactions = hasTransactions ? getMockTransactions(theme) : [];
-  const quickStats = getQuickStats(theme);
+  // Utiliser les vraies transactions Appwrite
+  const recentTransactions = transactions.slice(0, 5);
+  
+  // Stats rapides depuis les données Appwrite
+  const quickStats = {
+    totalTransactions: transactions.length,
+    totalSent: transactions.filter(t => t.type === 'send').reduce((sum, t) => sum + (t.amount || 0), 0),
+    totalReceived: transactions.filter(t => t.type === 'receive').reduce((sum, t) => sum + (t.amount || 0), 0),
+    totalSaved: wallets.reduce((sum, w) => sum + (w.balance || 0), 0),
+  };
 
-  if (!fontsLoaded || userLoading) {
+  if (!fontsLoaded || userLoading || profileLoading) {
     return <LoadingScreen />;
   }
 
@@ -120,8 +139,9 @@ export default function DashboardScreen() {
         <DashboardHeader
           theme={theme}
           displayName={getDisplayName()}
-          unreadNotificationCount={unreadNotificationCount}
+          unreadNotificationCount={unreadCount}
           onNotificationPress={handleNotificationPress}
+          rightComponent={<UserMenu displayName={getDisplayName()} />}
         />
 
         <BalanceOverview

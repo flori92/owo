@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { create } from 'zustand';
 import { Modal, View } from 'react-native';
 import { useAuthModal, useAuthStore, authKey } from './store';
+import { useAppwriteAuth } from '@/hooks/useAppwrite';
 
 
 /**
@@ -55,24 +56,15 @@ export const useAuth = () => {
  * This hook will automatically open the authentication modal if the user is not authenticated.
  */
 export const useRequireAuth = (options) => {
-  // Étape 1 : désactivation temporaire de l'auth obligatoire.
-  // On ne force plus l'ouverture du modal d'authentification afin de pouvoir
-  // naviguer dans l'application sans backend d'auth opérationnel.
-  // La logique originale est laissée en commentaire pour réactivation ultérieure.
+  const { user, loading } = useAppwriteAuth();
+  const { open } = useAuthModal();
 
-  // const { isAuthenticated, isReady } = useAuth();
-  // const { open } = useAuthModal();
-  //
-  // useEffect(() => {
-  //   if (!isAuthenticated && isReady) {
-  //     open({ mode: options?.mode });
-  //   }
-  // }, [isAuthenticated, open, options?.mode, isReady]);
-
-  // Hook neutre pour l'instant
   useEffect(() => {
-    // no-op
-  }, []);
+    if (!loading && !user) {
+      // Rediriger vers la page de login au lieu d'ouvrir un modal
+      router.replace('/auth/login');
+    }
+  }, [user, loading, open, options?.mode]);
 };
 
 export default useAuth;

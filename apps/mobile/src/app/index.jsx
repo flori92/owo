@@ -11,6 +11,7 @@ import {
   Fingerprint,
 } from "lucide-react-native";
 import { useAuth } from "@/utils/auth/useAuth";
+import { useAppwriteAuth } from "@/hooks/useAppwrite";
 import { useTheme } from "@/utils/useTheme";
 import {
   useFonts,
@@ -22,6 +23,7 @@ import {
 
 export default function Index() {
   const { auth, signIn, isReady } = useAuth();
+  const { user, loading } = useAppwriteAuth();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -34,7 +36,7 @@ export default function Index() {
   });
 
   // Show loading while auth system initializes
-  if (!isReady || !fontsLoaded) {
+  if (loading || !fontsLoaded) {
     return (
       <View
         style={{
@@ -58,7 +60,7 @@ export default function Index() {
   }
 
   // If user is authenticated, redirect to main app
-  if (auth && auth.user) {
+  if (user) {
     return <Redirect href="/(tabs)" />;
   }
 
@@ -269,7 +271,7 @@ export default function Index() {
             elevation: 4,
           }}
           onPress={() => {
-            router.push("/(tabs)");
+            router.push("/auth/login");
           }}
           activeOpacity={0.8}
         >
