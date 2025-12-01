@@ -25,7 +25,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
 import { SocialAuthButton, SocialAuthDivider } from "@/components/SocialAuthButton";
-import { OwoIcon, OwoTextIcon } from "@/components/icons/OwoIcon";
+import { OwoLogo } from "@/components/icons/OwoLogo";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -164,7 +164,7 @@ export default function LoginScreen() {
         >
           {/* Logo/Title */}
           <View style={{ alignItems: "center", marginBottom: 48 }}>
-            <OwoIcon size={80} />
+            <OwoLogo size={80} />
             <Text
               style={{
                 fontFamily: "Inter_700Bold",
