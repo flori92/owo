@@ -1,10 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { Redirect } from "expo-router";
+import { View, Text, TouchableOpacity, Image } from "react-native";
+import { Redirect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  Smartphone,
   Shield,
   Banknote,
   Globe,
@@ -25,6 +24,7 @@ export default function Index() {
   const { auth, signIn, isReady } = useAuth();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -91,7 +91,7 @@ export default function Index() {
             style={{
               width: 80,
               height: 80,
-              borderRadius: 25,
+              borderRadius: 20,
               backgroundColor: "#FFFFFF",
               justifyContent: "center",
               alignItems: "center",
@@ -100,12 +100,13 @@ export default function Index() {
               shadowOpacity: 0.1,
               shadowRadius: 12,
               elevation: 4,
+              overflow: "hidden",
             }}
           >
-            <Smartphone
-              size={40}
-              color={theme.colors.primary}
-              strokeWidth={1.5}
+            <Image
+              source={require("../assets/images/icon.png")}
+              style={{ width: 80, height: 80 }}
+              resizeMode="cover"
             />
           </View>
         </View>
@@ -186,7 +187,7 @@ export default function Index() {
                   marginBottom: 4,
                 }}
               >
-                Sécurité bancaire
+                Authentification sécurisée
               </Text>
               <Text
                 style={{
@@ -196,7 +197,7 @@ export default function Index() {
                   lineHeight: 18,
                 }}
               >
-                Chiffrement AES-256 et conformité PCI DSS
+                Protection avancée avec chiffrement de bout en bout
               </Text>
             </View>
           </View>
@@ -228,7 +229,7 @@ export default function Index() {
                   marginBottom: 4,
                 }}
               >
-                Multi-devises
+                Transactions instantanées
               </Text>
               <Text
                 style={{
@@ -238,7 +239,7 @@ export default function Index() {
                   lineHeight: 18,
                 }}
               >
-                EUR, FCFA, USD - Échanges en temps réel
+                Envoyez et recevez de l'argent en quelques secondes
               </Text>
             </View>
           </View>
@@ -266,7 +267,7 @@ export default function Index() {
                   marginBottom: 4,
                 }}
               >
-                Open Banking
+                Portée internationale
               </Text>
               <Text
                 style={{
@@ -276,7 +277,7 @@ export default function Index() {
                   lineHeight: 18,
                 }}
               >
-                Connexion sécurisée à vos banques européennes
+                Transférez vers l'Afrique et l'Europe sans frais cachés
               </Text>
             </View>
           </View>
@@ -308,7 +309,7 @@ export default function Index() {
                   marginBottom: 4,
                 }}
               >
-                Biométrie
+                Connexion biométrique
               </Text>
               <Text
                 style={{
@@ -318,7 +319,7 @@ export default function Index() {
                   lineHeight: 18,
                 }}
               >
-                Touch ID et Face ID supportés
+                Accédez rapidement avec votre empreinte ou visage
               </Text>
             </View>
           </View>
@@ -340,7 +341,10 @@ export default function Index() {
             shadowRadius: 12,
             elevation: 4,
           }}
-          onPress={() => signIn()}
+          onPress={() => {
+            // Ouvre le modal d'authentification
+            signIn();
+          }}
           activeOpacity={0.8}
         >
           <Text
