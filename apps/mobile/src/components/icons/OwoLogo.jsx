@@ -1,17 +1,29 @@
 import React from 'react';
-import { Image, View } from 'react-native';
+import { Image, View, Text } from 'react-native';
 
 export function OwoLogo({ size = 80 }) {
   return (
-    <Image
-      source={require('../../../assets/images/icon.png')}
+    <View
       style={{
         width: size,
         height: size,
-        borderRadius: size * 0.2, // Légèrement arrondi
-        resizeMode: 'contain',
+        borderRadius: size * 0.2,
+        backgroundColor: '#FF6B35',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
-    />
+    >
+      <Text
+        style={{
+          fontSize: size * 0.4,
+          fontWeight: 'bold',
+          color: '#FFFFFF',
+          letterSpacing: 2,
+        }}
+      >
+        owo!
+      </Text>
+    </View>
   );
 }
 
