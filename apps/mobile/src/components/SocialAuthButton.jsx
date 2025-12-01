@@ -1,6 +1,8 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/utils/useTheme';
+import { GoogleIcon } from '@/components/icons/GoogleIcon';
+import { AppleIcon } from '@/components/icons/AppleIcon';
 
 export function SocialAuthButton({
   provider,
@@ -14,13 +16,13 @@ export function SocialAuthButton({
     switch (provider) {
       case 'google':
         return {
-          icon: '🔍',
+          iconComponent: <GoogleIcon size={20} />,
           label: 'Google',
           color: '#4285F4',
         };
       case 'apple':
         return {
-          icon: '🍎',
+          iconComponent: <AppleIcon size={20} />,
           label: 'Apple',
           color: '#000000',
         };
@@ -67,9 +69,11 @@ export function SocialAuthButton({
           style={{ marginRight: 8 }}
         />
       ) : (
-        <Text style={{ fontSize: 20, marginRight: 8 }}>
-          {config.icon}
-        </Text>
+        config.iconComponent || (
+          <Text style={{ fontSize: 20, marginRight: 8 }}>
+            {config.icon}
+          </Text>
+        )
       )}
       
       <Text

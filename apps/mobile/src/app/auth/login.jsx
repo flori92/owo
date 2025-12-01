@@ -25,6 +25,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
 import { SocialAuthButton, SocialAuthDivider } from "@/components/SocialAuthButton";
+import { OwoIcon, OwoTextIcon } from "@/components/icons/OwoIcon";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -163,40 +164,26 @@ export default function LoginScreen() {
         >
           {/* Logo/Title */}
           <View style={{ alignItems: "center", marginBottom: 48 }}>
-            <View
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: 20,
-                backgroundColor: theme.colors.primary,
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: 16,
-              }}
-            >
-              <Text style={{ fontSize: 32, color: "white", fontWeight: "bold" }}>
-                owo!
-              </Text>
-            </View>
+            <OwoIcon size={80} />
             <Text
               style={{
                 fontFamily: "Inter_700Bold",
                 fontSize: 24,
-                color: theme.colors.text,
-                marginBottom: 8,
+                color: theme.colors.primary,
+                marginTop: 16,
               }}
             >
-              Bienvenue
+              owo!
             </Text>
             <Text
               style={{
                 fontFamily: "Inter_400Regular",
-                fontSize: 16,
+                fontSize: 14,
                 color: theme.colors.textSecondary,
-                textAlign: "center",
+                marginTop: 4,
               }}
             >
-              Connectez-vous pour gérer vos finances
+              Votre finance, simplifiée
             </Text>
           </View>
 
