@@ -1,5 +1,5 @@
-import React from "react";
-import { ScrollView } from "react-native";
+import React, { useState, useCallback } from "react";
+import { ScrollView, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   useFonts,
@@ -23,6 +23,7 @@ import { AccountsSection } from "@/components/Dashboard/AccountsSection";
 import { QuickActionsSection } from "@/components/Dashboard/QuickActionsSection";
 import { QuickStatsSection } from "@/components/Dashboard/QuickStatsSection";
 import { RecentTransactionsSection } from "@/components/Dashboard/RecentTransactionsSection";
+import useHaptics from "@/hooks/useHaptics";
 
 export default function DashboardScreen() {
   // Require authentication to access this screen
@@ -30,6 +31,8 @@ export default function DashboardScreen() {
 
   const insets = useSafeAreaInsets();
   const theme = useTheme();
+  const haptics = useHaptics();
+  const [refreshing, setRefreshing] = useState(false);
 
   // Récupérer les données utilisateur
   const { data: user, loading: userLoading } = useUser();
@@ -53,8 +56,20 @@ export default function DashboardScreen() {
   });
 
   const handleNotificationPress = () => {
+    haptics.light();
     router.push("/notifications");
   };
+
+  // Pull-to-refresh
+  const onRefresh = useCallback(() => {
+    haptics.medium();
+    setRefreshing(true);
+    // Simuler un rechargement des données
+    setTimeout(() => {
+      setRefreshing(false);
+      haptics.success();
+    }, 1500);
+  }, []);
 
   // Obtenir le nom d'affichage
   const getDisplayName = () => {
@@ -92,6 +107,15 @@ export default function DashboardScreen() {
           paddingBottom: insets.bottom + 16,
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
+            progressBackgroundColor={theme.colors.cardBackground}
+          />
+        }
       >
         <DashboardHeader
           theme={theme}

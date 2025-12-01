@@ -1,37 +1,52 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { Send, HandCoins, Users, PiggyBank } from "lucide-react-native";
+import { Send, HandCoins, Users, PiggyBank, QrCode } from "lucide-react-native";
 import { router } from "expo-router";
+import useHaptics from "@/hooks/useHaptics";
 
 export function QuickActionsSection({ theme }) {
+  const haptics = useHaptics();
+
+  const handlePress = (route) => {
+    haptics.light();
+    router.push(route);
+  };
+
   const actions = [
     {
       icon: Send,
       title: "Envoyer",
       subtitle: "de l'argent",
       color: theme.colors.primary,
-      onPress: () => router.push("/(tabs)/send-money"),
+      route: "/(tabs)/send-money",
     },
     {
       icon: HandCoins,
       title: "Demander",
       subtitle: "de l'argent",
       color: theme.colors.secondary || "#8B5CF6",
-      onPress: () => router.push("/(tabs)/request-money"),
+      route: "/(tabs)/request-money",
     },
     {
       icon: Users,
       title: "Cagnottes",
       subtitle: "Épargne de groupe",
       color: theme.colors.accent,
-      onPress: () => router.push("/group-savings"),
+      route: "/group-savings",
     },
     {
       icon: PiggyBank,
       title: "Épargne",
       subtitle: "Bloquée & sécurisée",
       color: theme.colors.success,
-      onPress: () => router.push("/locked-savings"),
+      route: "/locked-savings",
+    },
+    {
+      icon: QrCode,
+      title: "Scanner",
+      subtitle: "QR Code",
+      color: "#EC4899",
+      route: "/qr-scanner",
     },
   ];
 
@@ -52,12 +67,13 @@ export function QuickActionsSection({ theme }) {
         {actions.map((action, index) => (
           <TouchableOpacity
             key={index}
-            onPress={action.onPress}
+            onPress={() => handlePress(action.route)}
+            activeOpacity={0.7}
             style={{
-              width: "47%",
+              width: "31%",
               backgroundColor: theme.colors.cardBackground,
               borderRadius: 16,
-              padding: 16,
+              padding: 12,
               alignItems: "center",
               borderWidth: 1,
               borderColor: theme.colors.border,
@@ -70,34 +86,36 @@ export function QuickActionsSection({ theme }) {
           >
             <View
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
+                width: 40,
+                height: 40,
+                borderRadius: 20,
                 backgroundColor: action.color + "15",
                 justifyContent: "center",
                 alignItems: "center",
-                marginBottom: 10,
+                marginBottom: 8,
               }}
             >
-              <action.icon color={action.color} size={22} strokeWidth={2} />
+              <action.icon color={action.color} size={20} strokeWidth={2} />
             </View>
             <Text
               style={{
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: "600",
                 color: theme.colors.text,
                 textAlign: "center",
               }}
+              numberOfLines={1}
             >
               {action.title}
             </Text>
             <Text
               style={{
-                fontSize: 11,
+                fontSize: 10,
                 color: theme.colors.textSecondary,
                 textAlign: "center",
                 marginTop: 2,
               }}
+              numberOfLines={1}
             >
               {action.subtitle}
             </Text>
