@@ -4,7 +4,7 @@ import { Image, View } from 'react-native';
 export function OwoLogo({ size = 80 }) {
   return (
     <Image
-      source={require('@/assets/images/icon.png')}
+      source={require('../../../assets/images/icon.png')}
       style={{
         width: size,
         height: size,
