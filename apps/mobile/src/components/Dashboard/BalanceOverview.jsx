@@ -16,10 +16,9 @@ export function BalanceOverview({
   balanceVisible,
   onToggleVisibility,
 }) {
-  const totalBalance =
-    balance.totalEUR +
-    balance.europeanBanks.total +
-    balance.virtualCard.balance;
+  const totalBalance = balance 
+    ? (balance.totalEUR || 0) + (balance.europeanBanks?.total || 0) + (balance.virtualCard?.balance || 0)
+    : 0;
 
   return (
     <View
@@ -99,7 +98,7 @@ export function BalanceOverview({
         >
           Équivalent:{" "}
           {balanceVisible
-            ? `${balance.total.toLocaleString()} FCFA`
+            ? `${balance?.total?.toLocaleString() || 0} FCFA`
             : "••••• FCFA"}
         </Text>
       </View>
