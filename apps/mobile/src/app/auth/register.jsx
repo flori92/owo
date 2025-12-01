@@ -24,7 +24,6 @@ import ScreenContainer from "@/components/ScreenContainer";
 import LoadingScreen from "@/components/LoadingScreen";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
-import { OwoLogo } from "@/components/icons/OwoLogo";
 
 export default function RegisterScreen() {
   const insets = useSafeAreaInsets();
@@ -115,14 +114,33 @@ export default function RegisterScreen() {
         >
           {/* Logo/Title */}
           <View style={{ alignItems: "center", marginBottom: 48 }}>
-            <OwoLogo size={80} />
+            <View
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 16,
+                backgroundColor: theme.colors.primary,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 16,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 24,
+                  fontWeight: "bold",
+                  color: "white",
+                }}
+              >
+                owo!
+              </Text>
+            </View>
             <Text
               style={{
                 fontFamily: "Inter_700Bold",
                 fontSize: 24,
                 color: theme.colors.text,
                 marginBottom: 8,
-                marginTop: 16,
               }}
             >
               owo!
