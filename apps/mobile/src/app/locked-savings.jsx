@@ -27,6 +27,7 @@ import {
   Clock,
   CheckCircle,
   Key,
+  Settings,
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
@@ -254,9 +255,14 @@ export default function LockedSavingsScreen() {
         showBack={true}
         onBack={() => router.back()}
         rightComponent={
-          <TouchableOpacity onPress={() => setCreateModalVisible(true)}>
-            <Plus size={24} color={theme.colors.primary} strokeWidth={2} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+            <TouchableOpacity onPress={() => router.push("/savings-settings")}>
+              <Settings size={22} color={theme.colors.textSecondary} strokeWidth={2} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setCreateModalVisible(true)}>
+              <Plus size={24} color={theme.colors.primary} strokeWidth={2} />
+            </TouchableOpacity>
+          </View>
         }
       />
 
