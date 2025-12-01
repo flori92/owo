@@ -159,167 +159,159 @@ export default function Index() {
         </Text>
 
         {/* Feature List */}
-        <View style={{ gap: 20, marginBottom: 40 }}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ gap: 24, marginBottom: 40 }}>
+          {/* Feature 1 - Sécurité */}
+          <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
             <View
               style={{
-                width: 50,
-                height: 50,
-                borderRadius: 15,
-                backgroundColor: `${theme.colors.primary}15`,
+                width: 56,
+                height: 56,
+                borderRadius: 16,
+                backgroundColor: "#20B2AA20",
                 justifyContent: "center",
                 alignItems: "center",
                 marginRight: 16,
               }}
             >
-              <Shield
-                size={24}
-                color={theme.colors.primary}
-                strokeWidth={1.5}
-              />
+              <Shield size={28} color="#20B2AA" strokeWidth={1.5} />
             </View>
             <View style={{ flex: 1 }}>
               <Text
                 style={{
                   fontFamily: "Inter_600SemiBold",
-                  fontSize: 16,
-                  color: theme.colors.text,
-                  marginBottom: 4,
+                  fontSize: 17,
+                  color: "#1A202C",
+                  marginBottom: 6,
                 }}
               >
-                Authentification sécurisée
+                Sécurité maximale
               </Text>
               <Text
                 style={{
                   fontFamily: "Inter_400Regular",
-                  fontSize: 13,
-                  color: theme.colors.textSecondary,
-                  lineHeight: 18,
+                  fontSize: 14,
+                  color: "#64748B",
+                  lineHeight: 20,
                 }}
               >
-                Protection avancée avec chiffrement de bout en bout
+                Chiffrement de bout en bout et authentification biométrique pour protéger vos fonds
               </Text>
             </View>
           </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {/* Feature 2 - Transactions */}
+          <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
             <View
               style={{
-                width: 50,
-                height: 50,
-                borderRadius: 15,
-                backgroundColor: `${theme.colors.success}15`,
+                width: 56,
+                height: 56,
+                borderRadius: 16,
+                backgroundColor: "#10B98120",
                 justifyContent: "center",
                 alignItems: "center",
                 marginRight: 16,
               }}
             >
-              <Banknote
-                size={24}
-                color={theme.colors.success}
-                strokeWidth={1.5}
-              />
+              <Banknote size={28} color="#10B981" strokeWidth={1.5} />
             </View>
             <View style={{ flex: 1 }}>
               <Text
                 style={{
                   fontFamily: "Inter_600SemiBold",
-                  fontSize: 16,
-                  color: theme.colors.text,
-                  marginBottom: 4,
+                  fontSize: 17,
+                  color: "#1A202C",
+                  marginBottom: 6,
                 }}
               >
-                Transactions instantanées
+                Transferts instantanés
               </Text>
               <Text
                 style={{
                   fontFamily: "Inter_400Regular",
-                  fontSize: 13,
-                  color: theme.colors.textSecondary,
-                  lineHeight: 18,
+                  fontSize: 14,
+                  color: "#64748B",
+                  lineHeight: 20,
                 }}
               >
-                Envoyez et recevez de l'argent en quelques secondes
+                Envoyez et recevez de l'argent en quelques secondes, 24h/24 et 7j/7
               </Text>
             </View>
           </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {/* Feature 3 - International */}
+          <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
             <View
               style={{
-                width: 50,
-                height: 50,
-                borderRadius: 15,
-                backgroundColor: `${theme.colors.warning}15`,
+                width: 56,
+                height: 56,
+                borderRadius: 16,
+                backgroundColor: "#F5920020",
                 justifyContent: "center",
                 alignItems: "center",
                 marginRight: 16,
               }}
             >
-              <Globe size={24} color={theme.colors.warning} strokeWidth={1.5} />
+              <Globe size={28} color="#F59200" strokeWidth={1.5} />
             </View>
             <View style={{ flex: 1 }}>
               <Text
                 style={{
                   fontFamily: "Inter_600SemiBold",
-                  fontSize: 16,
-                  color: theme.colors.text,
-                  marginBottom: 4,
+                  fontSize: 17,
+                  color: "#1A202C",
+                  marginBottom: 6,
                 }}
               >
-                Portée internationale
+                Afrique ↔ Europe
               </Text>
               <Text
                 style={{
                   fontFamily: "Inter_400Regular",
-                  fontSize: 13,
-                  color: theme.colors.textSecondary,
-                  lineHeight: 18,
+                  fontSize: 14,
+                  color: "#64748B",
+                  lineHeight: 20,
                 }}
               >
-                Transférez vers l'Afrique et l'Europe sans frais cachés
+                Transférez entre l'Afrique de l'Ouest et l'Europe sans frais cachés
               </Text>
             </View>
           </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {/* Feature 4 - Multi-services */}
+          <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
             <View
               style={{
-                width: 50,
-                height: 50,
-                borderRadius: 15,
-                backgroundColor: `${theme.colors.error}15`,
+                width: 56,
+                height: 56,
+                borderRadius: 16,
+                backgroundColor: "#8B5CF620",
                 justifyContent: "center",
                 alignItems: "center",
                 marginRight: 16,
               }}
             >
-              <Fingerprint
-                size={24}
-                color={theme.colors.error}
-                strokeWidth={1.5}
-              />
+              <Fingerprint size={28} color="#8B5CF6" strokeWidth={1.5} />
             </View>
             <View style={{ flex: 1 }}>
               <Text
                 style={{
                   fontFamily: "Inter_600SemiBold",
-                  fontSize: 16,
-                  color: theme.colors.text,
-                  marginBottom: 4,
+                  fontSize: 17,
+                  color: "#1A202C",
+                  marginBottom: 6,
                 }}
               >
-                Connexion biométrique
+                Tout-en-un
               </Text>
               <Text
                 style={{
                   fontFamily: "Inter_400Regular",
-                  fontSize: 13,
-                  color: theme.colors.textSecondary,
-                  lineHeight: 18,
+                  fontSize: 14,
+                  color: "#64748B",
+                  lineHeight: 20,
                 }}
               >
-                Accédez rapidement avec votre empreinte ou visage
+                Cagnottes, épargne bloquée, carte virtuelle et Mobile Money réunis
               </Text>
             </View>
           </View>
