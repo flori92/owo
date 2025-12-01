@@ -24,6 +24,7 @@ import ScreenContainer from "@/components/ScreenContainer";
 import LoadingScreen from "@/components/LoadingScreen";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
+import { SocialAuthButton, SocialAuthDivider } from "@/components/SocialAuthButton";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -33,7 +34,7 @@ export default function LoginScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
-  const { login, loading } = useAppwriteAuth();
+  const { login, loginWithGoogle, loginWithApple, loading } = useAppwriteAuth();
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -80,6 +81,62 @@ export default function LoginScreen() {
   const handleQuickLogin = () => {
     setEmail("florifavi@gmail.com");
     setPassword("OwoApp2024!");
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsSubmitting(true);
+    try {
+      const result = await loginWithGoogle();
+      if (result.success) {
+        Alert.alert(
+          "Succès",
+          "Connexion Google réussie!",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                router.replace("/(tabs)/");
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert("Erreur", result.error || "Échec de la connexion Google");
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      Alert.alert("Erreur", "Impossible de se connecter avec Google. Veuillez réessayer.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setIsSubmitting(true);
+    try {
+      const result = await loginWithApple();
+      if (result.success) {
+        Alert.alert(
+          "Succès",
+          "Connexion Apple réussie!",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                router.replace("/(tabs)/");
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert("Erreur", result.error || "Échec de la connexion Apple");
+      }
+    } catch (error) {
+      console.error("Apple login error:", error);
+      Alert.alert("Erreur", "Impossible de se connecter avec Apple. Veuillez réessayer.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!fontsLoaded) {
@@ -280,6 +337,26 @@ export default function LoginScreen() {
             onPress={handleLogin}
             disabled={isSubmitting || loading || !email || !password}
           />
+
+          {/* Social Login Divider */}
+          <SocialAuthDivider />
+
+          {/* Social Login Buttons */}
+          <View style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}>
+            <SocialAuthButton
+              provider="google"
+              onPress={handleGoogleLogin}
+              disabled={isSubmitting}
+              loading={isSubmitting && email === ""}
+            />
+            
+            <SocialAuthButton
+              provider="apple"
+              onPress={handleAppleLogin}
+              disabled={isSubmitting}
+              loading={isSubmitting && email === ""}
+            />
+          </View>
 
           {/* Sign Up Link */}
           <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 24 }}>

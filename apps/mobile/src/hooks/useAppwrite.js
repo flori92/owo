@@ -29,6 +29,49 @@ export function useAppwriteAuth() {
     }
   }, []);
 
+  // Créer un compte
+  const createAccount = useCallback(async (email, password, name) => {
+    try {
+      const result = await appwriteService.createAccount(email, password, name);
+      if (result.success) {
+        // Forcer le rafraîchissement de l'utilisateur
+        await checkAuth();
+      }
+      return result;
+    } catch (error) {
+      console.error('Erreur création compte:', error);
+      return { success: false, error: error.message };
+    }
+  }, [checkAuth]);
+
+  // Connexion avec Google
+  const loginWithGoogle = useCallback(async () => {
+    try {
+      const result = await appwriteService.loginWithGoogle();
+      if (result.success) {
+        await checkAuth();
+      }
+      return result;
+    } catch (error) {
+      console.error('Erreur connexion Google:', error);
+      return { success: false, error: error.message };
+    }
+  }, [checkAuth]);
+
+  // Connexion avec Apple
+  const loginWithApple = useCallback(async () => {
+    try {
+      const result = await appwriteService.loginWithApple();
+      if (result.success) {
+        await checkAuth();
+      }
+      return result;
+    } catch (error) {
+      console.error('Erreur connexion Apple:', error);
+      return { success: false, error: error.message };
+    }
+  }, [checkAuth]);
+
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -45,6 +88,10 @@ export function useAppwriteAuth() {
     isAuthenticated: !!user,
     checkAuth,
     logout,
+    login,
+    createAccount,
+    loginWithGoogle,
+    loginWithApple,
   };
 }
 

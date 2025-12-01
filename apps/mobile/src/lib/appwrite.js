@@ -103,6 +103,75 @@ export async function logout() {
 }
 
 /**
+ * Connexion avec Google OAuth
+ */
+export async function loginWithGoogle() {
+  try {
+    // Utiliser le navigateur pour l'authentification OAuth
+    const session = await account.createOAuth2Session(
+      'google',
+      'https://fra.cloud.appwrite.io/v1/account/sessions/oauth2/callback/google',
+      'owo://auth'
+    );
+    return { success: true, session };
+  } catch (error) {
+    console.error('Erreur connexion Google:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Connexion avec Apple OAuth
+ */
+export async function loginWithApple() {
+  try {
+    const session = await account.createOAuth2Session(
+      'apple',
+      'https://fra.cloud.appwrite.io/v1/account/sessions/oauth2/callback/apple',
+      'owo://auth'
+    );
+    return { success: true, session };
+  } catch (error) {
+    console.error('Erreur connexion Apple:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Lier un compte Google à un utilisateur existant
+ */
+export async function linkGoogleAccount() {
+  try {
+    const session = await account.createOAuth2Session(
+      'google',
+      'https://fra.cloud.appwrite.io/v1/account/sessions/oauth2/callback/google',
+      'owo://auth'
+    );
+    return { success: true, session };
+  } catch (error) {
+    console.error('Erreur liaison Google:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Lier un compte Apple à un utilisateur existant
+ */
+export async function linkAppleAccount() {
+  try {
+    const session = await account.createOAuth2Session(
+      'apple',
+      'https://fra.cloud.appwrite.io/v1/account/sessions/oauth2/callback/apple',
+      'owo://auth'
+    );
+    return { success: true, session };
+  } catch (error) {
+    console.error('Erreur liaison Apple:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Obtenir l'utilisateur connecté
  */
 export async function getCurrentUser() {
