@@ -72,38 +72,38 @@ export async function createTransaction(data) {
   };
 }
 
-// Épargne de groupe (Tontines)
+// Épargne de groupe (Tontines) - EUR
 export async function getGroupSavings(userId) {
   console.log('🔧 getGroupSavings: Mock pour', userId);
   return {
     success: true,
     groups: [
-      { $id: 'g1', name: 'Épargne Famille 2024', members: 8, totalAmount: 450000, myContribution: 50000, status: 'active' },
-      { $id: 'g2', name: 'Tontine Amis', members: 5, totalAmount: 200000, myContribution: 40000, status: 'active' },
+      { $id: 'g1', userId, name: 'Épargne Famille 2024', members: 8, totalAmount: 12000, myContribution: 1500, currency: 'EUR', status: 'active', frequency: 'monthly' },
+      { $id: 'g2', userId, name: 'Projet Investissement', members: 4, totalAmount: 8000, myContribution: 2000, currency: 'EUR', status: 'active', frequency: 'monthly' },
     ]
   };
 }
 
-// Épargne bloquée
+// Épargne bloquée - EUR
 export async function getLockedSavings(userId) {
   console.log('🔧 getLockedSavings: Mock pour', userId);
   return {
     success: true,
     savings: [
-      { $id: 'ls1', name: 'Projet Maison', targetAmount: 5000000, currentAmount: 1250000, endDate: '2025-12-31', interestRate: 5.5 },
-      { $id: 'ls2', name: 'Études Enfants', targetAmount: 2000000, currentAmount: 800000, endDate: '2026-06-30', interestRate: 4.5 },
+      { $id: 'ls1', userId, name: 'Projet Immobilier', targetAmount: 50000, currentAmount: 15000, currency: 'EUR', endDate: '2026-12-31', interestRate: 3.5, status: 'active' },
+      { $id: 'ls2', userId, name: 'Épargne Retraite', targetAmount: 100000, currentAmount: 8500, currency: 'EUR', endDate: '2040-01-01', interestRate: 4.2, status: 'active' },
     ]
   };
 }
 
-// Cartes virtuelles
+// Cartes virtuelles - Solde total: 1787 EUR
 export async function getVirtualCards(userId) {
   console.log('🔧 getVirtualCards: Mock pour', userId);
   return {
     success: true,
     cards: [
-      { $id: 'vc1', name: 'Carte Shopping', lastFour: '4582', balance: 75000, status: 'active', expiryDate: '12/26' },
-      { $id: 'vc2', name: 'Carte Voyage', lastFour: '8891', balance: 150000, status: 'active', expiryDate: '08/27' },
+      { $id: 'vc1', userId, name: 'Carte Visa Premium', lastFour: '4582', balance: 1287.00, currency: 'EUR', status: 'active', expiryDate: '12/27', type: 'visa', cardNumber: '**** **** **** 4582' },
+      { $id: 'vc2', userId, name: 'Carte Mastercard', lastFour: '8891', balance: 500.00, currency: 'EUR', status: 'active', expiryDate: '08/28', type: 'mastercard', cardNumber: '**** **** **** 8891' },
     ]
   };
 }

@@ -93,7 +93,7 @@ export function useProfile(userId) {
 
     const fetchProfile = async () => {
       try {
-        // MODE MOCK : Retourner un profil fictif
+        // MODE MOCK : Profil Floriace FAVI
         if (USE_MOCK) {
           setProfile({
             id: userId,
@@ -102,7 +102,9 @@ export function useProfile(userId) {
             phone: '+229 97 00 00 00',
             avatar: '',
             kycVerified: true,
-            kycLevel: 2,
+            kycLevel: 3,
+            country: 'Bénin',
+            currency: 'EUR',
           });
           setLoading(false);
           return;
@@ -152,12 +154,13 @@ export function useWallets(userId) {
 
     const fetchWallets = async () => {
       try {
-        // MODE MOCK : Retourner des wallets fictifs
+        // MODE MOCK : Wallets Floriace FAVI (Total: 9755.75 EUR)
         if (USE_MOCK) {
           setWallets([
-            { id: 'w1', userId, name: 'MTN Mobile Money', type: 'mobile_money', provider: 'mtn', balance: 125000, currency: 'XOF', status: 'active', isPrimary: true },
-            { id: 'w2', userId, name: 'Moov Money', type: 'mobile_money', provider: 'moov', balance: 45000, currency: 'XOF', status: 'active', isPrimary: false },
-            { id: 'w3', userId, name: 'Wave', type: 'mobile_money', provider: 'wave', balance: 78500, currency: 'XOF', status: 'active', isPrimary: false },
+            { id: 'w1', userId, name: 'Compte Principal', type: 'main', provider: 'owo', balance: 4250.50, currency: 'EUR', status: 'active', isPrimary: true },
+            { id: 'w2', userId, name: 'MTN Mobile Money', type: 'mobile_money', provider: 'mtn', balance: 2150.25, currency: 'EUR', status: 'active', isPrimary: false },
+            { id: 'w3', userId, name: 'Moov Money', type: 'mobile_money', provider: 'moov', balance: 1875.00, currency: 'EUR', status: 'active', isPrimary: false },
+            { id: 'w4', userId, name: 'Wave', type: 'mobile_money', provider: 'wave', balance: 1480.00, currency: 'EUR', status: 'active', isPrimary: false },
           ]);
           setLoading(false);
           return;
@@ -219,13 +222,15 @@ export function useTransactions(userId, limitCount = 20) {
 
     const fetchTransactions = async () => {
       try {
-        // MODE MOCK : Retourner des transactions fictives
+        // MODE MOCK : Transactions Floriace FAVI
         if (USE_MOCK) {
           setTransactions([
-            { id: 't1', userId, type: 'receive', amount: 25000, currency: 'XOF', description: 'Reçu de Jean KOUASSI', status: 'completed', createdAt: new Date(Date.now() - 1000*60*30).toISOString(), senderName: 'Jean KOUASSI' },
-            { id: 't2', userId, type: 'send', amount: 15000, currency: 'XOF', description: 'Envoyé à Marie ADJOVI', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*2).toISOString(), recipientName: 'Marie ADJOVI' },
-            { id: 't3', userId, type: 'deposit', amount: 50000, currency: 'XOF', description: 'Dépôt MTN Mobile Money', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*24).toISOString() },
-            { id: 't4', userId, type: 'payment', amount: 8500, currency: 'XOF', description: 'Paiement Supermarché EREVAN', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*48).toISOString(), merchantName: 'Supermarché EREVAN' },
+            { id: 't1', userId, type: 'receive', amount: 1500.00, currency: 'EUR', description: 'Virement reçu - Salaire', status: 'completed', createdAt: new Date(Date.now() - 1000*60*30).toISOString(), senderName: 'ENTREPRISE XYZ' },
+            { id: 't2', userId, type: 'send', amount: 350.00, currency: 'EUR', description: 'Envoyé à Famille', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*2).toISOString(), recipientName: 'Marie FAVI' },
+            { id: 't3', userId, type: 'deposit', amount: 2000.00, currency: 'EUR', description: 'Dépôt compte principal', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*24).toISOString() },
+            { id: 't4', userId, type: 'payment', amount: 89.99, currency: 'EUR', description: 'Paiement Amazon', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*48).toISOString(), merchantName: 'Amazon' },
+            { id: 't5', userId, type: 'receive', amount: 500.00, currency: 'EUR', description: 'Remboursement', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*72).toISOString(), senderName: 'Jean KOUASSI' },
+            { id: 't6', userId, type: 'payment', amount: 45.50, currency: 'EUR', description: 'Carburant Total', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*96).toISOString(), merchantName: 'Total Energies' },
           ]);
           setLoading(false);
           return;
@@ -278,12 +283,13 @@ export function useNotifications(userId) {
 
     const fetchNotifications = async () => {
       try {
-        // MODE MOCK : Retourner des notifications fictives
+        // MODE MOCK : Notifications Floriace FAVI
         if (USE_MOCK) {
           const mockNotifications = [
-            { id: 'n1', userId, title: 'Transfert reçu', message: 'Vous avez reçu 25 000 FCFA de Jean KOUASSI', type: 'transaction', read: false, createdAt: new Date(Date.now() - 1000*60*30).toISOString() },
-            { id: 'n2', userId, title: 'Paiement effectué', message: 'Paiement de 8 500 FCFA chez Supermarché EREVAN', type: 'payment', read: true, createdAt: new Date(Date.now() - 1000*60*60*2).toISOString() },
-            { id: 'n3', userId, title: 'Nouveau membre', message: 'Marie ADJOVI a rejoint "Épargne Famille 2024"', type: 'group', read: false, createdAt: new Date(Date.now() - 1000*60*60*24).toISOString() },
+            { id: 'n1', userId, title: 'Virement reçu 💰', message: 'Vous avez reçu 1 500,00 € - Salaire', type: 'transaction', read: false, createdAt: new Date(Date.now() - 1000*60*30).toISOString() },
+            { id: 'n2', userId, title: 'Paiement effectué', message: 'Paiement de 89,99 € chez Amazon', type: 'payment', read: true, createdAt: new Date(Date.now() - 1000*60*60*2).toISOString() },
+            { id: 'n3', userId, title: 'Carte rechargée 💳', message: 'Votre carte Visa a été rechargée de 500 €', type: 'card', read: false, createdAt: new Date(Date.now() - 1000*60*60*24).toISOString() },
+            { id: 'n4', userId, title: 'Sécurité', message: 'Nouvelle connexion détectée depuis Paris', type: 'security', read: true, createdAt: new Date(Date.now() - 1000*60*60*48).toISOString() },
           ];
           setNotifications(mockNotifications);
           setUnreadCount(mockNotifications.filter(n => !n.read).length);
