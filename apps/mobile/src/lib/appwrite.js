@@ -18,18 +18,73 @@ export const COLLECTIONS = {
   NOTIFICATIONS: 'notifications',
 };
 
-// Initialiser le client Appwrite
-const client = new Client();
+// MODE DÉVELOPPEMENT LOCAL : Désactiver Appwrite pour éviter les crashes
+console.log('🔧 MODE DÉV LOCAL : Appwrite désactivé pour éviter les crashes Android');
 
-client
-  .setEndpoint(APPWRITE_ENDPOINT)
-  .setProject(APPWRITE_PROJECT_ID);
+// Créer des objets factices pour le développement local
+const client = null;
+const account = null;
+const databases = null;
+const storage = null;
+const functions = null;
 
-// Services Appwrite
-export const account = new Account(client);
-export const databases = new Databases(client);
-export const storage = new Storage(client);
-export const functions = new Functions(client);
+export { client, account, databases, storage, functions };
+
+// ============================================
+// SESSION MOCK POUR DÉVELOPPEMENT
+// ============================================
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const MOCK_SESSION_KEY = 'owo_mock_session';
+const MOCK_USER_KEY = 'owo_mock_user';
+
+// Utilisateur mock par défaut
+const DEFAULT_MOCK_USER = {
+  $id: 'mock_user_floriace',
+  email: 'florifavi@gmail.com',
+  name: 'Floriace FAVI',
+  $createdAt: new Date().toISOString(),
+  phone: '+229 97 00 00 00',
+  emailVerification: true,
+  phoneVerification: true,
+};
+
+// Stocker la session mock
+async function setMockSession(user) {
+  try {
+    await AsyncStorage.setItem(MOCK_USER_KEY, JSON.stringify(user));
+    await AsyncStorage.setItem(MOCK_SESSION_KEY, 'active');
+    console.log('🔧 MODE DÉV : Session mock sauvegardée');
+  } catch (error) {
+    console.error('Erreur sauvegarde session mock:', error);
+  }
+}
+
+// Récupérer la session mock
+async function getMockSession() {
+  try {
+    const session = await AsyncStorage.getItem(MOCK_SESSION_KEY);
+    const userStr = await AsyncStorage.getItem(MOCK_USER_KEY);
+    if (session === 'active' && userStr) {
+      return JSON.parse(userStr);
+    }
+    return null;
+  } catch (error) {
+    console.error('Erreur récupération session mock:', error);
+    return null;
+  }
+}
+
+// Effacer la session mock
+async function clearMockSession() {
+  try {
+    await AsyncStorage.removeItem(MOCK_SESSION_KEY);
+    await AsyncStorage.removeItem(MOCK_USER_KEY);
+    console.log('🔧 MODE DÉV : Session mock effacée');
+  } catch (error) {
+    console.error('Erreur effacement session mock:', error);
+  }
+}
 
 // ============================================
 // AUTHENTIFICATION
@@ -39,6 +94,24 @@ export const functions = new Functions(client);
  * Créer un compte avec email et mot de passe
  */
 export async function createAccount(email, password, name) {
+  // MODE DÉVELOPPEMENT : Mock authentification
+  if (__DEV__) {
+    console.log('🔧 MODE DÉV : Création compte mock pour', email);
+    
+    // Simuler un délai réseau
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const mockUser = {
+      $id: 'mock_user_' + Date.now(),
+      email: email,
+      name: name,
+      $createdAt: new Date().toISOString()
+    };
+    
+    return { success: true, user: mockUser };
+  }
+  
+  // MODE PRODUCTION : Code Appwrite original
   try {
     const newAccount = await account.create('unique()', email, password, name);
     // Créer une session automatiquement
@@ -54,6 +127,38 @@ export async function createAccount(email, password, name) {
  * Connexion avec email et mot de passe
  */
 export async function login(email, password) {
+  // MODE DÉVELOPPEMENT : Mock connexion avec persistance
+  if (__DEV__) {
+    console.log('🔧 MODE DÉV : Connexion mock pour', email);
+    
+    // Simuler un délai réseau
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Créer un utilisateur mock basé sur l'email
+    const mockUser = {
+      $id: 'mock_user_' + Date.now(),
+      email: email,
+      name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      $createdAt: new Date().toISOString(),
+      phone: '+229 97 00 00 00',
+      emailVerification: true,
+      phoneVerification: true,
+    };
+    
+    // Sauvegarder la session mock
+    await setMockSession(mockUser);
+    
+    const mockSession = {
+      $id: 'mock_session_' + Date.now(),
+      userId: mockUser.$id,
+      $createdAt: new Date().toISOString(),
+      $expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    };
+    
+    return { success: true, session: mockSession };
+  }
+  
+  // MODE PRODUCTION : Code Appwrite original
   try {
     const session = await account.createEmailPasswordSession(email, password);
     return { success: true, session };
@@ -93,6 +198,14 @@ export async function verifyPhoneOTP(userId, secret) {
  * Déconnexion
  */
 export async function logout() {
+  // MODE DÉVELOPPEMENT : Effacer la session mock
+  if (__DEV__) {
+    console.log('🔧 MODE DÉV : Déconnexion mock');
+    await clearMockSession();
+    return { success: true };
+  }
+  
+  // MODE PRODUCTION : Code Appwrite original
   try {
     await account.deleteSession('current');
     return { success: true };
@@ -175,10 +288,30 @@ export async function linkAppleAccount() {
  * Obtenir l'utilisateur connecté
  */
 export async function getCurrentUser() {
+  // MODE DÉVELOPPEMENT : Récupérer la session mock persistante
+  if (__DEV__) {
+    const mockUser = await getMockSession();
+    if (mockUser) {
+      console.log('🔧 MODE DÉV : Utilisateur mock récupéré:', mockUser.email);
+      return { success: true, user: mockUser };
+    }
+    console.log('🔧 MODE DÉV : Aucune session mock - utilisateur non connecté');
+    return { success: false, user: null };
+  }
+  
+  // MODE PRODUCTION : Code Appwrite original
   try {
+    if (!account) {
+      console.log('⚠️ Appwrite account not initialized');
+      return { success: false, user: null };
+    }
     const user = await account.get();
     return { success: true, user };
   } catch (error) {
+    // Ne pas logger l'erreur si l'utilisateur n'est simplement pas connecté
+    if (error.code !== 401) {
+      console.error('❌ Erreur getCurrentUser:', error.message);
+    }
     return { success: false, user: null };
   }
 }
@@ -234,6 +367,25 @@ export async function upsertProfile(userId, profileData) {
  * Obtenir le profil utilisateur
  */
 export async function getProfile(userId) {
+  // MODE DÉVELOPPEMENT : Retourner un profil mock
+  if (__DEV__) {
+    console.log('🔧 MODE DÉV : Profil mock pour userId:', userId);
+    const mockProfile = {
+      $id: userId,
+      userId: userId,
+      email: 'florifavi@gmail.com',
+      fullName: 'Floriace FAVI',
+      phone: '+229 97 00 00 00',
+      avatar: null,
+      country: 'Bénin',
+      city: 'Cotonou',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    return { success: true, profile: mockProfile };
+  }
+  
+  // MODE PRODUCTION : Code Appwrite original
   try {
     const profile = await databases.getDocument(
       DATABASE_ID,
@@ -254,6 +406,51 @@ export async function getProfile(userId) {
  * Obtenir les wallets de l'utilisateur
  */
 export async function getWallets(userId) {
+  // MODE DÉVELOPPEMENT : Retourner des wallets mock
+  if (__DEV__) {
+    console.log('🔧 MODE DÉV : Wallets mock pour userId:', userId);
+    const mockWallets = [
+      {
+        $id: 'wallet_mtn_1',
+        userId: userId,
+        type: 'mobile_money',
+        provider: 'MTN Mobile Money',
+        phoneNumber: '+229 97 00 00 00',
+        balance: 125000,
+        currency: 'XOF',
+        status: 'active',
+        isPrimary: true,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        $id: 'wallet_moov_1',
+        userId: userId,
+        type: 'mobile_money',
+        provider: 'Moov Money',
+        phoneNumber: '+229 96 00 00 00',
+        balance: 45000,
+        currency: 'XOF',
+        status: 'active',
+        isPrimary: false,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        $id: 'wallet_wave_1',
+        userId: userId,
+        type: 'mobile_money',
+        provider: 'Wave',
+        phoneNumber: '+229 95 00 00 00',
+        balance: 78500,
+        currency: 'XOF',
+        status: 'active',
+        isPrimary: false,
+        createdAt: new Date().toISOString(),
+      },
+    ];
+    return { success: true, wallets: mockWallets };
+  }
+  
+  // MODE PRODUCTION : Code Appwrite original
   try {
     const response = await databases.listDocuments(
       DATABASE_ID,
@@ -342,6 +539,55 @@ export async function createTransaction(transactionData) {
  * Obtenir les transactions de l'utilisateur
  */
 export async function getTransactions(userId, limit = 20) {
+  // MODE DÉVELOPPEMENT : Retourner des transactions mock
+  if (__DEV__) {
+    console.log('🔧 MODE DÉV : Transactions mock pour userId:', userId);
+    const mockTransactions = [
+      {
+        $id: 'tx_1',
+        userId: userId,
+        type: 'receive',
+        amount: 25000,
+        currency: 'XOF',
+        description: 'Paiement reçu de Kofi A.',
+        status: 'completed',
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        $id: 'tx_2',
+        userId: userId,
+        type: 'send',
+        amount: 15000,
+        currency: 'XOF',
+        description: 'Envoi à Ama B.',
+        status: 'completed',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        $id: 'tx_3',
+        userId: userId,
+        type: 'receive',
+        amount: 50000,
+        currency: 'XOF',
+        description: 'Salaire mensuel',
+        status: 'completed',
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        $id: 'tx_4',
+        userId: userId,
+        type: 'send',
+        amount: 8000,
+        currency: 'XOF',
+        description: 'Achat marché',
+        status: 'completed',
+        createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+    ];
+    return { success: true, transactions: mockTransactions.slice(0, limit) };
+  }
+  
+  // MODE PRODUCTION : Code Appwrite original
   try {
     const response = await databases.listDocuments(
       DATABASE_ID,
@@ -551,6 +797,46 @@ export async function getVirtualCard(userId) {
  * Obtenir les notifications
  */
 export async function getNotifications(userId, unreadOnly = false) {
+  // MODE DÉVELOPPEMENT : Retourner des notifications mock
+  if (__DEV__) {
+    console.log('🔧 MODE DÉV : Notifications mock pour userId:', userId);
+    const mockNotifications = [
+      {
+        $id: 'notif_1',
+        userId: userId,
+        title: 'Paiement reçu',
+        message: 'Vous avez reçu 25,000 FCFA de Kofi A.',
+        type: 'payment',
+        read: false,
+        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        $id: 'notif_2',
+        userId: userId,
+        title: 'Transfert effectué',
+        message: 'Votre transfert de 15,000 FCFA a été envoyé.',
+        type: 'transfer',
+        read: true,
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        $id: 'notif_3',
+        userId: userId,
+        title: 'Bienvenue sur owo!',
+        message: 'Votre compte a été créé avec succès.',
+        type: 'system',
+        read: true,
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      },
+    ];
+    
+    if (unreadOnly) {
+      return { success: true, notifications: mockNotifications.filter(n => !n.read) };
+    }
+    return { success: true, notifications: mockNotifications };
+  }
+  
+  // MODE PRODUCTION : Code Appwrite original
   try {
     const queries = [
       Query.equal('userId', userId),
@@ -591,9 +877,6 @@ export async function markNotificationRead(notificationId) {
     return { success: false };
   }
 }
-
-// Export du client pour usage avancé
-export { client };
 
 // Import Query pour les filtres
 import { Query } from 'appwrite';
