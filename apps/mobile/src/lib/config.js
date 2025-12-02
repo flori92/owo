@@ -9,8 +9,8 @@ export const USE_MOCK = false;
 export const MOCK_SESSION_KEY = 'owo_firebase_mock_session';
 
 // Flag pour déclencher la migration des données
-// Mettre à true pour migrer les données, puis remettre à false
-export const TRIGGER_MIGRATION = true;
+// Migration effectuée le 2025-12-02 pour Floriace FAVI
+export const TRIGGER_MIGRATION = false;
 
 // Configuration de l'app
 export const APP_CONFIG = {
