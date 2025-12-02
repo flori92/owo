@@ -82,6 +82,26 @@ export const COLLECTIONS = {
 };
 
 // ============================================
+// MODE MOCK TEMPORAIRE (Firebase API bloquée)
+// ============================================
+const USE_MOCK = true; // Mettre à false quand Firebase API est activée
+
+const MOCK_SESSION_KEY = 'owo_firebase_mock_session';
+
+async function setMockSession(user) {
+  await AsyncStorage.setItem(MOCK_SESSION_KEY, JSON.stringify(user));
+}
+
+async function getMockSession() {
+  const data = await AsyncStorage.getItem(MOCK_SESSION_KEY);
+  return data ? JSON.parse(data) : null;
+}
+
+async function clearMockSession() {
+  await AsyncStorage.removeItem(MOCK_SESSION_KEY);
+}
+
+// ============================================
 // AUTHENTIFICATION
 // ============================================
 
@@ -89,6 +109,21 @@ export const COLLECTIONS = {
  * Connexion avec email et mot de passe
  */
 export async function login(email, password) {
+  // MODE MOCK temporaire
+  if (USE_MOCK) {
+    console.log('🔧 MODE MOCK: Connexion pour', email);
+    await new Promise(r => setTimeout(r, 800));
+    const mockUser = {
+      uid: 'mock_' + Date.now(),
+      $id: 'mock_' + Date.now(),
+      email: email,
+      name: email.split('@')[0],
+      displayName: email.split('@')[0],
+    };
+    await setMockSession(mockUser);
+    return { success: true, user: mockUser };
+  }
+
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
@@ -112,6 +147,21 @@ export async function login(email, password) {
  * Créer un compte avec email et mot de passe
  */
 export async function createAccount(email, password, name) {
+  // MODE MOCK temporaire
+  if (USE_MOCK) {
+    console.log('🔧 MODE MOCK: Création compte pour', email);
+    await new Promise(r => setTimeout(r, 1000));
+    const mockUser = {
+      uid: 'mock_' + Date.now(),
+      $id: 'mock_' + Date.now(),
+      email: email,
+      name: name || email.split('@')[0],
+      displayName: name || email.split('@')[0],
+    };
+    await setMockSession(mockUser);
+    return { success: true, user: mockUser };
+  }
+
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
@@ -148,6 +198,13 @@ export async function createAccount(email, password, name) {
  * Déconnexion
  */
 export async function logout() {
+  // MODE MOCK temporaire
+  if (USE_MOCK) {
+    console.log('🔧 MODE MOCK: Déconnexion');
+    await clearMockSession();
+    return { success: true };
+  }
+
   try {
     await signOut(auth);
     return { success: true };
@@ -161,6 +218,16 @@ export async function logout() {
  * Obtenir l'utilisateur connecté
  */
 export async function getCurrentUser() {
+  // MODE MOCK temporaire
+  if (USE_MOCK) {
+    const mockUser = await getMockSession();
+    if (mockUser) {
+      console.log('🔧 MODE MOCK: Utilisateur récupéré:', mockUser.email);
+      return { success: true, user: mockUser };
+    }
+    return { success: false, user: null };
+  }
+
   try {
     const user = auth.currentUser;
     if (user) {
@@ -190,6 +257,22 @@ export async function getCurrentUser() {
  * Obtenir le profil utilisateur
  */
 export async function getProfile(userId) {
+  // MODE MOCK temporaire
+  if (USE_MOCK) {
+    return {
+      success: true,
+      profile: {
+        id: userId,
+        displayName: 'Floriace FAVI',
+        email: 'florifavi@gmail.com',
+        phone: '+229 97 00 00 00',
+        avatar: '',
+        kycVerified: true,
+        kycLevel: 2,
+      }
+    };
+  }
+
   try {
     const profileDoc = await getDoc(doc(db, COLLECTIONS.PROFILES, userId));
     if (profileDoc.exists()) {
@@ -210,6 +293,18 @@ export async function getProfile(userId) {
  * Obtenir les wallets de l'utilisateur
  */
 export async function getWallets(userId) {
+  // MODE MOCK temporaire
+  if (USE_MOCK) {
+    return {
+      success: true,
+      wallets: [
+        { id: 'w1', $id: 'w1', userId, name: 'MTN Mobile Money', type: 'mobile_money', provider: 'mtn', balance: 125000, currency: 'XOF', status: 'active', isPrimary: true },
+        { id: 'w2', $id: 'w2', userId, name: 'Moov Money', type: 'mobile_money', provider: 'moov', balance: 45000, currency: 'XOF', status: 'active', isPrimary: false },
+        { id: 'w3', $id: 'w3', userId, name: 'Wave', type: 'mobile_money', provider: 'wave', balance: 78500, currency: 'XOF', status: 'active', isPrimary: false },
+      ]
+    };
+  }
+
   try {
     const q = query(
       collection(db, COLLECTIONS.WALLETS),
@@ -233,6 +328,19 @@ export async function getWallets(userId) {
  * Obtenir les transactions de l'utilisateur
  */
 export async function getTransactions(userId, limitCount = 20) {
+  // MODE MOCK temporaire
+  if (USE_MOCK) {
+    return {
+      success: true,
+      transactions: [
+        { id: 't1', $id: 't1', userId, type: 'receive', amount: 25000, currency: 'XOF', description: 'Reçu de Jean KOUASSI', status: 'completed', createdAt: new Date(Date.now() - 1000*60*30).toISOString(), senderName: 'Jean KOUASSI' },
+        { id: 't2', $id: 't2', userId, type: 'send', amount: 15000, currency: 'XOF', description: 'Envoyé à Marie ADJOVI', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*2).toISOString(), recipientName: 'Marie ADJOVI' },
+        { id: 't3', $id: 't3', userId, type: 'deposit', amount: 50000, currency: 'XOF', description: 'Dépôt MTN Mobile Money', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*24).toISOString() },
+        { id: 't4', $id: 't4', userId, type: 'payment', amount: 8500, currency: 'XOF', description: 'Paiement Supermarché EREVAN', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*48).toISOString(), merchantName: 'Supermarché EREVAN' },
+      ]
+    };
+  }
+
   try {
     const q = query(
       collection(db, COLLECTIONS.TRANSACTIONS),
@@ -257,6 +365,16 @@ export async function getTransactions(userId, limitCount = 20) {
  * Obtenir les notifications de l'utilisateur
  */
 export async function getNotifications(userId, unreadOnly = false) {
+  // MODE MOCK temporaire
+  if (USE_MOCK) {
+    const mockNotifications = [
+      { id: 'n1', $id: 'n1', userId, title: 'Transfert reçu', message: 'Vous avez reçu 25 000 FCFA de Jean KOUASSI', type: 'transaction', read: false, createdAt: new Date(Date.now() - 1000*60*30).toISOString() },
+      { id: 'n2', $id: 'n2', userId, title: 'Paiement effectué', message: 'Paiement de 8 500 FCFA chez Supermarché EREVAN', type: 'payment', read: true, createdAt: new Date(Date.now() - 1000*60*60*2).toISOString() },
+      { id: 'n3', $id: 'n3', userId, title: 'Nouveau membre', message: 'Marie ADJOVI a rejoint "Épargne Famille 2024"', type: 'group', read: false, createdAt: new Date(Date.now() - 1000*60*60*24).toISOString() },
+    ];
+    return { success: true, notifications: unreadOnly ? mockNotifications.filter(n => !n.read) : mockNotifications };
+  }
+
   try {
     let q;
     if (unreadOnly) {
