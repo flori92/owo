@@ -18,6 +18,7 @@ import {
   getDoc,
   setDoc,
   getDocs,
+  addDoc,
   collection,
   query,
   where,
@@ -171,10 +172,40 @@ export async function createAccount(email, password, name) {
     
     // Créer le document profil dans Firestore
     await setDoc(doc(db, COLLECTIONS.PROFILES, user.uid), {
+      userId: user.uid,
       email,
-      displayName: name,
+      displayName: name || email.split('@')[0],
+      phone: '',
+      avatar: '',
+      kycVerified: false,
+      kycLevel: 0,
       createdAt: serverTimestamp(),
     });
+    
+    // Créer le wallet principal
+    await addDoc(collection(db, COLLECTIONS.WALLETS), {
+      userId: user.uid,
+      name: 'Wallet Principal',
+      type: 'main',
+      provider: 'owo',
+      balance: 0,
+      currency: 'XOF',
+      status: 'active',
+      isPrimary: true,
+      createdAt: serverTimestamp(),
+    });
+    
+    // Créer une notification de bienvenue
+    await addDoc(collection(db, COLLECTIONS.NOTIFICATIONS), {
+      userId: user.uid,
+      title: 'Bienvenue sur owo! 🎉',
+      message: 'Votre compte a été créé avec succès. Commencez par ajouter un mode de paiement.',
+      type: 'system',
+      read: false,
+      createdAt: serverTimestamp(),
+    });
+    
+    console.log('✅ Compte créé avec profil, wallet et notification');
     
     return { 
       success: true, 
