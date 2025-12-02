@@ -95,12 +95,11 @@ export default function RequestMoneyScreen() {
     const amountNum = parseFloat(amount);
     try {
       await Share.share({
-        message: `💰 Demande de paiement owo!\n\n` +
-          `Montant : ${amountNum.toLocaleString('fr-FR')} FCFA\n` +
-          (reason ? `Motif : ${reason}\n\n` : '\n') +
-          `📱 Si tu as l'app owo!, utilise ce code : ${requestCode}\n\n` +
-          `💳 Sinon, paie directement ici (Carte ou Mobile Money) :\n${paymentLink}\n\n` +
-          `Merci ! 🙏`,
+        message: `Demande de paiement owo!\n\n` +
+          `Bonjour ! Je te demande ${amount} FCFA via owo!.\n\n` +
+          `Si tu as l'app owo!, utilise ce code : ${requestCode}\n\n` +
+          `Sinon, paie directement ici (Carte ou Mobile Money) :\n${paymentLink}\n\n` +
+          `Merci !`,
         title: "Demande de paiement",
       });
     } catch (error) {

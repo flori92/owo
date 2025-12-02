@@ -107,11 +107,10 @@ export default function GroupSavingDetailScreen() {
 
     try {
       await Share.share({
-        message: `🎯 Rejoins ma cagnotte "${saving.title}" sur owo!\n\n` +
-          `📝 ${saving.description}\n` +
-          `💰 Objectif : ${saving.target_amount.toLocaleString()} ${saving.currency}\n\n` +
-          `📱 Code d'invitation : ${saving.invite_code}\n\n` +
-          `💳 Ou contribue directement (même sans l'app) :\n${saving.payment_link}\n\n` +
+        message: `Rejoins ma cagnotte "${saving.title}" sur owo!\n\n` +
+          `Objectif : ${saving.target_amount.toLocaleString()} ${saving.currency}\n\n` +
+          `Code d'invitation : ${saving.invite_code}\n\n` +
+          `Ou contribue directement (même sans l'app) :\n${saving.payment_link}\n\n` +
           `Télécharge owo! : https://owo-app.com/download`,
         title: `Cagnotte ${saving.title}`,
       });

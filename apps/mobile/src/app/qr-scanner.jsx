@@ -116,7 +116,7 @@ export default function QRScannerScreen() {
 
   const handleCagnotteCode = (code) => {
     Alert.alert(
-      "🎯 Cagnotte détectée",
+      "Cagnotte détectée",
       `Code : ${code}\n\nVoulez-vous rejoindre cette cagnotte ?`,
       [
         { text: "Annuler", onPress: () => setScanned(false), style: "cancel" },
@@ -145,7 +145,7 @@ export default function QRScannerScreen() {
     };
 
     Alert.alert(
-      "💰 Demande de paiement",
+      "Demande de paiement",
       `De : ${mockPaymentData.requester}\n` +
       `Montant : ${mockPaymentData.amount.toLocaleString()} ${mockPaymentData.currency}\n` +
       (mockPaymentData.reason ? `Motif : ${mockPaymentData.reason}\n` : "") +

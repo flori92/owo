@@ -20,6 +20,7 @@ import {
   Building2,
   Search,
   CheckCircle,
+  Trophy,
   ArrowRight,
   Shield,
   Eye,
@@ -195,7 +196,7 @@ export default function ConnectBankScreen() {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       Alert.alert(
-        "🎉 Connexion réussie!",
+        "Connexion réussie !",
         `Votre compte ${bank.name} a été connecté avec succès à owo!`,
         [
           {

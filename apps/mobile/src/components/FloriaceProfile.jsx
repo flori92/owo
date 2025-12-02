@@ -230,7 +230,7 @@ export function FloriaceProfile() {
       {savings.length > 0 && (
         <View style={{ marginBottom: 20 }}>
           <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: theme.colors.text }}>
-            🎯 Cagnottes
+            Cagnottes
           </Text>
           {savings.map((saving, index) => (
             <View key={index} style={{
@@ -265,7 +265,7 @@ export function FloriaceProfile() {
       {/* Transactions Récentes */}
       <View style={{ marginBottom: 20 }}>
         <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: theme.colors.text }}>
-          💸 Transactions Récentes
+          Transactions Récentes
         </Text>
         {transactions.slice(0, 3).map((transaction, index) => (
           <View key={index} style={{

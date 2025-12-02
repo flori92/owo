@@ -225,7 +225,7 @@ export default function LoginScreen() {
                 textAlign: "center",
               }}
             >
-              🚀 Connexion rapide (Floriace FAVI)
+              Connexion rapide (Floriace FAVI)
             </Text>
           </TouchableOpacity>
 
@@ -406,7 +406,7 @@ export default function LoginScreen() {
                 marginBottom: 8,
               }}
             >
-              📱 Compte de test disponible
+              Compte de test disponible
             </Text>
             <Text
               style={{

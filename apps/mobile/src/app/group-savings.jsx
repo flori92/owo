@@ -446,7 +446,7 @@ export default function GroupSavingsScreen() {
                       marginLeft: 8,
                     }}
                   >
-                    Objectif atteint ! 🎉
+                    Objectif atteint !
                   </Text>
                 </View>
               )}

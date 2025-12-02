@@ -18,16 +18,17 @@ import {
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
 import {
+  ArrowLeft,
   Lock,
-  Unlock,
-  Plus,
+  TrendingUp,
   Calendar,
   Shield,
   AlertTriangle,
   Clock,
-  CheckCircle,
-  Key,
-  Settings,
+  DollarSign,
+  Trophy,
+  Target,
+  Timer,
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
@@ -193,11 +194,11 @@ export default function LockedSavingsScreen() {
       resetForm();
       setCreating(false);
       Alert.alert(
-        "🎉 Épargne créée !",
+        "Épargne créée !",
         `Votre épargne "${title}" a été créée avec succès.\n\n` +
-        `💰 Montant initial : ${initialAmount.toLocaleString()} FCFA\n` +
-        `🎯 Objectif : ${target.toLocaleString()} FCFA\n` +
-        `📅 Déblocage : ${formatDate(unlockDate)}\n\n` +
+        `Montant initial : ${initialAmount.toLocaleString()} FCFA\n` +
+        `Objectif : ${target.toLocaleString()} FCFA\n` +
+        `Déblocage : ${formatDate(unlockDate)}\n\n` +
         `(Mode démo : données non persistées)`
       );
     }, 500);
@@ -230,7 +231,7 @@ export default function LockedSavingsScreen() {
     // Confirmation avant déblocage d'urgence
     if (isEmergency) {
       Alert.alert(
-        "⚠️ Déblocage d'urgence",
+        "Déblocage d'urgence",
         `Êtes-vous sûr de vouloir débloquer "${saving.title}" avant la date prévue ?\n\nMontant : ${saving.amount?.toLocaleString() || 0} FCFA\nDate prévue : ${formatDate(saving.unlock_date)}`,
         [
           { text: "Annuler", style: "cancel" },
@@ -265,10 +266,10 @@ export default function LockedSavingsScreen() {
       setUnlocking(false);
       
       Alert.alert(
-        "🎉 Épargne débloquée !",
+        "Épargne débloquée !",
         `Votre épargne "${saving.title}" a été débloquée.\n\n` +
-        `💰 Montant disponible : ${saving.amount?.toLocaleString() || 0} FCFA\n` +
-        (isEmergency ? "⚠️ Déblocage anticipé (urgence)\n\n" : "") +
+        `Montant disponible : ${saving.amount?.toLocaleString() || 0} FCFA\n` +
+        (isEmergency ? "Déblocage anticipé (urgence)\n\n" : "") +
         "(Mode démo : données non persistées)"
       );
     }, 500);
@@ -744,7 +745,7 @@ export default function LockedSavingsScreen() {
                     marginBottom: 8,
                   }}
                 >
-                  🎯 Objectif à atteindre *
+                  Objectif à atteindre *
                 </Text>
                 <TextInput
                   style={{
@@ -785,7 +786,7 @@ export default function LockedSavingsScreen() {
                     marginBottom: 8,
                   }}
                 >
-                  💰 Montant initial (optionnel)
+                  Montant initial (optionnel)
                 </Text>
                 <TextInput
                   style={{
@@ -825,7 +826,7 @@ export default function LockedSavingsScreen() {
                     marginBottom: 12,
                   }}
                 >
-                  ⏱️ Durée de blocage *
+                  Durée de blocage *
                 </Text>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
                   {durations.map((duration) => (
