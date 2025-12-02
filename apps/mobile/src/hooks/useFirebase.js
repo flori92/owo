@@ -18,6 +18,11 @@ import {
   orderBy,
   limit,
 } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Mode mock activé temporairement
+const USE_MOCK = true;
+const MOCK_SESSION_KEY = 'owo_firebase_mock_session';
 
 // ============================================
 // FIREBASE AUTH HOOK
@@ -32,7 +37,34 @@ export function useFirebaseAuth() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Écouter les changements d'état d'authentification
+    // MODE MOCK : Vérifier la session dans AsyncStorage
+    if (USE_MOCK) {
+      const checkMockSession = async () => {
+        try {
+          const data = await AsyncStorage.getItem(MOCK_SESSION_KEY);
+          if (data) {
+            const mockUser = JSON.parse(data);
+            console.log('🔧 MODE MOCK: Session trouvée pour', mockUser.email);
+            setUser(mockUser);
+          } else {
+            setUser(null);
+          }
+        } catch (err) {
+          console.error('Erreur lecture session mock:', err);
+          setUser(null);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      checkMockSession();
+      
+      // Écouter les changements de session mock
+      const interval = setInterval(checkMockSession, 1000);
+      return () => clearInterval(interval);
+    }
+
+    // MODE FIREBASE RÉEL
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
