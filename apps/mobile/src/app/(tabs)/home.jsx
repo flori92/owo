@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from "react";
-import { ScrollView, RefreshControl } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { ScrollView, RefreshControl, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   useFonts,
@@ -18,6 +18,8 @@ import {
   useNotifications,
   useProfile,
 } from "@/hooks/useFirebase";
+import { TRIGGER_MIGRATION } from "@/lib/config";
+import { migrateDataToFirestore } from "@/lib/migrateToFirebase";
 import ScreenContainer from "@/components/ScreenContainer";
 import LoadingScreen from "@/components/LoadingScreen";
 import { DashboardHeader } from "@/components/Dashboard/DashboardHeader";
@@ -44,6 +46,29 @@ export default function DashboardScreen() {
   const { wallets, loading: walletsLoading, getTotalBalance } = useWallets(user?.uid);
   const { transactions, loading: transactionsLoading } = useTransactions(user?.uid);
   const { notifications, unreadCount } = useNotifications(user?.uid);
+
+  // Migration automatique des données (une seule fois)
+  const [migrationDone, setMigrationDone] = useState(false);
+  
+  useEffect(() => {
+    if (TRIGGER_MIGRATION && user && !migrationDone) {
+      console.log('🔄 Démarrage de la migration...');
+      migrateDataToFirestore()
+        .then((result) => {
+          if (result.success) {
+            setMigrationDone(true);
+            Alert.alert(
+              '✅ Migration réussie',
+              'Vos données ont été migrées vers Firebase.\n\n💰 Solde: 9 755,75 €\n💳 Cartes: 1 787,00 €',
+              [{ text: 'OK' }]
+            );
+          }
+        })
+        .catch((error) => {
+          console.error('Erreur migration:', error);
+        });
+    }
+  }, [user, migrationDone]);
 
   // État pour la visibilité du solde
   const [balanceVisible, setBalanceVisible] = useState(true);
