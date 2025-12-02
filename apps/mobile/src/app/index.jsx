@@ -16,7 +16,9 @@ import { useTheme } from "@/utils/useTheme";
 
 export default function Index() {
   const { auth, signIn, isReady } = useAuth();
-  const { user, loading } = useAppwriteAuth();
+  // TEMPORAIREMENT DÉSACTIVÉ : const { user, loading } = useAppwriteAuth();
+  const user = null; // Force pas d'utilisateur pour tester
+  const loading = false;
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -44,9 +46,10 @@ export default function Index() {
     );
   }
 
-  if (user) {
-    return <Redirect href="/(tabs)/home" />;
-  }
+  // TEMPORAIREMENT DÉSACTIVÉ : redirection si user connecté
+  // if (user) {
+  //   return <Redirect href="/(tabs)/home" />;
+  // }
 
   return (
     <View

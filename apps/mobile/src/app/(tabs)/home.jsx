@@ -105,12 +105,29 @@ export default function DashboardScreen() {
   const recentTransactions = transactions.slice(0, 5);
   
   // Stats rapides depuis les données Appwrite
-  const quickStats = {
-    totalTransactions: transactions.length,
-    totalSent: transactions.filter(t => t.type === 'send').reduce((sum, t) => sum + (t.amount || 0), 0),
-    totalReceived: transactions.filter(t => t.type === 'receive').reduce((sum, t) => sum + (t.amount || 0), 0),
-    totalSaved: wallets.reduce((sum, w) => sum + (w.balance || 0), 0),
-  };
+  const quickStats = [
+    {
+      icon: 'Repeat',
+      title: 'Transactions',
+      value: transactions.length.toString(),
+      change: '+12%',
+      color: theme.colors.primary,
+    },
+    {
+      icon: 'PiggyBank',
+      title: 'Épargne totale',
+      value: `${wallets.reduce((sum, w) => sum + (w.balance || 0), 0).toLocaleString('fr-FR')} FCFA`,
+      change: '+8%',
+      color: theme.colors.success,
+    },
+    {
+      icon: 'CreditCard',
+      title: 'Dépenses',
+      value: `${transactions.filter(t => t.type === 'send').reduce((sum, t) => sum + (t.amount || 0), 0).toLocaleString('fr-FR')} FCFA`,
+      change: '-3%',
+      color: theme.colors.error,
+    },
+  ];
 
   if (!fontsLoaded || userLoading || profileLoading) {
     return <LoadingScreen />;
