@@ -17,5 +17,9 @@
 	},
 	"submit": {
 		"production": {}
+	},
+	"update": {
+		"branch": "main",
+		"production": {}
 	}
 }

@@ -63,7 +63,7 @@ export function DashboardHeader({
               color: theme.colors.textSecondary,
             }}
           >
-            Bonjour, {displayName} 👋
+            Bonjour, {displayName}
           </Text>
         </View>
       </View>

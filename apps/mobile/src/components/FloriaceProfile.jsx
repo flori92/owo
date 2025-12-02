@@ -161,7 +161,7 @@ export function FloriaceProfile() {
       {virtualCards.length > 0 && (
         <View style={{ marginBottom: 20 }}>
           <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: theme.colors.text }}>
-            💳 Carte Virtuelle
+            Carte Virtuelle
           </Text>
           {virtualCards.map((card, index) => (
             <View key={index} style={{
@@ -194,7 +194,7 @@ export function FloriaceProfile() {
       {lockedSavings.length > 0 && (
         <View style={{ marginBottom: 20 }}>
           <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: theme.colors.text }}>
-            🔒 Épargne Bloquée
+            Épargne Bloquée
           </Text>
           {lockedSavings.map((saving, index) => (
             <View key={index} style={{
@@ -300,7 +300,7 @@ export function FloriaceProfile() {
       {/* Notifications */}
       <View style={{ marginBottom: 20 }}>
         <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: theme.colors.text }}>
-          📬 Notifications ({unreadNotifications} non lues)
+          Notifications ({unreadNotifications} non lues)
         </Text>
         {notifications.slice(0, 3).map((notif, index) => (
           <View key={index} style={{
@@ -335,7 +335,7 @@ export function FloriaceProfile() {
         }}
       >
         <Text style={{ color: 'white', fontWeight: '600' }}>
-          🔄 Actualiser les données
+          Actualiser les données
         </Text>
       </TouchableOpacity>
     </View>
