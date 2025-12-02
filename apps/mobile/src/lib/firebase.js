@@ -1,6 +1,7 @@
 // ============================================
 // CONFIGURATION FIREBASE
 // ============================================
+import { USE_MOCK, MOCK_SESSION_KEY } from './config';
 import { initializeApp, getApps } from 'firebase/app';
 import {
   getAuth,
@@ -84,9 +85,6 @@ export const COLLECTIONS = {
 // ============================================
 // MODE MOCK TEMPORAIRE (Firebase API bloquée)
 // ============================================
-const USE_MOCK = true; // Temporaire - vérifier les restrictions d'API key
-
-const MOCK_SESSION_KEY = 'owo_firebase_mock_session';
 
 async function setMockSession(user) {
   await AsyncStorage.setItem(MOCK_SESSION_KEY, JSON.stringify(user));

@@ -7,6 +7,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
+import { USE_MOCK, MOCK_SESSION_KEY } from '@/lib/config';
 import {
   collection,
   doc,
@@ -19,10 +20,6 @@ import {
   limit,
 } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// Mode mock activé temporairement
-const USE_MOCK = true;
-const MOCK_SESSION_KEY = 'owo_firebase_mock_session';
 
 // ============================================
 // FIREBASE AUTH HOOK
