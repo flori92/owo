@@ -44,6 +44,8 @@ const NATIVE_ALIASES = {
     __dirname,
     './polyfills/native/texinput.native.jsx'
   ),
+  // Mock Appwrite SDK pour éviter les crashes en développement
+  'appwrite': path.resolve(__dirname, './polyfills/native/appwrite.mock.js'),
 };
 const SHARED_ALIASES = {
   'expo-image': path.resolve(__dirname, './polyfills/shared/expo-image.tsx'),

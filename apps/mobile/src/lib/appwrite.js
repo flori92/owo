@@ -36,14 +36,21 @@ let appwriteError = null;
 /**
  * Initialise le SDK Appwrite de manière lazy (différée)
  * Cette fonction est appelée uniquement quand on a besoin d'Appwrite
+ * EN MODE DEV : Ne jamais initialiser le SDK pour éviter les crashes
  */
 async function initializeAppwrite() {
+  // MODE DÉVELOPPEMENT : Ne jamais charger le SDK
+  if (__DEV__) {
+    console.log('🔧 MODE DÉV : SDK Appwrite désactivé');
+    return { success: false, error: 'SDK désactivé en mode développement' };
+  }
+  
   if (appwriteInitialized) return { success: !appwriteError, error: appwriteError };
   
   try {
     console.log('🚀 Initialisation Appwrite...');
     
-    // Import dynamique du SDK
+    // Import dynamique du SDK (uniquement en production)
     const AppwriteSDK = await import('appwrite');
     const { Client, Account, Databases, Storage, Functions, Query: AppwriteQuery } = AppwriteSDK;
     Query = AppwriteQuery;
