@@ -1,4 +1,6 @@
-import { Client, Account, Databases, Storage, Functions } from 'appwrite';
+// ============================================
+// CONFIGURATION APPWRITE - Initialisation Lazy
+// ============================================
 
 // Configuration Appwrite
 const APPWRITE_ENDPOINT = process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT || 'https://fra.cloud.appwrite.io/v1';
@@ -18,17 +20,57 @@ export const COLLECTIONS = {
   NOTIFICATIONS: 'notifications',
 };
 
-// MODE DÉVELOPPEMENT LOCAL : Désactiver Appwrite pour éviter les crashes
-console.log('🔧 MODE DÉV LOCAL : Appwrite désactivé pour éviter les crashes Android');
+// ============================================
+// INITIALISATION LAZY DU SDK APPWRITE
+// ============================================
 
-// Créer des objets factices pour le développement local
-const client = null;
-const account = null;
-const databases = null;
-const storage = null;
-const functions = null;
+let client = null;
+let account = null;
+let databases = null;
+let storage = null;
+let functions = null;
+let Query = null;
+let appwriteInitialized = false;
+let appwriteError = null;
 
-export { client, account, databases, storage, functions };
+/**
+ * Initialise le SDK Appwrite de manière lazy (différée)
+ * Cette fonction est appelée uniquement quand on a besoin d'Appwrite
+ */
+async function initializeAppwrite() {
+  if (appwriteInitialized) return { success: !appwriteError, error: appwriteError };
+  
+  try {
+    console.log('🚀 Initialisation Appwrite...');
+    
+    // Import dynamique du SDK
+    const AppwriteSDK = await import('appwrite');
+    const { Client, Account, Databases, Storage, Functions, Query: AppwriteQuery } = AppwriteSDK;
+    Query = AppwriteQuery;
+    
+    // Créer le client
+    client = new Client();
+    client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID);
+    
+    // Initialiser les services
+    account = new Account(client);
+    databases = new Databases(client);
+    storage = new Storage(client);
+    functions = new Functions(client);
+    
+    appwriteInitialized = true;
+    console.log('✅ Appwrite initialisé avec succès');
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Erreur initialisation Appwrite:', error.message);
+    appwriteError = error.message;
+    appwriteInitialized = true; // Marquer comme tenté pour éviter de réessayer
+    return { success: false, error: error.message };
+  }
+}
+
+// Export des objets (seront null jusqu'à l'initialisation)
+export { client, account, databases, storage, functions, Query, initializeAppwrite };
 
 // ============================================
 // SESSION MOCK POUR DÉVELOPPEMENT
@@ -111,8 +153,14 @@ export async function createAccount(email, password, name) {
     return { success: true, user: mockUser };
   }
   
-  // MODE PRODUCTION : Code Appwrite original
+  // MODE PRODUCTION : Code Appwrite avec initialisation lazy
   try {
+    // Initialiser Appwrite si nécessaire
+    const initResult = await initializeAppwrite();
+    if (!initResult.success) {
+      return { success: false, error: 'Appwrite non disponible: ' + initResult.error };
+    }
+    
     const newAccount = await account.create('unique()', email, password, name);
     // Créer une session automatiquement
     await login(email, password);
@@ -158,8 +206,13 @@ export async function login(email, password) {
     return { success: true, session: mockSession };
   }
   
-  // MODE PRODUCTION : Code Appwrite original
+  // MODE PRODUCTION : Code Appwrite avec initialisation lazy
   try {
+    const initResult = await initializeAppwrite();
+    if (!initResult.success) {
+      return { success: false, error: 'Appwrite non disponible: ' + initResult.error };
+    }
+    
     const session = await account.createEmailPasswordSession(email, password);
     return { success: true, session };
   } catch (error) {
@@ -450,8 +503,13 @@ export async function getWallets(userId) {
     return { success: true, wallets: mockWallets };
   }
   
-  // MODE PRODUCTION : Code Appwrite original
+  // MODE PRODUCTION : Code Appwrite avec initialisation lazy
   try {
+    const initResult = await initializeAppwrite();
+    if (!initResult.success) {
+      return { success: false, wallets: [], error: initResult.error };
+    }
+    
     const response = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.WALLETS,
@@ -878,5 +936,5 @@ export async function markNotificationRead(notificationId) {
   }
 }
 
-// Import Query pour les filtres
-import { Query } from 'appwrite';
+// Query sera initialisé dynamiquement avec le SDK
+// Utilisé dans les fonctions qui appellent initializeAppwrite() d'abord
