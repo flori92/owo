@@ -84,7 +84,7 @@ export const COLLECTIONS = {
 // ============================================
 // MODE MOCK TEMPORAIRE (Firebase API bloquée)
 // ============================================
-const USE_MOCK = true; // Mettre à false quand Firebase API est activée
+const USE_MOCK = true; // Temporaire - vérifier les restrictions d'API key
 
 const MOCK_SESSION_KEY = 'owo_firebase_mock_session';
 
