@@ -2,8 +2,8 @@
 // CONFIGURATION CENTRALISÉE owo!
 // ============================================
 
-// MODE MOCK : Mettre à false pour utiliser Firebase réel
-// Quand Firebase API sera débloquée, changez cette valeur
+// MODE MOCK : true = données fictives, false = Firebase réel
+// Auth Firebase fonctionne, mais Firestore est vide donc on garde mock pour les données
 export const USE_MOCK = true;
 
 // Clé de session mock

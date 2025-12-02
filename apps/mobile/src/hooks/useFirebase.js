@@ -93,16 +93,38 @@ export function useProfile(userId) {
 
     const fetchProfile = async () => {
       try {
+        // MODE MOCK : Retourner un profil fictif
+        if (USE_MOCK) {
+          setProfile({
+            id: userId,
+            displayName: 'Floriace FAVI',
+            email: 'florifavi@gmail.com',
+            phone: '+229 97 00 00 00',
+            avatar: '',
+            kycVerified: true,
+            kycLevel: 2,
+          });
+          setLoading(false);
+          return;
+        }
+
         const profileRef = doc(db, 'profiles', userId);
         const profileSnap = await getDoc(profileRef);
         
         if (profileSnap.exists()) {
           setProfile({ id: profileSnap.id, ...profileSnap.data() });
         } else {
-          setProfile(null);
+          // Créer un profil par défaut si inexistant
+          setProfile({
+            id: userId,
+            displayName: 'Utilisateur owo!',
+            email: '',
+          });
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
+        // Fallback en cas d'erreur
+        setProfile({ id: userId, displayName: 'Utilisateur', email: '' });
       } finally {
         setLoading(false);
       }
@@ -130,6 +152,17 @@ export function useWallets(userId) {
 
     const fetchWallets = async () => {
       try {
+        // MODE MOCK : Retourner des wallets fictifs
+        if (USE_MOCK) {
+          setWallets([
+            { id: 'w1', userId, name: 'MTN Mobile Money', type: 'mobile_money', provider: 'mtn', balance: 125000, currency: 'XOF', status: 'active', isPrimary: true },
+            { id: 'w2', userId, name: 'Moov Money', type: 'mobile_money', provider: 'moov', balance: 45000, currency: 'XOF', status: 'active', isPrimary: false },
+            { id: 'w3', userId, name: 'Wave', type: 'mobile_money', provider: 'wave', balance: 78500, currency: 'XOF', status: 'active', isPrimary: false },
+          ]);
+          setLoading(false);
+          return;
+        }
+
         const walletsRef = collection(db, 'wallets');
         const q = query(
           walletsRef,
@@ -143,9 +176,18 @@ export function useWallets(userId) {
           ...doc.data()
         }));
         
-        setWallets(walletsData);
+        // Si pas de wallets, créer des wallets par défaut
+        if (walletsData.length === 0) {
+          setWallets([
+            { id: 'default', userId, name: 'Wallet Principal', balance: 0, currency: 'XOF', isPrimary: true },
+          ]);
+        } else {
+          setWallets(walletsData);
+        }
       } catch (error) {
         console.error('Error fetching wallets:', error);
+        // Fallback avec wallet vide
+        setWallets([{ id: 'default', userId, name: 'Wallet Principal', balance: 0, currency: 'XOF', isPrimary: true }]);
       } finally {
         setLoading(false);
       }
@@ -177,6 +219,18 @@ export function useTransactions(userId, limitCount = 20) {
 
     const fetchTransactions = async () => {
       try {
+        // MODE MOCK : Retourner des transactions fictives
+        if (USE_MOCK) {
+          setTransactions([
+            { id: 't1', userId, type: 'receive', amount: 25000, currency: 'XOF', description: 'Reçu de Jean KOUASSI', status: 'completed', createdAt: new Date(Date.now() - 1000*60*30).toISOString(), senderName: 'Jean KOUASSI' },
+            { id: 't2', userId, type: 'send', amount: 15000, currency: 'XOF', description: 'Envoyé à Marie ADJOVI', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*2).toISOString(), recipientName: 'Marie ADJOVI' },
+            { id: 't3', userId, type: 'deposit', amount: 50000, currency: 'XOF', description: 'Dépôt MTN Mobile Money', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*24).toISOString() },
+            { id: 't4', userId, type: 'payment', amount: 8500, currency: 'XOF', description: 'Paiement Supermarché EREVAN', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*48).toISOString(), merchantName: 'Supermarché EREVAN' },
+          ]);
+          setLoading(false);
+          return;
+        }
+
         const transactionsRef = collection(db, 'transactions');
         const q = query(
           transactionsRef,
@@ -194,6 +248,7 @@ export function useTransactions(userId, limitCount = 20) {
         setTransactions(transactionsData);
       } catch (error) {
         console.error('Error fetching transactions:', error);
+        setTransactions([]);
       } finally {
         setLoading(false);
       }
@@ -223,6 +278,19 @@ export function useNotifications(userId) {
 
     const fetchNotifications = async () => {
       try {
+        // MODE MOCK : Retourner des notifications fictives
+        if (USE_MOCK) {
+          const mockNotifications = [
+            { id: 'n1', userId, title: 'Transfert reçu', message: 'Vous avez reçu 25 000 FCFA de Jean KOUASSI', type: 'transaction', read: false, createdAt: new Date(Date.now() - 1000*60*30).toISOString() },
+            { id: 'n2', userId, title: 'Paiement effectué', message: 'Paiement de 8 500 FCFA chez Supermarché EREVAN', type: 'payment', read: true, createdAt: new Date(Date.now() - 1000*60*60*2).toISOString() },
+            { id: 'n3', userId, title: 'Nouveau membre', message: 'Marie ADJOVI a rejoint "Épargne Famille 2024"', type: 'group', read: false, createdAt: new Date(Date.now() - 1000*60*60*24).toISOString() },
+          ];
+          setNotifications(mockNotifications);
+          setUnreadCount(mockNotifications.filter(n => !n.read).length);
+          setLoading(false);
+          return;
+        }
+
         const notificationsRef = collection(db, 'notifications');
         const q = query(
           notificationsRef,
