@@ -11,9 +11,12 @@ import {
   loginWithApple as appwriteLoginWithApple,
   logout as appwriteLogout,
 } from '@/lib/appwrite';
+import { USE_MOCK, MOCK_SESSION_KEY } from '@/lib/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * Hook pour gérer l'état d'authentification Appwrite
+ * Synchronisé avec le mode mock de Firebase
  */
 export function useAppwriteAuth() {
   const [user, setUser] = useState(null);
@@ -23,6 +26,21 @@ export function useAppwriteAuth() {
   const checkAuth = useCallback(async () => {
     try {
       setLoading(true);
+      
+      // MODE MOCK : Vérifier AsyncStorage
+      if (USE_MOCK) {
+        const data = await AsyncStorage.getItem(MOCK_SESSION_KEY);
+        if (data) {
+          const mockUser = JSON.parse(data);
+          console.log('🔧 useAppwriteAuth MOCK: Session trouvée pour', mockUser.email);
+          setUser(mockUser);
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+        return;
+      }
+      
       const { success, user } = await getCurrentUser();
       setUser(success ? user : null);
     } catch (err) {
@@ -32,6 +50,17 @@ export function useAppwriteAuth() {
       setLoading(false);
     }
   }, []);
+
+  // Vérifier l'auth au démarrage
+  useEffect(() => {
+    checkAuth();
+    
+    // En mode mock, écouter les changements
+    if (USE_MOCK) {
+      const interval = setInterval(checkAuth, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [checkAuth]);
 
   // Créer un compte
   const createAccount = useCallback(async (email, password, name) => {
