@@ -11,14 +11,12 @@ import { Redirect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/utils/auth/useAuth";
-import { useAppwriteAuth } from "@/hooks/useAppwrite";
+import { useFirebaseAuth } from "@/hooks/useFirebase";
 import { useTheme } from "@/utils/useTheme";
 
 export default function Index() {
   const { auth, signIn, isReady } = useAuth();
-  // TEMPORAIREMENT DÉSACTIVÉ : const { user, loading } = useAppwriteAuth();
-  const user = null; // Force pas d'utilisateur pour tester
-  const loading = false;
+  const { user, loading } = useFirebaseAuth();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -46,10 +44,9 @@ export default function Index() {
     );
   }
 
-  // TEMPORAIREMENT DÉSACTIVÉ : redirection si user connecté
-  // if (user) {
-  //   return <Redirect href="/(tabs)/home" />;
-  // }
+  if (user) {
+    return <Redirect href="/(tabs)/home" />;
+  }
 
   return (
     <View

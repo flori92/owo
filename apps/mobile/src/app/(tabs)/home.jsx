@@ -11,11 +11,13 @@ import {
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
 import { useRequireAuth } from "@/utils/auth/useAuth";
-import { useAppwriteAuth } from "@/hooks/useAppwrite";
-import { useWallets } from "@/hooks/useAppwrite";
-import { useTransactions } from "@/hooks/useAppwrite";
-import { useNotifications } from "@/hooks/useAppwrite";
-import { useProfile } from "@/hooks/useAppwrite";
+import {
+  useFirebaseAuth,
+  useWallets,
+  useTransactions,
+  useNotifications,
+  useProfile,
+} from "@/hooks/useFirebase";
 import ScreenContainer from "@/components/ScreenContainer";
 import LoadingScreen from "@/components/LoadingScreen";
 import { DashboardHeader } from "@/components/Dashboard/DashboardHeader";
@@ -36,12 +38,12 @@ export default function DashboardScreen() {
   const haptics = useHaptics();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Récupérer les données utilisateur via Appwrite
-  const { user, loading: userLoading } = useAppwriteAuth();
-  const { profile, loading: profileLoading } = useProfile(user?.$id);
-  const { wallets, loading: walletsLoading, getTotalBalance } = useWallets(user?.$id);
-  const { transactions, loading: transactionsLoading } = useTransactions(user?.$id);
-  const { notifications, unreadCount } = useNotifications(user?.$id);
+  // Récupérer les données utilisateur via Firebase
+  const { user, loading: userLoading } = useFirebaseAuth();
+  const { profile, loading: profileLoading } = useProfile(user?.uid);
+  const { wallets, loading: walletsLoading, getTotalBalance } = useWallets(user?.uid);
+  const { transactions, loading: transactionsLoading } = useTransactions(user?.uid);
+  const { notifications, unreadCount } = useNotifications(user?.uid);
 
   // État pour la visibilité du solde
   const [balanceVisible, setBalanceVisible] = useState(true);
@@ -59,12 +61,12 @@ export default function DashboardScreen() {
     router.push("/notifications");
   };
 
-  // Pull-to-refresh avec Appwrite
+  // Pull-to-refresh avec Firebase
   const onRefresh = useCallback(async () => {
     haptics.medium();
     setRefreshing(true);
     try {
-      // Rafraîchir toutes les données Appwrite
+      // Rafraîchir toutes les données Firebase
       await Promise.all([
         // Les hooks vont automatiquement se rafraîchir
       ]);
@@ -76,18 +78,21 @@ export default function DashboardScreen() {
     }
   }, []);
 
-  // Obtenir le nom d'affichage depuis Appwrite
+  // Obtenir le nom d'affichage depuis Firebase
   const getDisplayName = () => {
-    if (profile?.firstName) {
-      return profile.firstName;
+    if (profile?.displayName) {
+      return profile.displayName.split(" ")[0];
     }
-    if (user?.name) {
-      return user.name.split(" ")[0];
+    if (user?.displayName) {
+      return user.displayName.split(" ")[0];
+    }
+    if (user?.email) {
+      return user.email.split("@")[0];
     }
     return "Floriace";
   };
 
-  // Créer l'objet balance pour les composants depuis Appwrite
+  // Créer l'objet balance pour les composants depuis Firebase
   const totalBalance = getTotalBalance();
   const balance = {
     total: totalBalance,
@@ -101,10 +106,10 @@ export default function DashboardScreen() {
     moov: wallets.find(w => w.provider?.includes('Moov'))?.balance || 0,
   };
 
-  // Utiliser les vraies transactions Appwrite
+  // Utiliser les vraies transactions Firebase
   const recentTransactions = transactions.slice(0, 5);
-  
-  // Stats rapides depuis les données Appwrite
+
+  // Stats rapides depuis les données Firebase
   const quickStats = [
     {
       icon: 'Repeat',

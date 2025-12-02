@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Fonction pour vérifier l'authentification
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Avatars utilisateurs
+    match /avatars/{userId}/{fileName} {
+      allow read: if true; // Les avatars sont publics
+      allow write: if isAuthenticated() && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024 // Max 5MB
+                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // Documents KYC (privés)
+    match /kyc/{userId}/{fileName} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && request.auth.uid == userId
+                   && request.resource.size < 10 * 1024 * 1024; // Max 10MB
+    }
+    
+    // Reçus de transactions
+    match /receipts/{userId}/{transactionId}/{fileName} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && request.auth.uid == userId
+                   && request.resource.size < 2 * 1024 * 1024; // Max 2MB
+    }
+  }
+}
