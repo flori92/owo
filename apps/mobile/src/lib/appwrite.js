@@ -1,11 +1,16 @@
 // ============================================
-// CONFIGURATION APPWRITE - Initialisation Lazy
+// CONFIGURATION APPWRITE - MODE MOCK UNIQUEMENT
 // ============================================
+// Le SDK Appwrite a été supprimé pour éviter les crashes
+// Toutes les fonctions utilisent des données mock
 
-// Configuration Appwrite
+// Configuration Appwrite (conservée pour la production future)
 const APPWRITE_ENDPOINT = process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT || 'https://fra.cloud.appwrite.io/v1';
 const APPWRITE_PROJECT_ID = process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID || '6915ff850039f714e80a';
 const APPWRITE_API_KEY = process.env.EXPO_PUBLIC_APPWRITE_API_KEY;
+
+// FORCER LE MODE MOCK - SDK supprimé
+const USE_MOCK = true;
 
 // IDs des collections (à créer dans Appwrite)
 export const DATABASE_ID = 'owo_database';
@@ -34,46 +39,13 @@ let appwriteInitialized = false;
 let appwriteError = null;
 
 /**
- * Initialise le SDK Appwrite de manière lazy (différée)
- * Cette fonction est appelée uniquement quand on a besoin d'Appwrite
- * EN MODE DEV : Ne jamais initialiser le SDK pour éviter les crashes
+ * Initialise le SDK Appwrite - DÉSACTIVÉ POUR LE DÉVELOPPEMENT
+ * Le package appwrite a été supprimé pour éviter les crashes
+ * Toutes les fonctions utilisent les mocks
  */
 async function initializeAppwrite() {
-  // MODE DÉVELOPPEMENT : Ne jamais charger le SDK
-  if (__DEV__) {
-    console.log('🔧 MODE DÉV : SDK Appwrite désactivé');
-    return { success: false, error: 'SDK désactivé en mode développement' };
-  }
-  
-  if (appwriteInitialized) return { success: !appwriteError, error: appwriteError };
-  
-  try {
-    console.log('🚀 Initialisation Appwrite...');
-    
-    // Import dynamique du SDK (uniquement en production)
-    const AppwriteSDK = await import('appwrite');
-    const { Client, Account, Databases, Storage, Functions, Query: AppwriteQuery } = AppwriteSDK;
-    Query = AppwriteQuery;
-    
-    // Créer le client
-    client = new Client();
-    client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID);
-    
-    // Initialiser les services
-    account = new Account(client);
-    databases = new Databases(client);
-    storage = new Storage(client);
-    functions = new Functions(client);
-    
-    appwriteInitialized = true;
-    console.log('✅ Appwrite initialisé avec succès');
-    return { success: true };
-  } catch (error) {
-    console.error('❌ Erreur initialisation Appwrite:', error.message);
-    appwriteError = error.message;
-    appwriteInitialized = true; // Marquer comme tenté pour éviter de réessayer
-    return { success: false, error: error.message };
-  }
+  console.log('🔧 SDK Appwrite désactivé - Utilisation des mocks');
+  return { success: false, error: 'SDK désactivé - utilisation des mocks' };
 }
 
 // Export des objets (seront null jusqu'à l'initialisation)
@@ -143,8 +115,8 @@ async function clearMockSession() {
  * Créer un compte avec email et mot de passe
  */
 export async function createAccount(email, password, name) {
-  // MODE DÉVELOPPEMENT : Mock authentification
-  if (__DEV__) {
+  // MODE MOCK : Authentification simulée (SDK supprimé)
+  if (USE_MOCK || __DEV__) {
     console.log('🔧 MODE DÉV : Création compte mock pour', email);
     
     // Simuler un délai réseau
@@ -182,8 +154,8 @@ export async function createAccount(email, password, name) {
  * Connexion avec email et mot de passe
  */
 export async function login(email, password) {
-  // MODE DÉVELOPPEMENT : Mock connexion avec persistance
-  if (__DEV__) {
+  // MODE MOCK : Connexion simulée (SDK supprimé)
+  if (USE_MOCK || __DEV__) {
     console.log('🔧 MODE DÉV : Connexion mock pour', email);
     
     // Simuler un délai réseau
@@ -259,7 +231,7 @@ export async function verifyPhoneOTP(userId, secret) {
  */
 export async function logout() {
   // MODE DÉVELOPPEMENT : Effacer la session mock
-  if (__DEV__) {
+  if (USE_MOCK || __DEV__) {
     console.log('🔧 MODE DÉV : Déconnexion mock');
     await clearMockSession();
     return { success: true };
@@ -349,7 +321,7 @@ export async function linkAppleAccount() {
  */
 export async function getCurrentUser() {
   // MODE DÉVELOPPEMENT : Récupérer la session mock persistante
-  if (__DEV__) {
+  if (USE_MOCK || __DEV__) {
     const mockUser = await getMockSession();
     if (mockUser) {
       console.log('🔧 MODE DÉV : Utilisateur mock récupéré:', mockUser.email);
@@ -428,7 +400,7 @@ export async function upsertProfile(userId, profileData) {
  */
 export async function getProfile(userId) {
   // MODE DÉVELOPPEMENT : Retourner un profil mock
-  if (__DEV__) {
+  if (USE_MOCK || __DEV__) {
     console.log('🔧 MODE DÉV : Profil mock pour userId:', userId);
     const mockProfile = {
       $id: userId,
@@ -467,7 +439,7 @@ export async function getProfile(userId) {
  */
 export async function getWallets(userId) {
   // MODE DÉVELOPPEMENT : Retourner des wallets mock
-  if (__DEV__) {
+  if (USE_MOCK || __DEV__) {
     console.log('🔧 MODE DÉV : Wallets mock pour userId:', userId);
     const mockWallets = [
       {
@@ -605,7 +577,7 @@ export async function createTransaction(transactionData) {
  */
 export async function getTransactions(userId, limit = 20) {
   // MODE DÉVELOPPEMENT : Retourner des transactions mock
-  if (__DEV__) {
+  if (USE_MOCK || __DEV__) {
     console.log('🔧 MODE DÉV : Transactions mock pour userId:', userId);
     const mockTransactions = [
       {
@@ -863,7 +835,7 @@ export async function getVirtualCard(userId) {
  */
 export async function getNotifications(userId, unreadOnly = false) {
   // MODE DÉVELOPPEMENT : Retourner des notifications mock
-  if (__DEV__) {
+  if (USE_MOCK || __DEV__) {
     console.log('🔧 MODE DÉV : Notifications mock pour userId:', userId);
     const mockNotifications = [
       {
