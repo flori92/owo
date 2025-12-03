@@ -24,6 +24,7 @@ import ScreenContainer from "@/components/ScreenContainer";
 import LoadingScreen from "@/components/LoadingScreen";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
+import { registerSchema, validateForm } from "@/utils/validation";
 
 export default function RegisterScreen() {
   const insets = useSafeAreaInsets();
@@ -46,18 +47,17 @@ export default function RegisterScreen() {
   });
 
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword || !name) {
-      Alert.alert("Erreur", "Veuillez remplir tous les champs");
-      return;
-    }
+    // Valider les champs avec Yup
+    const validation = await validateForm(registerSchema, {
+      name,
+      email,
+      password,
+      confirmPassword
+    });
 
-    if (password !== confirmPassword) {
-      Alert.alert("Erreur", "Les mots de passe ne correspondent pas");
-      return;
-    }
-
-    if (password.length < 8) {
-      Alert.alert("Erreur", "Le mot de passe doit contenir au moins 8 caractères");
+    if (!validation.valid) {
+      const firstError = Object.values(validation.errors)[0];
+      Alert.alert("Erreur de validation", firstError);
       return;
     }
 
@@ -65,7 +65,7 @@ export default function RegisterScreen() {
 
     try {
       const result = await createAccount(email, password, name);
-      
+
       if (result.success) {
         Alert.alert(
           "Succès",
@@ -83,7 +83,9 @@ export default function RegisterScreen() {
         Alert.alert("Erreur", result.error || "Échec de la création du compte");
       }
     } catch (error) {
-      console.error("Register error:", error);
+      if (__DEV__) {
+        console.error("Register error:", error);
+      }
       Alert.alert("Erreur", "Impossible de créer le compte. Veuillez réessayer.");
     } finally {
       setIsSubmitting(false);

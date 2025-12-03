@@ -32,6 +32,17 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == adminId;
     }
 
+    // Valider les champs requis du profil
+    function isValidProfile(profile) {
+      return profile.keys().hasAll(['name', 'email', 'phone', 'currency', 'createdAt']) &&
+             profile.name is string &&
+             profile.name.size() > 0 &&
+             profile.name.size() <= 100 &&
+             profile.email is string &&
+             profile.email.size() > 0 &&
+             profile.email.matches('.*@.*\\..*');
+    }
+
     // ============================================
     // PROFILS UTILISATEURS
     // ============================================
@@ -40,13 +51,27 @@ service cloud.firestore {
       allow read: if isOwner(profileId);
 
       // Création : uniquement son propre profil à la création du compte
-      allow create: if isOwner(profileId);
+      allow create: if isOwner(profileId) &&
+                       isValidProfile(request.resource.data);
 
-      // Mise à jour : uniquement son propre profil
-      allow update: if isOwner(profileId);
+      // Mise à jour : uniquement son propre profil avec validation
+      allow update: if isOwner(profileId) &&
+                       isValidProfile(request.resource.data);
 
       // Suppression : non autorisée (soft delete via status)
       allow delete: if false;
+    }
+
+    // Valider les champs requis du wallet
+    function isValidWallet(wallet) {
+      return wallet.keys().hasAll(['userId', 'provider', 'accountNumber', 'balance', 'isPrimary', 'createdAt']) &&
+             wallet.provider is string &&
+             wallet.provider.size() > 0 &&
+             wallet.accountNumber is string &&
+             wallet.accountNumber.size() > 0 &&
+             wallet.balance is number &&
+             wallet.balance >= 0 &&
+             wallet.isPrimary is bool;
     }
 
     // ============================================
@@ -57,20 +82,39 @@ service cloud.firestore {
       allow read: if isAuthenticated() &&
                      resource.data.userId == request.auth.uid;
 
-      // Création : uniquement pour soi-même
+      // Création : uniquement pour soi-même avec validation
       allow create: if isAuthenticated() &&
                        request.resource.data.userId == request.auth.uid &&
-                       request.resource.data.balance >= 0;
+                       isValidWallet(request.resource.data);
 
-      // Mise à jour : uniquement ses propres wallets
+      // Mise à jour : uniquement ses propres wallets avec validation
       allow update: if isAuthenticated() &&
                        resource.data.userId == request.auth.uid &&
-                       request.resource.data.balance >= 0;
+                       isValidWallet(request.resource.data);
 
       // Suppression : uniquement ses propres wallets (avec balance = 0)
       allow delete: if isAuthenticated() &&
                        resource.data.userId == request.auth.uid &&
                        resource.data.balance == 0;
+    }
+
+    // Valider les champs requis de la transaction
+    function isValidTransaction(transaction) {
+      let hasRequiredFields = transaction.keys().hasAll(['userId', 'walletId', 'type', 'amount', 'reference', 'status', 'createdAt']);
+      let hasValidType = transaction.type in ['send', 'receive', 'deposit'];
+      let hasValidAmount = transaction.amount is number && transaction.amount > 0;
+      let hasValidStatus = transaction.status in ['pending', 'completed', 'failed'];
+
+      // Pour les transactions 'send', vérifier recipientPhone et recipientName
+      let sendValidation = transaction.type != 'send' || (
+        transaction.keys().hasAll(['recipientPhone', 'recipientName']) &&
+        transaction.recipientPhone is string &&
+        transaction.recipientPhone.size() >= 8 &&
+        transaction.recipientName is string &&
+        transaction.recipientName.size() > 0
+      );
+
+      return hasRequiredFields && hasValidType && hasValidAmount && hasValidStatus && sendValidation;
     }
 
     // ============================================
@@ -81,9 +125,10 @@ service cloud.firestore {
       allow read: if isAuthenticated() &&
                      resource.data.userId == request.auth.uid;
 
-      // Création : uniquement pour soi-même
+      // Création : uniquement pour soi-même avec validation complète
       allow create: if isAuthenticated() &&
-                       request.resource.data.userId == request.auth.uid;
+                       request.resource.data.userId == request.auth.uid &&
+                       isValidTransaction(request.resource.data);
 
       // Mise à jour : non autorisée (transactions immuables)
       allow update: if false;

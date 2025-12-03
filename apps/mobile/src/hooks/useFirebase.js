@@ -45,7 +45,9 @@ export function useAuth() {
       }
       return result;
     } catch (error) {
-      console.error('Erreur création compte:', error);
+      if (__DEV__) {
+        console.error('Erreur création compte:', error);
+      }
       return { success: false, error: error.message };
     }
   }, [checkAuth]);
@@ -63,7 +65,9 @@ export function useAuth() {
       }
       return result;
     } catch (error) {
-      console.error('Erreur connexion:', error);
+      if (__DEV__) {
+        console.error('Erreur connexion:', error);
+      }
       return { success: false, error: error.message };
     }
   }, [checkAuth]);
@@ -188,7 +192,9 @@ export function useNotifications(userId) {
         setUnreadCount(data.filter(n => !n.read).length);
       }
     } catch (err) {
-      console.error('Erreur notifications:', err);
+      if (__DEV__) {
+        console.error('Erreur notifications:', err);
+      }
     } finally {
       setLoading(false);
     }

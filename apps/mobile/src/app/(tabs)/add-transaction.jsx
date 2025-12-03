@@ -38,6 +38,7 @@ import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
 import LoadingScreen from "@/components/LoadingScreen";
 import KeyboardAvoidingAnimatedView from "@/components/KeyboardAvoidingAnimatedView";
+import { transactionSchema, validateForm } from "@/utils/validation";
 
 export default function AddTransactionScreen() {
   const insets = useSafeAreaInsets();
@@ -94,19 +95,19 @@ export default function AddTransactionScreen() {
   }, [wallets, walletId]);
 
   const handleSubmit = useCallback(async () => {
-    if (!amount || !title || !walletId) {
-      Alert.alert("Erreur", "Veuillez remplir tous les champs obligatoires");
-      return;
-    }
+    // Valider les champs avec Yup
+    const validation = await validateForm(transactionSchema, {
+      amount: parseFloat(amount) || 0,
+      title,
+      walletId,
+      recipientName,
+      recipientPhone,
+      type: transactionType
+    });
 
-    if (parseFloat(amount) <= 0) {
-      Alert.alert("Erreur", "Le montant doit être supérieur à 0");
-      return;
-    }
-
-    // Pour les transactions d'envoi, vérifier le destinataire
-    if (transactionType === 'send' && (!recipientPhone || !recipientName)) {
-      Alert.alert("Erreur", "Veuillez renseigner le destinataire");
+    if (!validation.valid) {
+      const firstError = Object.values(validation.errors)[0];
+      Alert.alert("Erreur de validation", firstError);
       return;
     }
 
@@ -149,7 +150,9 @@ export default function AddTransactionScreen() {
         Alert.alert("Erreur", result.error || "Impossible d'ajouter la transaction");
       }
     } catch (error) {
-      console.error("Transaction creation error:", error);
+      if (__DEV__) {
+        console.error("Transaction creation error:", error);
+      }
       Alert.alert(
         "Erreur",
         "Impossible d'ajouter la transaction. Veuillez réessayer.",

@@ -25,6 +25,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
 import { SocialAuthButton, SocialAuthDivider } from "@/components/SocialAuthButton";
+import { loginSchema, validateForm } from "@/utils/validation";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -44,8 +45,12 @@ export default function LoginScreen() {
   });
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Erreur", "Veuillez remplir tous les champs");
+    // Valider les champs avec Yup
+    const validation = await validateForm(loginSchema, { email, password });
+
+    if (!validation.valid) {
+      const firstError = Object.values(validation.errors)[0];
+      Alert.alert("Erreur de validation", firstError);
       return;
     }
 
@@ -53,7 +58,7 @@ export default function LoginScreen() {
 
     try {
       const result = await login(email, password);
-      
+
       if (result.success) {
         Alert.alert(
           "Succès",
@@ -71,7 +76,9 @@ export default function LoginScreen() {
         Alert.alert("Erreur", result.error || "Échec de la connexion");
       }
     } catch (error) {
-      console.error("Login error:", error);
+      if (__DEV__) {
+        console.error("Login error:", error);
+      }
       Alert.alert("Erreur", "Impossible de se connecter. Veuillez réessayer.");
     } finally {
       setIsSubmitting(false);
