@@ -78,10 +78,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleQuickLogin = () => {
-    setEmail("florifavi@gmail.com");
-    setPassword("OwoApp2024!");
-  };
+  // Quick login removed for security reasons in production
 
   const handleGoogleLogin = async () => {
     setIsSubmitting(true);
@@ -204,30 +201,6 @@ export default function LoginScreen() {
               Votre finance, simplifiée
             </Text>
           </View>
-
-          {/* Quick Login Button */}
-          <TouchableOpacity
-            onPress={handleQuickLogin}
-            style={{
-              backgroundColor: `${theme.colors.primary}20`,
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 24,
-              borderWidth: 1,
-              borderColor: theme.colors.primary,
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: "Inter_500Medium",
-                fontSize: 14,
-                color: theme.colors.primary,
-                textAlign: "center",
-              }}
-            >
-              Connexion rapide (Floriace FAVI)
-            </Text>
-          </TouchableOpacity>
 
           {/* Email Input */}
           <View style={{ marginBottom: 20 }}>
@@ -385,42 +358,6 @@ export default function LoginScreen() {
                 S'inscrire
               </Text>
             </TouchableOpacity>
-          </View>
-
-          {/* Test Account Info */}
-          <View
-            style={{
-              backgroundColor: `${theme.colors.warning}20`,
-              borderRadius: 12,
-              padding: 16,
-              marginTop: 32,
-              borderWidth: 1,
-              borderColor: theme.colors.warning,
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: "Inter_600SemiBold",
-                fontSize: 14,
-                color: theme.colors.warning,
-                marginBottom: 8,
-              }}
-            >
-              Compte de test disponible
-            </Text>
-            <Text
-              style={{
-                fontFamily: "Inter_400Regular",
-                fontSize: 12,
-                color: theme.colors.text,
-                lineHeight: 18,
-              }}
-            >
-              Email: florifavi@gmail.com{"\n"}
-              Mot de passe: OwoApp2024!{"\n"}
-              {"\n"}
-              Utilisez le bouton "Connexion rapide" pour remplir automatiquement ces identifiants.
-            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

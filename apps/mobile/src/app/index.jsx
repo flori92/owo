@@ -21,7 +21,10 @@ export default function Index() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  console.log('📱 Index: loading=', loading, 'isReady=', isReady, 'user=', user?.email);
+
   if (loading || !isReady) {
+    console.log('📱 Index: Affichage écran de chargement');
     return (
       <View
         style={{
@@ -45,8 +48,11 @@ export default function Index() {
   }
 
   if (user) {
+    console.log('📱 Index: Utilisateur connecté, redirection vers home');
     return <Redirect href="/(tabs)/home" />;
   }
+
+  console.log('📱 Index: Affichage page de bienvenue');
 
   return (
     <View

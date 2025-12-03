@@ -98,7 +98,7 @@ export function BalanceOverview({
         >
           Équivalent:{" "}
           {balanceVisible
-            ? `${balance?.total?.toLocaleString() || 0} FCFA`
+            ? `${Math.round(balance?.totalFCFA || 0).toLocaleString('fr-FR')} FCFA`
             : "••••• FCFA"}
         </Text>
       </View>

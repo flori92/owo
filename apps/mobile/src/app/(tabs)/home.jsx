@@ -18,6 +18,7 @@ import {
   useNotifications,
   useProfile,
 } from "@/hooks/useFirebase";
+import { useSavingsGoals } from "@/hooks/useSavingsGoals";
 import { TRIGGER_MIGRATION } from "@/lib/config";
 import { migrateDataToFirestore } from "@/lib/migrateToFirebase";
 import ScreenContainer from "@/components/ScreenContainer";
@@ -29,9 +30,12 @@ import { AccountsSection } from "@/components/Dashboard/AccountsSection";
 import { QuickActionsSection } from "@/components/Dashboard/QuickActionsSection";
 import { QuickStatsSection } from "@/components/Dashboard/QuickStatsSection";
 import { RecentTransactionsSection } from "@/components/Dashboard/RecentTransactionsSection";
+import { SavingsSection } from "@/components/Dashboard/SavingsSection";
 import useHaptics from "@/hooks/useHaptics";
 
 export default function DashboardScreen() {
+  console.log('🏠 Home: Rendu du composant');
+  
   // Require authentication to access this screen
   useRequireAuth();
 
@@ -46,6 +50,9 @@ export default function DashboardScreen() {
   const { wallets, loading: walletsLoading, getTotalBalance } = useWallets(user?.uid);
   const { transactions, loading: transactionsLoading } = useTransactions(user?.uid);
   const { notifications, unreadCount } = useNotifications(user?.uid);
+  const { lockedSavings, totalSaved, loading: savingsLoading } = useSavingsGoals(user?.uid);
+
+  console.log('🏠 Home: userLoading=', userLoading, 'profileLoading=', profileLoading, 'walletsLoading=', walletsLoading);
 
   // Migration automatique des données (une seule fois)
   const [migrationDone, setMigrationDone] = useState(false);
@@ -118,21 +125,101 @@ export default function DashboardScreen() {
   };
 
   // Créer l'objet balance pour les composants depuis Firebase
-  const totalBalance = getTotalBalance();
+  // Les wallets sont déjà en EUR (pas en FCFA)
+  const mobileMoneyWallets = wallets.filter(w => w.type === 'mobile_money');
+  const mainWallets = wallets.filter(w => w.type === 'main');
+
+  const mobileMoneyTotal = mobileMoneyWallets.reduce((sum, w) => sum + (w.balance || 0), 0);
+  const europeanBanksTotal = mainWallets.reduce((sum, w) => sum + (w.balance || 0), 0);
+
+  // Total des wallets = 9755.75 EUR
+  const totalWalletsEUR = mobileMoneyTotal + europeanBanksTotal;
+
   const balance = {
-    total: totalBalance,
-    totalEUR: totalBalance / 655.956, // Conversion XOF → EUR
-    totalFCFA: totalBalance,
-    // Ajouter les wallets individuels
+    // Pour BalanceOverview - il additionne totalEUR + europeanBanks.total + virtualCard.balance
+    totalEUR: mobileMoneyTotal, // Mobile Money seulement (MTN + Moov + Wave)
+    total: mobileMoneyTotal * 655.957, // Mobile Money en FCFA (pour AccountsSection)
+    totalFCFA: totalWalletsEUR * 655.957, // Total complet en FCFA
+
+    // Pour AccountsSection
+    mobileMoneyTotal: mobileMoneyTotal,
     mtn: wallets.find(w => w.provider?.includes('MTN'))?.balance || 0,
     orange: wallets.find(w => w.provider?.includes('Orange'))?.balance || 0,
     ecobank: wallets.find(w => w.provider?.includes('ECOBANK'))?.balance || 0,
     wave: wallets.find(w => w.provider?.includes('Wave'))?.balance || 0,
     moov: wallets.find(w => w.provider?.includes('Moov'))?.balance || 0,
+
+    europeanBanks: {
+      accounts: ['Compte Principal'],
+      total: europeanBanksTotal, // Compte Principal en EUR
+    },
+
+    virtualCard: {
+      status: 'active',
+      balance: 0, // Carte virtuelle non incluse dans le solde total
+    },
   };
 
-  // Utiliser les vraies transactions Firebase
-  const recentTransactions = transactions.slice(0, 5);
+  // Transformer les transactions Firebase en format compatible TransactionItem
+  const formatTransactions = (firebaseTransactions) => {
+    return firebaseTransactions.map(t => {
+      // Déterminer le type et la couleur
+      let type, categoryColor, category;
+
+      switch(t.type) {
+        case 'receive':
+          type = 'income';
+          categoryColor = theme.colors.success;
+          category = 'Réception';
+          break;
+        case 'send':
+          type = 'expense';
+          categoryColor = theme.colors.error;
+          category = 'Envoi';
+          break;
+        case 'deposit':
+          type = 'income';
+          categoryColor = theme.colors.primary;
+          category = 'Dépôt';
+          break;
+        case 'payment':
+          type = 'expense';
+          categoryColor = theme.colors.warning || '#F59E0B';
+          category = 'Paiement';
+          break;
+        default:
+          type = 'expense';
+          categoryColor = theme.colors.textSecondary;
+          category = 'Autre';
+      }
+
+      // Formater la date
+      const date = new Date(t.createdAt);
+      const formattedDate = date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: 'short'
+      });
+
+      // Construire le titre
+      let title = t.description || category;
+      if (t.senderName) title = t.senderName;
+      if (t.recipientName) title = t.recipientName;
+      if (t.merchantName) title = t.merchantName;
+
+      return {
+        ...t,
+        title,
+        category,
+        date: formattedDate,
+        categoryColor,
+        type,
+        isVirtualCard: false,
+        amount: type === 'income' ? t.amount : -t.amount, // Négatif pour les dépenses
+      };
+    });
+  };
+
+  const recentTransactions = formatTransactions(transactions.slice(0, 5));
 
   // Stats rapides depuis les données Firebase
   const quickStats = [
@@ -159,9 +246,14 @@ export default function DashboardScreen() {
     },
   ];
 
+  console.log('🏠 Home: fontsLoaded=', fontsLoaded, 'userLoading=', userLoading, 'profileLoading=', profileLoading);
+  
   if (!fontsLoaded || userLoading || profileLoading) {
+    console.log('🏠 Home: Affichage LoadingScreen');
     return <LoadingScreen />;
   }
+  
+  console.log('🏠 Home: Affichage du dashboard');
 
   return (
     <ScreenContainer>
@@ -207,6 +299,12 @@ export default function DashboardScreen() {
         <QuickActionsSection theme={theme} />
 
         <QuickStatsSection theme={theme} stats={quickStats} />
+
+        <SavingsSection
+          theme={theme}
+          savings={lockedSavings}
+          totalSaved={totalSaved}
+        />
 
         <RecentTransactionsSection
           theme={theme}

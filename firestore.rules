@@ -1,0 +1,234 @@
+rules_version = '2';
+
+// ============================================
+// RÈGLES FIRESTORE POUR OWO!
+// Multi-tenant : Chaque utilisateur accède uniquement à ses données
+// ============================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // FONCTIONS HELPERS
+    // ============================================
+
+    // Vérifier si l'utilisateur est authentifié
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Vérifier si l'utilisateur est propriétaire de la ressource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Vérifier si l'utilisateur est membre d'un groupe
+    function isMember(memberIds) {
+      return isAuthenticated() && request.auth.uid in memberIds;
+    }
+
+    // Vérifier si l'utilisateur est admin d'un groupe
+    function isAdmin(adminId) {
+      return isAuthenticated() && request.auth.uid == adminId;
+    }
+
+    // ============================================
+    // PROFILS UTILISATEURS
+    // ============================================
+    match /profiles/{profileId} {
+      // Lecture : uniquement son propre profil
+      allow read: if isOwner(profileId);
+
+      // Création : uniquement son propre profil à la création du compte
+      allow create: if isOwner(profileId);
+
+      // Mise à jour : uniquement son propre profil
+      allow update: if isOwner(profileId);
+
+      // Suppression : non autorisée (soft delete via status)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // WALLETS (PORTEFEUILLES)
+    // ============================================
+    match /wallets/{walletId} {
+      // Lecture : uniquement ses propres wallets
+      allow read: if isAuthenticated() &&
+                     resource.data.userId == request.auth.uid;
+
+      // Création : uniquement pour soi-même
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.balance >= 0;
+
+      // Mise à jour : uniquement ses propres wallets
+      allow update: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.balance >= 0;
+
+      // Suppression : uniquement ses propres wallets (avec balance = 0)
+      allow delete: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid &&
+                       resource.data.balance == 0;
+    }
+
+    // ============================================
+    // TRANSACTIONS
+    // ============================================
+    match /transactions/{transactionId} {
+      // Lecture : uniquement ses propres transactions
+      allow read: if isAuthenticated() &&
+                     resource.data.userId == request.auth.uid;
+
+      // Création : uniquement pour soi-même
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid;
+
+      // Mise à jour : non autorisée (transactions immuables)
+      allow update: if false;
+
+      // Suppression : non autorisée
+      allow delete: if false;
+    }
+
+    // ============================================
+    // ÉPARGNES BLOQUÉES (OBJECTIFS INDIVIDUELS)
+    // ============================================
+    match /lockedSavings/{savingsId} {
+      // Lecture : uniquement ses propres objectifs
+      allow read: if isAuthenticated() &&
+                     resource.data.userId == request.auth.uid;
+
+      // Création : uniquement pour soi-même
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.currentAmount >= 0 &&
+                       request.resource.data.targetAmount > 0;
+
+      // Mise à jour : uniquement ses propres objectifs
+      // Vérifier que currentAmount ne dépasse pas targetAmount
+      allow update: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.currentAmount >= 0 &&
+                       request.resource.data.currentAmount <= request.resource.data.targetAmount + 100; // Tolérance de 100 pour les arrondis
+
+      // Suppression : uniquement si status = completed ou cancelled
+      allow delete: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid &&
+                       resource.data.status in ['completed', 'cancelled'];
+    }
+
+    // ============================================
+    // ÉPARGNES DE GROUPE
+    // ============================================
+    match /groupSavings/{groupId} {
+      // Lecture : uniquement si membre du groupe
+      allow read: if isAuthenticated() &&
+                     request.auth.uid in resource.data.memberIds;
+
+      // Création : uniquement pour créer un groupe où on est admin
+      allow create: if isAuthenticated() &&
+                       request.resource.data.adminId == request.auth.uid &&
+                       request.auth.uid in request.resource.data.memberIds &&
+                       request.resource.data.currentAmount >= 0 &&
+                       request.resource.data.targetAmount > 0;
+
+      // Mise à jour : uniquement si admin OU membre (pour contributions)
+      allow update: if isAuthenticated() && (
+                       // Admin peut tout modifier
+                       isAdmin(resource.data.adminId) ||
+                       // Membre peut uniquement ajouter des contributions
+                       (isMember(resource.data.memberIds) &&
+                        request.resource.data.currentAmount >= resource.data.currentAmount)
+                     );
+
+      // Suppression : uniquement si admin et status = completed
+      allow delete: if isAuthenticated() &&
+                       isAdmin(resource.data.adminId) &&
+                       resource.data.status == 'completed';
+    }
+
+    // ============================================
+    // MEMBRES DE GROUPE
+    // ============================================
+    match /groupMembers/{memberId} {
+      // Lecture : uniquement si membre du groupe
+      allow read: if isAuthenticated() && (
+                       resource.data.userId == request.auth.uid ||
+                       // Vérifier si fait partie du groupe (nécessite une sous-requête)
+                       exists(/databases/$(database)/documents/groupSavings/$(resource.data.groupId)) &&
+                       request.auth.uid in get(/databases/$(database)/documents/groupSavings/$(resource.data.groupId)).data.memberIds
+                     );
+
+      // Création : uniquement par l'admin du groupe
+      allow create: if isAuthenticated() &&
+                       exists(/databases/$(database)/documents/groupSavings/$(request.resource.data.groupId)) &&
+                       get(/databases/$(database)/documents/groupSavings/$(request.resource.data.groupId)).data.adminId == request.auth.uid;
+
+      // Mise à jour : uniquement par l'admin ou le membre concerné (pour contributions)
+      allow update: if isAuthenticated() && (
+                       request.auth.uid == resource.data.userId ||
+                       (exists(/databases/$(database)/documents/groupSavings/$(resource.data.groupId)) &&
+                        get(/databases/$(database)/documents/groupSavings/$(resource.data.groupId)).data.adminId == request.auth.uid)
+                     );
+
+      // Suppression : uniquement par l'admin
+      allow delete: if isAuthenticated() &&
+                       exists(/databases/$(database)/documents/groupSavings/$(resource.data.groupId)) &&
+                       get(/databases/$(database)/documents/groupSavings/$(resource.data.groupId)).data.adminId == request.auth.uid;
+    }
+
+    // ============================================
+    // CARTES VIRTUELLES
+    // ============================================
+    match /virtualCards/{cardId} {
+      // Lecture : uniquement ses propres cartes
+      allow read: if isAuthenticated() &&
+                     resource.data.userId == request.auth.uid;
+
+      // Création : uniquement pour soi-même
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.balance >= 0;
+
+      // Mise à jour : uniquement ses propres cartes
+      allow update: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.balance >= 0;
+
+      // Suppression : uniquement ses propres cartes (avec balance = 0)
+      allow delete: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid &&
+                       resource.data.balance == 0 &&
+                       resource.data.status in ['inactive', 'cancelled'];
+    }
+
+    // ============================================
+    // NOTIFICATIONS
+    // ============================================
+    match /notifications/{notificationId} {
+      // Lecture : uniquement ses propres notifications
+      allow read: if isAuthenticated() &&
+                     resource.data.userId == request.auth.uid;
+
+      // Création : système uniquement (via Cloud Functions)
+      allow create: if false;
+
+      // Mise à jour : uniquement pour marquer comme lu
+      allow update: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasOnly(['read', 'readAt']);
+
+      // Suppression : non autorisée (soft delete via système)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // COLLECTION SYSTÈME (ADMIN SEULEMENT)
+    // ============================================
+    match /system/{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,9 +1,24 @@
-# Fichiers de variables d'environnement
+# ============================================
+# FICHIERS SENSIBLES - NE JAMAIS COMMITTER
+# ============================================
+# Variables d'environnement
 .env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Clés et certificats Firebase/Google
+service-account-key.json
+serviceAccountKey.json
+*-service-account*.json
+firebase-adminsdk-*.json
+*.pem
+*.key
+*.p12
+*.pfx
+google-credentials.json
 
 # Dépendances
 node_modules/
@@ -101,3 +116,34 @@ pids
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+
+# ============================================
+# EXPO / REACT NATIVE SPECIFIC
+# ============================================
+.expo/
+.expo-shared/
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+*.orig.*
+web-build/
+dist/
+
+# Metro
+.metro-health-check*
+
+# Testing
+__tests__/
+*.test.js
+*.test.jsx
+*.spec.js
+*.spec.jsx
+
+# Firebase Emulator
+.firebase/
+firebase-debug.log
+firestore-debug.log
+database-debug.log
+ui-debug.log
+pubsub-debug.log

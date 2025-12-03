@@ -92,6 +92,12 @@ export default function TabLayout() {
       />
       {/* Hidden tabs for navigation */}
       <Tabs.Screen
+        name="index"
+        options={{
+          href: null, // Hidden redirect tab
+        }}
+      />
+      <Tabs.Screen
         name="transactions"
         options={{
           href: null,
