@@ -19,7 +19,7 @@ import {
 } from "@expo-google-fonts/inter";
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
-import { useAppwriteAuth } from "@/hooks/useAppwrite";
+import { useAuth } from "@/hooks/useFirebase";
 import ScreenContainer from "@/components/ScreenContainer";
 import LoadingScreen from "@/components/LoadingScreen";
 import HeaderBar from "@/components/HeaderBar";
@@ -33,8 +33,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
-  const { login, loginWithGoogle, loginWithApple, loading } = useAppwriteAuth();
+
+  const { login, loading } = useAuth();
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -81,59 +81,11 @@ export default function LoginScreen() {
   // Quick login removed for security reasons in production
 
   const handleGoogleLogin = async () => {
-    setIsSubmitting(true);
-    try {
-      const result = await loginWithGoogle();
-      if (result.success) {
-        Alert.alert(
-          "Succès",
-          "Connexion Google réussie!",
-          [
-            {
-              text: "OK",
-              onPress: () => {
-                router.replace("/(tabs)/");
-              },
-            },
-          ]
-        );
-      } else {
-        Alert.alert("Erreur", result.error || "Échec de la connexion Google");
-      }
-    } catch (error) {
-      console.error("Google login error:", error);
-      Alert.alert("Erreur", "Impossible de se connecter avec Google. Veuillez réessayer.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    Alert.alert("Info", "Connexion Google bientôt disponible");
   };
 
   const handleAppleLogin = async () => {
-    setIsSubmitting(true);
-    try {
-      const result = await loginWithApple();
-      if (result.success) {
-        Alert.alert(
-          "Succès",
-          "Connexion Apple réussie!",
-          [
-            {
-              text: "OK",
-              onPress: () => {
-                router.replace("/(tabs)/");
-              },
-            },
-          ]
-        );
-      } else {
-        Alert.alert("Erreur", result.error || "Échec de la connexion Apple");
-      }
-    } catch (error) {
-      console.error("Apple login error:", error);
-      Alert.alert("Erreur", "Impossible de se connecter avec Apple. Veuillez réessayer.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    Alert.alert("Info", "Connexion Apple bientôt disponible");
   };
 
   if (!fontsLoaded) {

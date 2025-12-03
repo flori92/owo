@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { create } from 'zustand';
 import { Modal, View } from 'react-native';
 import { useAuthModal, useAuthStore, authKey } from './store';
-import { useAppwriteAuth } from '@/hooks/useAppwrite';
+import { useAuth as useFirebaseAuth } from '@/hooks/useFirebase';
 
 
 /**
@@ -74,7 +74,7 @@ export const useAuth = () => {
  * This hook will automatically open the authentication modal if the user is not authenticated.
  */
 export const useRequireAuth = (options) => {
-  const { user, loading } = useAppwriteAuth();
+  const { user, loading } = useFirebaseAuth();
   const { open } = useAuthModal();
 
   useEffect(() => {

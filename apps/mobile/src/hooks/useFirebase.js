@@ -1,367 +1,245 @@
 import { useState, useEffect, useCallback } from 'react';
-// ⚠️ IMPORTS FIREBASE DÉSACTIVÉS pour Expo Go
-// import {
-//   onAuthStateChanged,
-//   signInWithEmailAndPassword,
-//   createUserWithEmailAndPassword,
-//   signOut,
-//   updateProfile,
-// } from 'firebase/auth';
-// import { auth, db } from '@/lib/firebase';
-import { USE_MOCK, MOCK_SESSION_KEY } from '@/lib/config';
-// import {
-//   collection,
-//   doc,
-//   getDoc,
-//   getDocs,
-//   setDoc,
-//   query,
-//   where,
-//   orderBy,
-//   limit,
-// } from 'firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// ============================================
-// FIREBASE AUTH HOOK
-// ============================================
+import {
+  getCurrentUser,
+  getWallets,
+  getTransactions,
+  getNotifications,
+  getProfile,
+  createAccount as firebaseCreateAccount,
+  login as firebaseLogin,
+  logout as firebaseLogout,
+} from '@/lib/firebase';
 
 /**
- * Hook pour l'authentification Firebase
+ * Hook pour gérer l'état d'authentification Firebase
  */
-export function useFirebaseAuth() {
+export function useAuth() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // MODE MOCK pour Expo Go : Vérifier la session dans AsyncStorage
-    const checkMockSession = async () => {
-      try {
-        const data = await AsyncStorage.getItem(MOCK_SESSION_KEY);
-        if (data) {
-          const mockUser = JSON.parse(data);
-          console.log('🔧 MODE MOCK: Session trouvée pour', mockUser.email);
-          setUser(mockUser);
-        } else {
-          setUser(null);
-        }
-      } catch (err) {
-        console.error('Erreur lecture session mock:', err);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkMockSession();
-
-    // Écouter les changements de session mock
-    const interval = setInterval(checkMockSession, 1000);
-    return () => clearInterval(interval);
-
-    // ⚠️ CODE FIREBASE RÉEL DÉSACTIVÉ pour Expo Go
-    // const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-    //   setUser(firebaseUser);
-    //   setLoading(false);
-    // }, (err) => {
-    //   console.error('Firebase Auth error:', err);
-    //   setError(err.message);
-    //   setLoading(false);
-    // });
-    //
-    // return () => unsubscribe();
+  const checkAuth = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { success, user } = await getCurrentUser();
+      setUser(success ? user : null);
+    } catch (err) {
+      setError(err.message);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { user, loading, error };
-}
-
-/**
- * Hook pour le profil utilisateur Firestore
- */
-export function useProfile(userId) {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-
+  // Vérifier l'auth au démarrage
   useEffect(() => {
-    if (!userId) {
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
+    checkAuth();
+  }, [checkAuth]);
 
-    const fetchProfile = async () => {
-      try {
-        // MODE MOCK pour Expo Go : Profil Floriace FAVI
-        setProfile({
-          id: userId,
-          displayName: 'Floriace FAVI',
-          email: 'florifavi@gmail.com',
-          phone: '+229 97 00 00 00',
-          avatar: '',
-          kycVerified: true,
-          kycLevel: 3,
-          country: 'Bénin',
-          currency: 'EUR',
-        });
-        setLoading(false);
-
-        // ⚠️ CODE FIREBASE RÉEL DÉSACTIVÉ pour Expo Go
-        // const profileRef = doc(db, 'profiles', userId);
-        // const profileSnap = await getDoc(profileRef);
-        //
-        // if (profileSnap.exists()) {
-        //   setProfile({ id: profileSnap.id, ...profileSnap.data() });
-        // } else {
-        //   // Créer un profil par défaut si inexistant
-        //   setProfile({
-        //     id: userId,
-        //     displayName: 'Utilisateur owo!',
-        //     email: '',
-        //   });
-        // }
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-        // Fallback en cas d'erreur
-        setProfile({ id: userId, displayName: 'Utilisateur', email: '' });
-        setLoading(false);
+  // Créer un compte
+  const createAccount = useCallback(async (email, password, name) => {
+    try {
+      const result = await firebaseCreateAccount(email, password, name);
+      if (result.success) {
+        await checkAuth();
       }
-    };
+      return result;
+    } catch (error) {
+      console.error('Erreur création compte:', error);
+      return { success: false, error: error.message };
+    }
+  }, [checkAuth]);
 
-    fetchProfile();
-  }, [userId]);
+  const logout = useCallback(async () => {
+    await firebaseLogout();
+    setUser(null);
+  }, []);
 
-  return { profile, loading };
+  const login = useCallback(async (email, password) => {
+    try {
+      const result = await firebaseLogin(email, password);
+      if (result.success) {
+        await checkAuth();
+      }
+      return result;
+    } catch (error) {
+      console.error('Erreur connexion:', error);
+      return { success: false, error: error.message };
+    }
+  }, [checkAuth]);
+
+  return {
+    user,
+    loading,
+    error,
+    isAuthenticated: !!user,
+    checkAuth,
+    logout,
+    login,
+    createAccount,
+  };
 }
 
 /**
- * Hook pour les wallets (portefeuilles) Firestore
+ * Hook pour gérer les wallets
  */
 export function useWallets(userId) {
   const [wallets, setWallets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!userId) {
-      setWallets([]);
-      setLoading(false);
-      return;
-    }
+  const fetchWallets = useCallback(async () => {
+    if (!userId) return;
 
-    const fetchWallets = async () => {
-      try {
-        // MODE MOCK pour Expo Go : Wallets Floriace FAVI (Total: 9755.75 EUR)
-        setWallets([
-          { id: 'w1', userId, name: 'Compte Principal', type: 'main', provider: 'owo', balance: 4250.50, currency: 'EUR', status: 'active', isPrimary: true },
-          { id: 'w2', userId, name: 'MTN Mobile Money', type: 'mobile_money', provider: 'MTN', balance: 2150.25, currency: 'EUR', status: 'active', isPrimary: false },
-          { id: 'w3', userId, name: 'Moov Money', type: 'mobile_money', provider: 'Moov', balance: 1875.00, currency: 'EUR', status: 'active', isPrimary: false },
-          { id: 'w4', userId, name: 'Wave', type: 'mobile_money', provider: 'Wave', balance: 1480.00, currency: 'EUR', status: 'active', isPrimary: false },
-        ]);
-        setLoading(false);
-
-        // ⚠️ CODE FIREBASE RÉEL DÉSACTIVÉ pour Expo Go
-        // const walletsRef = collection(db, 'wallets');
-        // const q = query(
-        //   walletsRef,
-        //   where('userId', '==', userId),
-        //   orderBy('isPrimary', 'desc')
-        // );
-        // const querySnapshot = await getDocs(q);
-        //
-        // const walletsData = querySnapshot.docs.map(doc => ({
-        //   id: doc.id,
-        //   ...doc.data()
-        // }));
-        //
-        // // Si pas de wallets, créer des wallets par défaut
-        // if (walletsData.length === 0) {
-        //   setWallets([
-        //     { id: 'default', userId, name: 'Wallet Principal', balance: 0, currency: 'XOF', isPrimary: true },
-        //   ]);
-        // } else {
-        //   setWallets(walletsData);
-        // }
-      } catch (error) {
-        console.error('Error fetching wallets:', error);
-        // Fallback avec wallet vide
-        setWallets([{ id: 'default', userId, name: 'Wallet Principal', balance: 0, currency: 'XOF', isPrimary: true }]);
-        setLoading(false);
+    try {
+      setLoading(true);
+      const { success, wallets: data } = await getWallets(userId);
+      if (success) {
+        setWallets(data);
       }
-    };
-
-    fetchWallets();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
 
-  const getTotalBalance = useCallback(() => {
-    return wallets.reduce((total, wallet) => total + (wallet.balance || 0), 0);
+  useEffect(() => {
+    fetchWallets();
+  }, [fetchWallets]);
+
+  const getTotalBalance = useCallback((currency = 'XOF') => {
+    return wallets
+      .filter(w => w.currency === currency && w.status === 'active')
+      .reduce((sum, w) => sum + (parseFloat(w.balance) || 0), 0);
   }, [wallets]);
 
-  return { wallets, loading, getTotalBalance };
+  const getMobileMoneyWallets = useCallback(() => {
+    return wallets.filter(w => w.type === 'mobile_money');
+  }, [wallets]);
+
+  const getBankWallets = useCallback(() => {
+    return wallets.filter(w => w.type === 'bank');
+  }, [wallets]);
+
+  return {
+    wallets,
+    loading,
+    error,
+    refetch: fetchWallets,
+    getTotalBalance,
+    getMobileMoneyWallets,
+    getBankWallets,
+  };
 }
 
 /**
- * Hook pour les transactions Firestore
+ * Hook pour gérer les transactions
  */
-export function useTransactions(userId, limitCount = 20) {
+export function useTransactions(userId, limit = 20) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchTransactions = useCallback(async () => {
+    if (!userId) return;
+
+    try {
+      setLoading(true);
+      const { success, transactions: data } = await getTransactions(userId, limit);
+      if (success) {
+        setTransactions(data);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, limit]);
 
   useEffect(() => {
-    if (!userId) {
-      setTransactions([]);
-      setLoading(false);
-      return;
-    }
-
-    const fetchTransactions = async () => {
-      try {
-        // MODE MOCK pour Expo Go : Transactions Floriace FAVI
-        setTransactions([
-          { id: 't1', userId, type: 'receive', amount: 1500.00, currency: 'EUR', description: 'Virement reçu - Salaire', status: 'completed', createdAt: new Date(Date.now() - 1000*60*30).toISOString(), senderName: 'ENTREPRISE XYZ' },
-          { id: 't2', userId, type: 'send', amount: 350.00, currency: 'EUR', description: 'Envoyé à Famille', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*2).toISOString(), recipientName: 'Marie FAVI' },
-          { id: 't3', userId, type: 'deposit', amount: 2000.00, currency: 'EUR', description: 'Dépôt compte principal', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*24).toISOString() },
-          { id: 't4', userId, type: 'payment', amount: 89.99, currency: 'EUR', description: 'Paiement Amazon', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*48).toISOString(), merchantName: 'Amazon' },
-          { id: 't5', userId, type: 'receive', amount: 500.00, currency: 'EUR', description: 'Remboursement', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*72).toISOString(), senderName: 'Jean KOUASSI' },
-          { id: 't6', userId, type: 'payment', amount: 45.50, currency: 'EUR', description: 'Carburant Total', status: 'completed', createdAt: new Date(Date.now() - 1000*60*60*96).toISOString(), merchantName: 'Total Energies' },
-        ]);
-        setLoading(false);
-
-        // ⚠️ CODE FIREBASE RÉEL DÉSACTIVÉ pour Expo Go
-        // const transactionsRef = collection(db, 'transactions');
-        // const q = query(
-        //   transactionsRef,
-        //   where('userId', '==', userId),
-        //   orderBy('createdAt', 'desc'),
-        //   limit(limitCount)
-        // );
-        // const querySnapshot = await getDocs(q);
-        //
-        // const transactionsData = querySnapshot.docs.map(doc => ({
-        //   id: doc.id,
-        //   ...doc.data()
-        // }));
-        //
-        // setTransactions(transactionsData);
-      } catch (error) {
-        console.error('Error fetching transactions:', error);
-        setTransactions([]);
-        setLoading(false);
-      }
-    };
-
     fetchTransactions();
-  }, [userId, limitCount]);
+  }, [fetchTransactions]);
 
-  return { transactions, loading };
+  return {
+    transactions,
+    loading,
+    error,
+    refetch: fetchTransactions,
+  };
 }
 
 /**
- * Hook pour les notifications Firestore
+ * Hook pour gérer les notifications
  */
 export function useNotifications(userId) {
   const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!userId) {
-      setNotifications([]);
-      setUnreadCount(0);
-      setLoading(false);
-      return;
-    }
+  const fetchNotifications = useCallback(async () => {
+    if (!userId) return;
 
-    const fetchNotifications = async () => {
-      try {
-        // MODE MOCK pour Expo Go : Notifications Floriace FAVI
-        const mockNotifications = [
-          { id: 'n1', userId, title: 'Virement reçu 💰', message: 'Vous avez reçu 1 500,00 € - Salaire', type: 'transaction', read: false, createdAt: new Date(Date.now() - 1000*60*30).toISOString() },
-          { id: 'n2', userId, title: 'Paiement effectué', message: 'Paiement de 89,99 € chez Amazon', type: 'payment', read: true, createdAt: new Date(Date.now() - 1000*60*60*2).toISOString() },
-          { id: 'n3', userId, title: 'Carte rechargée 💳', message: 'Votre carte Visa a été rechargée de 500 €', type: 'card', read: false, createdAt: new Date(Date.now() - 1000*60*60*24).toISOString() },
-          { id: 'n4', userId, title: 'Sécurité', message: 'Nouvelle connexion détectée depuis Paris', type: 'security', read: true, createdAt: new Date(Date.now() - 1000*60*60*48).toISOString() },
-        ];
-        setNotifications(mockNotifications);
-        setUnreadCount(mockNotifications.filter(n => !n.read).length);
-        setLoading(false);
-
-        // ⚠️ CODE FIREBASE RÉEL DÉSACTIVÉ pour Expo Go
-        // const notificationsRef = collection(db, 'notifications');
-        // const q = query(
-        //   notificationsRef,
-        //   where('userId', '==', userId),
-        //   orderBy('createdAt', 'desc'),
-        //   limit(50)
-        // );
-        // const querySnapshot = await getDocs(q);
-        //
-        // const notificationsData = querySnapshot.docs.map(doc => ({
-        //   id: doc.id,
-        //   ...doc.data()
-        // }));
-        //
-        // setNotifications(notificationsData);
-        // setUnreadCount(notificationsData.filter(n => !n.read).length);
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-        setLoading(false);
+    try {
+      setLoading(true);
+      const { success, notifications: data } = await getNotifications(userId);
+      if (success) {
+        setNotifications(data);
+        setUnreadCount(data.filter(n => !n.read).length);
       }
-    };
-
-    fetchNotifications();
+    } catch (err) {
+      console.error('Erreur notifications:', err);
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
 
-  return { notifications, unreadCount, loading };
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  return {
+    notifications,
+    unreadCount,
+    loading,
+    refetch: fetchNotifications,
+  };
 }
 
-// ============================================
-// FONCTIONS D'AUTHENTIFICATION FIREBASE
-// ⚠️ DÉSACTIVÉES pour Expo Go - utiliser firebase.js
-// ============================================
+/**
+ * Hook pour gérer le profil utilisateur
+ */
+export function useProfile(userId) {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-// Ces fonctions sont désactivées car elles nécessitent Firebase SDK
-// Utilisez les fonctions de @/lib/firebase à la place :
-// - login(email, password)
-// - createAccount(email, password, name)
-// - logout()
-// - getCurrentUser()
+  const fetchProfile = useCallback(async () => {
+    if (!userId) return;
 
-// export async function loginWithEmail(email, password) {
-//   try {
-//     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-//     return { success: true, user: userCredential.user };
-//   } catch (error) {
-//     console.error('Login error:', error);
-//     return { success: false, error: error.message };
-//   }
-// }
+    try {
+      setLoading(true);
+      const { success, profile: data } = await getProfile(userId);
+      if (success) {
+        setProfile(data);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
 
-// export async function createAccountWithEmail(email, password, displayName) {
-//   try {
-//     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-//
-//     if (displayName) {
-//       await updateProfile(userCredential.user, { displayName });
-//
-//       await setDoc(doc(db, 'profiles', userCredential.user.uid), {
-//         email,
-//         displayName,
-//         createdAt: new Date().toISOString(),
-//       });
-//     }
-//
-//     return { success: true, user: userCredential.user };
-//   } catch (error) {
-//     console.error('Create account error:', error);
-//     return { success: false, error: error.message };
-//   }
-// }
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
-// export async function logoutUser() {
-//   try {
-//     await signOut(auth);
-//     return { success: true };
-//   } catch (error) {
-//     console.error('Logout error:', error);
-//     return { success: false, error: error.message };
-//   }
-// }
+  return {
+    profile,
+    loading,
+    error,
+    refetch: fetchProfile,
+  };
+}
+
+export default useAuth;

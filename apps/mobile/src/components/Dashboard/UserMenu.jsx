@@ -14,11 +14,11 @@ import {
   ChevronDown,
 } from 'lucide-react-native';
 import { useTheme } from '@/utils/useTheme';
-import { useAppwriteAuth } from '@/hooks/useAppwrite';
+import { useAuth } from '@/hooks/useFirebase';
 
 export function UserMenu({ displayName }) {
   const theme = useTheme();
-  const { logout } = useAppwriteAuth();
+  const { logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
 
   const handleLogout = () => {

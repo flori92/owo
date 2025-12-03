@@ -19,7 +19,7 @@ import {
 } from "@expo-google-fonts/inter";
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
-import { useAppwriteAuth } from "@/hooks/useAppwrite";
+import { useAuth } from "@/hooks/useFirebase";
 import ScreenContainer from "@/components/ScreenContainer";
 import LoadingScreen from "@/components/LoadingScreen";
 import HeaderBar from "@/components/HeaderBar";
@@ -35,8 +35,8 @@ export default function RegisterScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
-  const { createAccount, loading } = useAppwriteAuth();
+
+  const { createAccount, loading } = useAuth();
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,

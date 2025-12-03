@@ -31,9 +31,8 @@ import {
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
-import { useAppwriteAuth } from "@/hooks/useAppwrite";
-import { useWallets } from "@/hooks/useAppwrite";
-import { createTransaction } from "@/lib/appwrite";
+import { useAuth, useWallets } from "@/hooks/useFirebase";
+import { createTransaction } from "@/lib/firebase";
 import ScreenContainer from "@/components/ScreenContainer";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
@@ -53,7 +52,7 @@ export default function AddTransactionScreen() {
   const theme = useTheme();
 
   // Récupérer l'utilisateur et ses wallets
-  const { user } = useAppwriteAuth();
+  const { user } = useAuth();
   const { wallets } = useWallets(user?.$id);
 
   const [fontsLoaded] = useFonts({
