@@ -116,15 +116,25 @@ export default function NotificationsScreen() {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log("Marquage tout lu réussi:", result);
+        
         setNotifications((prev) =>
           prev.map((notif) => ({ ...notif, isRead: true })),
         );
         setUnreadCount(0);
         Alert.alert("Succès", "Toutes les notifications marquées comme lues");
+      } else {
+        const errorData = await response.json();
+        console.error("Erreur réponse API:", errorData);
+        Alert.alert(
+          "Erreur",
+          errorData.error || "Impossible de marquer comme lues",
+        );
       }
     } catch (error) {
       console.error("Erreur marquage tout lu:", error);
-      Alert.alert("Erreur", "Impossible de marquer comme lues");
+      Alert.alert("Erreur", "Erreur réseau lors du marquage");
     }
   };
 
@@ -310,12 +320,23 @@ export default function NotificationsScreen() {
                     padding: 20,
                     opacity: notification.isRead ? 0.7 : 1,
                   }}
-                  onPress={() => {
+                  onPress={async () => {
+                    // Marquer comme lu d'abord
                     if (!notification.isRead) {
-                      markAsRead(notification.id);
+                      await markAsRead(notification.id);
                     }
+                    
+                    // Naviguer vers la page associée si disponible
                     if (notification.actionUrl) {
-                      router.push(notification.actionUrl);
+                      try {
+                        router.push(notification.actionUrl);
+                      } catch (error) {
+                        console.error("Erreur navigation:", error);
+                        Alert.alert(
+                          "Erreur",
+                          "Impossible d'ouvrir cette notification",
+                        );
+                      }
                     }
                   }}
                 >
