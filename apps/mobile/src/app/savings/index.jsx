@@ -13,7 +13,7 @@ import {
 } from 'lucide-react-native';
 import { useTheme } from '@/utils/useTheme';
 import { useRequireAuth } from '@/utils/auth/useAuth';
-import { useFirebaseAuth } from '@/hooks/useFirebase';
+import { useAuth as useFirebaseAuth } from '@/hooks/useFirebase';
 import { useSavingsGoals } from '@/hooks/useSavingsGoals';
 import ScreenContainer from '@/components/ScreenContainer';
 import LoadingScreen from '@/components/LoadingScreen';

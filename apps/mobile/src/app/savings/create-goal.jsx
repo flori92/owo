@@ -27,7 +27,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@/utils/useTheme';
 import { useRequireAuth } from '@/utils/auth/useAuth';
-import { useFirebaseAuth, useWallets } from '@/hooks/useFirebase';
+import { useAuth as useFirebaseAuth, useWallets } from '@/hooks/useFirebase';
 import { createSavingsGoal } from '@/hooks/useSavingsGoals';
 import ScreenContainer from '@/components/ScreenContainer';
 import LoadingScreen from '@/components/LoadingScreen';

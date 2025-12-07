@@ -11,7 +11,7 @@ import { Redirect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/utils/auth/useAuth";
-import { useFirebaseAuth } from "@/hooks/useFirebase";
+import { useAuth as useFirebaseAuth } from "@/hooks/useFirebase";
 import { useTheme } from "@/utils/useTheme";
 
 export default function Index() {

@@ -18,7 +18,7 @@ import {
 import * as Icons from 'lucide-react-native';
 import { useTheme } from '@/utils/useTheme';
 import { useRequireAuth } from '@/utils/auth/useAuth';
-import { useFirebaseAuth, useWallets } from '@/hooks/useFirebase';
+import { useAuth as useFirebaseAuth, useWallets } from '@/hooks/useFirebase';
 import { useSavingsGoals, contributeToGoal, contributeToGroupSavings } from '@/hooks/useSavingsGoals';
 import ScreenContainer from '@/components/ScreenContainer';
 import LoadingScreen from '@/components/LoadingScreen';

@@ -12,7 +12,7 @@ import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
 import { useRequireAuth } from "@/utils/auth/useAuth";
 import {
-  useFirebaseAuth,
+  useAuth as useFirebaseAuth,
   useWallets,
   useTransactions,
   useNotifications,
