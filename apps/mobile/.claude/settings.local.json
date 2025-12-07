@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(eas build:*)",
+      "WebFetch(domain:expo.dev)",
+      "Bash(eas build:view:*)",
+      "Bash(eas build:logs:*)",
+      "Bash(npm view:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
