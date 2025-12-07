@@ -99,7 +99,7 @@ exports.processAutoDebit = functions.pubsub
 
           // Déduire du wallet source
           batch.update(sourceWalletSnapshot.ref, {
-            balance: admin.firestore.Increment(-amountToAdd),
+            balance: admin.firestore.FieldValue.increment(-amountToAdd),
             lastActivity: admin.firestore.FieldValue.serverTimestamp(),
           });
 

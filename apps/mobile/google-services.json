@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "647650316598",
+    "project_id": "owo-631ab",
+    "storage_bucket": "owo-631ab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:647650316598:android:a741de8c438bb78861e397",
+        "android_client_info": {
+          "package_name": "com.owo.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "647650316598-0ulgldchtrnk6a2m6sr5dfqvavtpf87r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7XTtgsACu-AvspCKDp-9XsKhYXUqwQgg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "647650316598-0ulgldchtrnk6a2m6sr5dfqvavtpf87r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
