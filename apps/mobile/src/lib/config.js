@@ -8,3 +8,7 @@ export const APP_CONFIG = {
   version: '1.0.0',
   environment: __DEV__ ? 'development' : 'production',
 };
+
+// Flag pour déclencher la migration des données de démo vers Firebase
+// Quand il est à true, l'écran Home appelle migrateDataToFirestore() une fois
+export const TRIGGER_MIGRATION = true;
