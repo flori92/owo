@@ -252,6 +252,47 @@ export async function getProfile(userId) {
   }
 }
 
+/**
+ * Mettre à jour le profil utilisateur
+ */
+export async function updateUserProfile(userId, profileData) {
+  try {
+    const profileRef = doc(db, COLLECTIONS.PROFILES, userId);
+    const profileDoc = await getDoc(profileRef);
+    
+    const dataToSave = {
+      ...profileData,
+      updatedAt: serverTimestamp(),
+    };
+    
+    if (profileDoc.exists()) {
+      // Mise à jour du profil existant
+      await updateDoc(profileRef, dataToSave);
+    } else {
+      // Création du profil
+      await setDoc(profileRef, {
+        ...dataToSave,
+        userId: userId,
+        createdAt: serverTimestamp(),
+      });
+    }
+    
+    // Mettre à jour aussi le displayName dans Firebase Auth si fourni
+    if (profileData.displayName && auth.currentUser) {
+      await updateProfile(auth.currentUser, {
+        displayName: profileData.displayName,
+      });
+    }
+    
+    return { success: true };
+  } catch (error) {
+    if (__DEV__) {
+      console.error('Erreur updateUserProfile Firebase:', error);
+    }
+    return { success: false, error: error.message };
+  }
+}
+
 // ============================================
 // WALLETS
 // ============================================

@@ -10,7 +10,7 @@ import {
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
 import { useAuth } from "@/utils/auth/useAuth";
-import useUser from "@/utils/auth/useUser";
+import { useAuth as useFirebaseAuth } from "@/hooks/useFirebase";
 import ScreenContainer from "@/components/ScreenContainer";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useProfile } from "@/hooks/useProfile";
@@ -29,7 +29,7 @@ import { getMenuSections } from "@/utils/profileMenuConfig";
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { signOut } = useAuth();
-  const { data: user, loading: userLoading, refetch: refetchUser } = useUser();
+  const { user, loading: userLoading } = useFirebaseAuth();
   const theme = useTheme();
 
   const [fontsLoaded] = useFonts({
@@ -47,7 +47,7 @@ export default function ProfileScreen() {
     userProfile,
     loading,
     refetch: refetchProfile,
-  } = useProfile(user?.id);
+  } = useProfile(user?.uid);
   const {
     supportedLanguages,
     currentLanguage,
@@ -68,7 +68,6 @@ export default function ProfileScreen() {
   const formData = useProfileForm(userProfile, user, () => {
     setEditModalVisible(false);
     refetchProfile();
-    refetchUser();
   });
 
   // Update form data when profile loads

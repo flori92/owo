@@ -1,48 +1,53 @@
 import { useState } from "react";
 import { Alert } from "react-native";
+import { updateUserProfile as firebaseUpdateProfile } from "@/lib/firebase";
 
 export function useProfileForm(initialProfile, user, onSuccess) {
-  const [firstName, setFirstName] = useState(initialProfile?.first_name || "");
-  const [lastName, setLastName] = useState(initialProfile?.last_name || "");
+  const [firstName, setFirstName] = useState(initialProfile?.firstName || initialProfile?.first_name || "");
+  const [lastName, setLastName] = useState(initialProfile?.lastName || initialProfile?.last_name || "");
   const [email, setEmail] = useState(
     initialProfile?.email || user?.email || "",
   );
-  const [phone, setPhone] = useState(initialProfile?.phone || "");
+  const [phone, setPhone] = useState(initialProfile?.phone || initialProfile?.phoneNumber || "");
   const [address, setAddress] = useState(initialProfile?.address || "");
   const [city, setCity] = useState(initialProfile?.city || "");
   const [saving, setSaving] = useState(false);
 
   const updateProfile = async (preferences) => {
+    if (!user?.uid) {
+      Alert.alert("Erreur", "Utilisateur non connecté");
+      return false;
+    }
+
     setSaving(true);
     try {
-      const response = await fetch("/api/user-profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          first_name: firstName,
-          last_name: lastName,
-          email: email,
-          phone: phone,
-          address: address,
-          city: city,
-          ...preferences,
-        }),
-      });
+      const profileData = {
+        firstName: firstName,
+        lastName: lastName,
+        displayName: `${firstName} ${lastName}`.trim(),
+        email: email,
+        phone: phone,
+        phoneNumber: phone,
+        address: address,
+        city: city,
+        ...preferences,
+      };
 
-      if (response.ok) {
+      const { success, error } = await firebaseUpdateProfile(user.uid, profileData);
+
+      if (success) {
         Alert.alert("Succès", "Profil mis à jour");
         if (onSuccess) {
           onSuccess();
         }
         return true;
       } else {
-        const error = await response.json();
-        Alert.alert("Erreur", error.error || "Impossible de mettre à jour");
+        Alert.alert("Erreur", error || "Impossible de mettre à jour");
         return false;
       }
     } catch (error) {
       console.error("Erreur mise à jour profil:", error);
-      Alert.alert("Erreur", "Erreur réseau");
+      Alert.alert("Erreur", "Erreur lors de la mise à jour");
       return false;
     } finally {
       setSaving(false);
@@ -50,10 +55,10 @@ export function useProfileForm(initialProfile, user, onSuccess) {
   };
 
   const setFormData = (profile, user) => {
-    setFirstName(profile?.first_name || "");
-    setLastName(profile?.last_name || "");
+    setFirstName(profile?.firstName || profile?.first_name || "");
+    setLastName(profile?.lastName || profile?.last_name || "");
     setEmail(profile?.email || user?.email || "");
-    setPhone(profile?.phone || "");
+    setPhone(profile?.phone || profile?.phoneNumber || "");
     setAddress(profile?.address || "");
     setCity(profile?.city || "");
   };
