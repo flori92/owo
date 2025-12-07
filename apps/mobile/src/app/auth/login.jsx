@@ -33,8 +33,8 @@ import { loginSchema, validateForm } from "@/utils/validation";
 
 // Configuration Google Sign-In
 GoogleSignin.configure({
-  webClientId: "647650316598-0ulgldchtrnk6a2m6sr5dfqvavtpf87r.apps.googleusercontent.com",
-  iosClientId: "647650316598-0ulgldchtrnk6a2m6sr5dfqvavtpf87r.apps.googleusercontent.com",
+  webClientId: "647650316598-n1nojrun3ki4veveslgvsrtjrsmaurr5.apps.googleusercontent.com",
+  iosClientId: "647650316598-n1nojrun3ki4veveslgvsrtjrsmaurr5.apps.googleusercontent.com",
 });
 
 export default function LoginScreen() {
