@@ -1,14 +1,36 @@
-import { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { useEffect, useRef, useCallback } from 'react';
+import { StyleSheet, Animated } from 'react-native';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Garde le splash screen natif visible pendant le chargement
 SplashScreen.preventAutoHideAsync();
 
+// Source vidéo
+const splashVideo = require('../../assets/images/splash.mp4');
+
 export default function AnimatedSplashScreen({ onFinish }) {
-  const videoRef = useRef(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const hasFinished = useRef(false);
+
+  // Créer le player vidéo avec expo-video
+  const player = useVideoPlayer(splashVideo, (player) => {
+    player.loop = false;
+    player.play();
+  });
+
+  const triggerFinish = useCallback(() => {
+    if (hasFinished.current) return;
+    hasFinished.current = true;
+    
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(() => {
+      onFinish?.();
+    });
+  }, [fadeAnim, onFinish]);
 
   useEffect(() => {
     // Cache le splash screen natif après un court délai
@@ -19,29 +41,28 @@ export default function AnimatedSplashScreen({ onFinish }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const handlePlaybackStatusUpdate = (status) => {
-    if (status.didJustFinish) {
-      // Fade out après la fin de la vidéo
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }).start(() => {
-        onFinish?.();
-      });
-    }
-  };
+  // Écouter la fin de la vidéo
+  useEffect(() => {
+    if (!player) return;
+    
+    const subscription = player.addListener('playingChange', (isPlaying) => {
+      if (!isPlaying && player.currentTime > 0) {
+        triggerFinish();
+      }
+    });
+
+    return () => {
+      subscription?.remove();
+    };
+  }, [player, triggerFinish]);
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <Video
-        ref={videoRef}
-        source={require('../../assets/images/splash.mp4')}
+      <VideoView
+        player={player}
         style={styles.video}
-        resizeMode={ResizeMode.CONTAIN}
-        shouldPlay
-        isLooping={false}
-        onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+        contentFit="contain"
+        nativeControls={false}
       />
     </Animated.View>
   );

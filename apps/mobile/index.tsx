@@ -1,10 +1,5 @@
-import ExceptionsManager from 'react-native/Libraries/Core/ExceptionsManager';
-
-if (__DEV__) {
-  ExceptionsManager.handleException = (error, isFatal) => {
-    // no-op
-  };
-}
+// Suppression du deep import deprecated de react-native
+// L'exception manager est géré par les ErrorBoundary
 
 import 'react-native-url-polyfill/auto';
 import './src/__create/polyfills';
