@@ -18,14 +18,24 @@ import {
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
 import { router } from "expo-router";
+import * as AppleAuthentication from "expo-apple-authentication";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import * as Crypto from "expo-crypto";
 import { useTheme } from "@/utils/useTheme";
 import { useAuth } from "@/hooks/useFirebase";
+import { loginWithGoogle, loginWithApple, resetPassword } from "@/lib/firebase";
 import ScreenContainer from "@/components/ScreenContainer";
 import LoadingScreen from "@/components/LoadingScreen";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
 import { SocialAuthButton, SocialAuthDivider } from "@/components/SocialAuthButton";
 import { loginSchema, validateForm } from "@/utils/validation";
+
+// Configuration Google Sign-In
+GoogleSignin.configure({
+  webClientId: "647650316598-0ulgldchtrnk6a2m6sr5dfqvavtpf87r.apps.googleusercontent.com",
+  iosClientId: "647650316598-0ulgldchtrnk6a2m6sr5dfqvavtpf87r.apps.googleusercontent.com",
+});
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -85,14 +95,111 @@ export default function LoginScreen() {
     }
   };
 
-  // Quick login removed for security reasons in production
-
+  // Connexion Google
   const handleGoogleLogin = async () => {
-    Alert.alert("Info", "Connexion Google bientôt disponible");
+    try {
+      setIsSubmitting(true);
+      
+      // Vérifier si Google Play Services est disponible (Android)
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      
+      // Connexion Google
+      const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo.data?.idToken || userInfo.idToken;
+      
+      if (!idToken) {
+        throw new Error("Impossible d'obtenir le token Google");
+      }
+      
+      // Connexion Firebase avec le token Google
+      const result = await loginWithGoogle(idToken);
+      
+      if (result.success) {
+        router.replace("/(tabs)/");
+      } else {
+        Alert.alert("Erreur", result.error || "Échec de la connexion Google");
+      }
+    } catch (error) {
+      if (__DEV__) {
+        console.error("Google Sign-In error:", error);
+      }
+      
+      // Ignorer l'erreur si l'utilisateur a annulé
+      if (error.code !== "SIGN_IN_CANCELLED" && error.code !== "-5") {
+        Alert.alert("Erreur", "Impossible de se connecter avec Google");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  // Connexion Apple
   const handleAppleLogin = async () => {
-    Alert.alert("Info", "Connexion Apple bientôt disponible");
+    try {
+      setIsSubmitting(true);
+      
+      // Générer un nonce aléatoire pour la sécurité
+      const nonce = Math.random().toString(36).substring(2, 15);
+      const hashedNonce = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        nonce
+      );
+      
+      // Lancer la connexion Apple
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashedNonce,
+      });
+      
+      if (!credential.identityToken) {
+        throw new Error("Impossible d'obtenir le token Apple");
+      }
+      
+      // Connexion Firebase avec le token Apple
+      const result = await loginWithApple(credential.identityToken, nonce);
+      
+      if (result.success) {
+        router.replace("/(tabs)/");
+      } else {
+        Alert.alert("Erreur", result.error || "Échec de la connexion Apple");
+      }
+    } catch (error) {
+      if (__DEV__) {
+        console.error("Apple Sign-In error:", error);
+      }
+      
+      // Ignorer l'erreur si l'utilisateur a annulé
+      if (error.code !== "ERR_CANCELED") {
+        Alert.alert("Erreur", "Impossible de se connecter avec Apple");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Réinitialisation du mot de passe
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert("Info", "Veuillez entrer votre email pour réinitialiser votre mot de passe");
+      return;
+    }
+    
+    try {
+      const result = await resetPassword(email);
+      if (result.success) {
+        Alert.alert(
+          "Email envoyé",
+          "Un email de réinitialisation a été envoyé à " + email
+        );
+      } else {
+        Alert.alert("Erreur", result.error || "Impossible d'envoyer l'email");
+      }
+    } catch (error) {
+      Alert.alert("Erreur", "Une erreur est survenue");
+    }
   };
 
   if (!fontsLoaded) {
@@ -252,9 +359,7 @@ export default function LoginScreen() {
           {/* Forgot Password */}
           <TouchableOpacity
             style={{ marginBottom: 32 }}
-            onPress={() => {
-              Alert.alert("Info", "Fonctionnalité de réinitialisation bientôt disponible");
-            }}
+            onPress={handleForgotPassword}
           >
             <Text
               style={{

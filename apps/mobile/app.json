@@ -17,6 +17,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.floriace.owo",
       "googleServicesFile": "./GoogleService-Info.plist",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -60,7 +61,14 @@
       "expo-video",
       "expo-secure-store",
       "expo-web-browser",
-      "expo-asset"
+      "expo-asset",
+      "expo-apple-authentication",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.647650316598-0ulgldchtrnk6a2m6sr5dfqvavtpf87r"
+        }
+      ]
     ],
     "web": {
       "bundler": "metro",

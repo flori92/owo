@@ -12,6 +12,13 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   updateProfile,
+  signInWithCredential,
+  GoogleAuthProvider,
+  OAuthProvider,
+  sendPasswordResetEmail,
+  PhoneAuthProvider,
+  multiFactor,
+  PhoneMultiFactorGenerator,
 } from 'firebase/auth';
 import {
   getFirestore,
@@ -228,6 +235,130 @@ export async function getCurrentUser() {
     }
     return { success: false, user: null };
   }
+}
+
+/**
+ * Connexion avec Google
+ */
+export async function loginWithGoogle(idToken) {
+  try {
+    const credential = GoogleAuthProvider.credential(idToken);
+    const userCredential = await signInWithCredential(auth, credential);
+    const user = userCredential.user;
+    
+    // Créer ou mettre à jour le profil
+    const profileRef = doc(db, COLLECTIONS.PROFILES, user.uid);
+    const profileDoc = await getDoc(profileRef);
+    
+    if (!profileDoc.exists()) {
+      await setDoc(profileRef, {
+        userId: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        provider: 'google',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    }
+    
+    return {
+      success: true,
+      user: {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+      }
+    };
+  } catch (error) {
+    if (__DEV__) {
+      console.error('Erreur connexion Google:', error);
+    }
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Connexion avec Apple
+ */
+export async function loginWithApple(identityToken, nonce) {
+  try {
+    const provider = new OAuthProvider('apple.com');
+    const credential = provider.credential({
+      idToken: identityToken,
+      rawNonce: nonce,
+    });
+    
+    const userCredential = await signInWithCredential(auth, credential);
+    const user = userCredential.user;
+    
+    // Créer ou mettre à jour le profil
+    const profileRef = doc(db, COLLECTIONS.PROFILES, user.uid);
+    const profileDoc = await getDoc(profileRef);
+    
+    if (!profileDoc.exists()) {
+      await setDoc(profileRef, {
+        userId: user.uid,
+        email: user.email,
+        displayName: user.displayName || 'Utilisateur Apple',
+        provider: 'apple',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    }
+    
+    return {
+      success: true,
+      user: {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+      }
+    };
+  } catch (error) {
+    if (__DEV__) {
+      console.error('Erreur connexion Apple:', error);
+    }
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Réinitialiser le mot de passe
+ */
+export async function resetPassword(email) {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { success: true };
+  } catch (error) {
+    if (__DEV__) {
+      console.error('Erreur réinitialisation mot de passe:', error);
+    }
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Vérifier si l'utilisateur a activé la 2FA
+ */
+export function has2FAEnabled() {
+  const user = auth.currentUser;
+  if (!user) return false;
+  
+  try {
+    const enrolledFactors = multiFactor(user).enrolledFactors;
+    return enrolledFactors.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Obtenir l'instance auth pour la 2FA
+ */
+export function getAuthInstance() {
+  return auth;
 }
 
 // ============================================
