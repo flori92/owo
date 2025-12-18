@@ -6,7 +6,7 @@ import { useAuth } from "@/utils/auth/useAuth";
 import { useTheme } from "@/utils/useTheme";
 import ScreenContainer from "@/components/ScreenContainer";
 
-export default function TransactionsScreen() {
+export default function TransactionsNewScreen() {
   const { user } = useAuth();
   const theme = useTheme();
   const [showNewTransactionModal, setShowNewTransactionModal] = useState(false);
