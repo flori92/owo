@@ -62,7 +62,7 @@ if (getApps().length === 0) {
         persistence: inMemoryPersistence,
       });
     } catch (error) {
-      auth = getAuth(app);
+      auth = null;
     }
 
     db = getFirestore(app);
@@ -79,7 +79,11 @@ if (getApps().length === 0) {
 } else {
   // Firebase déjà initialisé
   app = getApps()[0];
-  auth = getAuth(app);
+  try {
+    auth = getAuth(app);
+  } catch (error) {
+    auth = null;
+  }
   db = getFirestore(app);
   storage = getStorage(app);
 }
@@ -112,6 +116,9 @@ export const COLLECTIONS = {
  */
 export async function login(email, password) {
   try {
+    if (!auth) {
+      return { success: false, error: 'Firebase Auth indisponible' };
+    }
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     return {
@@ -137,6 +144,9 @@ export async function login(email, password) {
  */
 export async function createAccount(email, password, name) {
   try {
+    if (!auth) {
+      return { success: false, error: 'Firebase Auth indisponible' };
+    }
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -207,6 +217,9 @@ export async function createAccount(email, password, name) {
  */
 export async function logout() {
   try {
+    if (!auth) {
+      return { success: true };
+    }
     await signOut(auth);
     return { success: true };
   } catch (error) {
@@ -222,6 +235,9 @@ export async function logout() {
  */
 export async function getCurrentUser() {
   try {
+    if (!auth) {
+      return { success: false, user: null, error: 'Firebase Auth indisponible' };
+    }
     const user = auth.currentUser;
     if (user) {
       return {
@@ -249,6 +265,9 @@ export async function getCurrentUser() {
  */
 export async function loginWithGoogle(idToken) {
   try {
+    if (!auth) {
+      return { success: false, error: 'Firebase Auth indisponible' };
+    }
     const credential = GoogleAuthProvider.credential(idToken);
     const userCredential = await signInWithCredential(auth, credential);
     const user = userCredential.user;
@@ -291,6 +310,9 @@ export async function loginWithGoogle(idToken) {
  */
 export async function loginWithApple(identityToken, nonce) {
   try {
+    if (!auth) {
+      return { success: false, error: 'Firebase Auth indisponible' };
+    }
     const provider = new OAuthProvider('apple.com');
     const credential = provider.credential({
       idToken: identityToken,
@@ -350,6 +372,7 @@ export async function resetPassword(email) {
  * Vérifier si l'utilisateur a activé la 2FA
  */
 export function has2FAEnabled() {
+  if (!auth) return false;
   const user = auth.currentUser;
   if (!user) return false;
   
@@ -416,7 +439,7 @@ export async function updateUserProfile(userId, profileData) {
     }
     
     // Mettre à jour aussi le displayName dans Firebase Auth si fourni
-    if (profileData.displayName && auth.currentUser) {
+    if (profileData.displayName && auth?.currentUser) {
       await updateProfile(auth.currentUser, {
         displayName: profileData.displayName,
       });

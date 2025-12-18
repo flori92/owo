@@ -10,8 +10,8 @@ import {
   ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFonts } from "@expo-google-fonts/inter";
 import {
-  useFonts,
   Inter_400Regular,
   Inter_500Medium,
   Inter_600SemiBold,
@@ -19,7 +19,6 @@ import {
 } from "@expo-google-fonts/inter";
 import { router } from "expo-router";
 import * as AppleAuthentication from "expo-apple-authentication";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import * as Crypto from "expo-crypto";
 import { useTheme } from "@/utils/useTheme";
 import { useAuth } from "@/hooks/useFirebase";
@@ -31,11 +30,23 @@ import ActionButton from "@/components/ActionButton";
 import { SocialAuthButton, SocialAuthDivider } from "@/components/SocialAuthButton";
 import { loginSchema, validateForm } from "@/utils/validation";
 
-// Configuration Google Sign-In
-GoogleSignin.configure({
-  webClientId: "647650316598-n1nojrun3ki4veveslgvsrtjrsmaurr5.apps.googleusercontent.com",
-  iosClientId: "647650316598-n1nojrun3ki4veveslgvsrtjrsmaurr5.apps.googleusercontent.com",
-});
+const getGoogleSignin = () => {
+  try {
+    // En Expo Go, le module natif RNGoogleSignin n'est pas disponible.
+    // On charge dynamiquement pour éviter un crash à l'import.
+    // eslint-disable-next-line global-require
+    const mod = require('@react-native-google-signin/google-signin');
+    const gs = mod?.GoogleSignin;
+    if (!gs) return null;
+    gs.configure({
+      webClientId: "647650316598-n1nojrun3ki4veveslgvsrtjrsmaurr5.apps.googleusercontent.com",
+      iosClientId: "647650316598-n1nojrun3ki4veveslgvsrtjrsmaurr5.apps.googleusercontent.com",
+    });
+    return gs;
+  } catch (e) {
+    return null;
+  }
+};
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -99,6 +110,15 @@ export default function LoginScreen() {
   const handleGoogleLogin = async () => {
     try {
       setIsSubmitting(true);
+
+      const GoogleSignin = getGoogleSignin();
+      if (!GoogleSignin) {
+        Alert.alert(
+          "Indisponible",
+          "Connexion Google indisponible dans Expo Go. Utilise email/mot de passe ou lance une Dev Build."
+        );
+        return;
+      }
       
       // Vérifier si Google Play Services est disponible (Android)
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });

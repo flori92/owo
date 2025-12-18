@@ -1,6 +1,22 @@
 import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.NEON_DATABASE_URL);
+let _sql = null;
+
+const getSql = () => {
+  if (_sql) return _sql;
+  const url = process.env.NEON_DATABASE_URL;
+  if (!url) {
+    throw new Error(
+      'NEON_DATABASE_URL manquante: Neon est désactivé (mode démo).'
+    );
+  }
+  _sql = neon(url);
+  return _sql;
+};
+
+const sql = (...args) => {
+  return getSql()(...args);
+};
 
 export { sql };
 
