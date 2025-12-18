@@ -54,16 +54,24 @@ let storage = null;
 
 if (getApps().length === 0) {
   // Première initialisation
-  app = initializeApp(firebaseConfig);
+  try {
+    app = initializeApp(firebaseConfig);
 
-  // Expo Go / React Native: on évite la persistence "web".
-  // (firebase/auth/react-native n'est pas disponible selon versions)
-  auth = initializeAuth(app, {
-    persistence: inMemoryPersistence,
-  });
+    try {
+      auth = initializeAuth(app, {
+        persistence: inMemoryPersistence,
+      });
+    } catch (error) {
+      auth = getAuth(app);
+    }
 
-  db = getFirestore(app);
-  storage = getStorage(app);
+    db = getFirestore(app);
+    storage = getStorage(app);
+  } catch (error) {
+    if (__DEV__) {
+      console.error('Erreur initialisation Firebase:', error);
+    }
+  }
 
   if (__DEV__) {
     console.log('✅ Firebase initialized successfully');
@@ -471,6 +479,24 @@ export async function getTransactions(userId, limitCount = 20) {
       console.error('Erreur getTransactions Firebase:', error);
     }
     return { success: false, transactions: [] };
+  }
+}
+
+/**
+ * Créer une transaction
+ */
+export async function createTransaction(transactionData) {
+  try {
+    const docRef = await addDoc(collection(db, COLLECTIONS.TRANSACTIONS), {
+      ...transactionData,
+      createdAt: serverTimestamp(),
+    });
+    return { success: true, id: docRef.id, $id: docRef.id };
+  } catch (error) {
+    if (__DEV__) {
+      console.error('Erreur createTransaction Firebase:', error);
+    }
+    return { success: false, error: error.message };
   }
 }
 
