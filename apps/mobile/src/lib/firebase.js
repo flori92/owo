@@ -1,13 +1,11 @@
 // ============================================
 // CONFIGURATION FIREBASE
 // ============================================
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { initializeApp, getApps } from 'firebase/app';
 import {
   getAuth,
   initializeAuth,
-  getReactNativePersistence,
+  inMemoryPersistence,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -58,9 +56,10 @@ if (getApps().length === 0) {
   // Première initialisation
   app = initializeApp(firebaseConfig);
 
-  // Initialiser Auth avec persistence React Native
+  // Expo Go / React Native: on évite la persistence "web".
+  // (firebase/auth/react-native n'est pas disponible selon versions)
   auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage),
+    persistence: inMemoryPersistence,
   });
 
   db = getFirestore(app);

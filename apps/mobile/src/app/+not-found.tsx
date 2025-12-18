@@ -20,7 +20,7 @@ function NotFoundScreen() {
   }, []);
 
   const handleGoHome = () => {
-    router.replace('/(tabs)/home');
+    router.replace('/');
   };
 
   const handleGoBack = () => {

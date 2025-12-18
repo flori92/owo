@@ -8,7 +8,7 @@ import {
   Share,
   Linking
 } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useTheme } from '@/utils/useTheme';
 import { 
   QrCode, 
@@ -21,17 +21,17 @@ import {
 
 export default function QRCodeScanner({ visible, onClose, onScanSuccess }) {
   const theme = useTheme();
-  const [hasPermission, setHasPermission] = useState(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
+    if (!visible) return;
+    if (!permission) return;
+    if (permission.granted) return;
+    requestPermission();
   }, []);
 
-  const handleBarCodeScanned = ({ type, data }) => {
+  const handleBarCodeScanned = ({ data }) => {
     if (scanned) return;
     
     setScanned(true);
@@ -130,7 +130,11 @@ export default function QRCodeScanner({ visible, onClose, onScanSuccess }) {
     });
   };
 
-  if (hasPermission === null) {
+  if (!visible) {
+    return null;
+  }
+
+  if (!permission) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
         <Text style={{ color: theme.colors.text }}>Vérification des permissions...</Text>
@@ -138,7 +142,7 @@ export default function QRCodeScanner({ visible, onClose, onScanSuccess }) {
     );
   }
 
-  if (hasPermission === false) {
+  if (!permission.granted) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
         <Camera size={64} color={theme.colors.textSecondary} style={{ marginBottom: 16 }} />
@@ -149,7 +153,7 @@ export default function QRCodeScanner({ visible, onClose, onScanSuccess }) {
           Pour scanner des codes QR, owo! a besoin d'accéder à votre caméra.
         </Text>
         <TouchableOpacity
-          onPress={() => BarCodeScanner.requestPermissionsAsync()}
+          onPress={requestPermission}
           style={{
             backgroundColor: theme.colors.primary,
             paddingHorizontal: 24,
@@ -195,14 +199,12 @@ export default function QRCodeScanner({ visible, onClose, onScanSuccess }) {
       </View>
 
       {/* Scanner */}
-      <BarCodeScanner
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+      <CameraView
         style={{ flex: 1 }}
-        barCodeTypes={[
-          BarCodeScanner.Constants.BarCodeType.qr,
-          BarCodeScanner.Constants.BarCodeType.aztec,
-          BarCodeScanner.Constants.BarCodeType.pdf417,
-        ]}
+        barcodeScannerSettings={{
+          barcodeTypes: ['qr', 'aztec', 'pdf417'],
+        }}
+        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
       />
 
       {/* Overlay */}
