@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import {
   Shield,
@@ -21,9 +21,21 @@ export default function Index() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const [ignoreFirebaseLoading, setIgnoreFirebaseLoading] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setIgnoreFirebaseLoading(false);
+      return;
+    }
+
+    const t = setTimeout(() => setIgnoreFirebaseLoading(true), 3000);
+    return () => clearTimeout(t);
+  }, [loading]);
+
   console.log('📱 Index: loading=', loading, 'isReady=', isReady, 'user=', user?.email);
 
-  if (loading || !isReady) {
+  if (!isReady || (loading && !ignoreFirebaseLoading)) {
     console.log('📱 Index: Affichage écran de chargement');
     return (
       <View

@@ -20,7 +20,6 @@ export default function LoadingScreen({ message = "Chargement..." }) {
         style={{
           fontSize: 16,
           color: theme.colors.textSecondary,
-          fontFamily: "Inter_400Regular",
         }}
       >
         {message}
