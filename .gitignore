@@ -147,3 +147,7 @@ firestore-debug.log
 database-debug.log
 ui-debug.log
 pubsub-debug.log
+
+.neon/
+/package.json
+/package-lock.json
