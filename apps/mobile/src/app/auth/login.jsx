@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -55,6 +55,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [fontFallback, setFontFallback] = useState(false);
 
   const { login, loading } = useAuth();
 
@@ -64,6 +65,11 @@ export default function LoginScreen() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+
+  useEffect(() => {
+    const t = setTimeout(() => setFontFallback(true), 2000);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleLogin = async () => {
     // Valider les champs avec Yup
@@ -222,7 +228,7 @@ export default function LoginScreen() {
     }
   };
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded && !fontFallback) {
     return <LoadingScreen />;
   }
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -36,6 +36,7 @@ export default function RegisterScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fontFallback, setFontFallback] = useState(false);
 
   const { createAccount, loading } = useAuth();
 
@@ -45,6 +46,11 @@ export default function RegisterScreen() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+
+  useEffect(() => {
+    const t = setTimeout(() => setFontFallback(true), 2000);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleRegister = async () => {
     // Valider les champs avec Yup
@@ -92,7 +98,7 @@ export default function RegisterScreen() {
     }
   };
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded && !fontFallback) {
     return <LoadingScreen />;
   }
 
