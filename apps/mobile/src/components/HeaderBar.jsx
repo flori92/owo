@@ -63,7 +63,6 @@ export default function HeaderBar({
       {/* Titre */}
       <Text
         style={{
-          fontFamily: "Inter_500Medium",
           fontSize: 16,
           color: theme.colors.text,
           flex: 1,
