@@ -77,12 +77,15 @@ export const useRequireAuth = (options) => {
   const { user, loading } = useFirebaseAuth();
   const { open } = useAuthModal();
 
+  const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+
   useEffect(() => {
+    if (AUTH_BYPASS) return;
     if (!loading && !user) {
       // Rediriger vers la page de login au lieu d'ouvrir un modal
       router.replace('/auth/login');
     }
-  }, [user, loading, open, options?.mode]);
+  }, [user, loading, open, options?.mode, AUTH_BYPASS]);
 };
 
 export default useAuth;

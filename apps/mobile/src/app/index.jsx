@@ -10,6 +10,8 @@ export default function Index() {
   const { user, loading } = useFirebaseAuth();
   const theme = useTheme();
 
+  const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+
   const [ignoreFirebaseLoading, setIgnoreFirebaseLoading] = useState(false);
 
   useEffect(() => {
@@ -46,6 +48,11 @@ export default function Index() {
         </Text>
       </View>
     );
+  }
+
+  if (AUTH_BYPASS) {
+    console.log('📱 Index: AUTH_BYPASS actif, redirection vers home');
+    return <Redirect href="/(tabs)/home" />;
   }
 
   if (user) {
