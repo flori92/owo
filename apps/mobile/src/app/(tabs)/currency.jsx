@@ -50,10 +50,6 @@ export default function CurrencyExchangeScreen() {
     handleExchange,
   } = useCurrencyExchange();
 
-  if (!fontsLoaded) {
-    return <LoadingScreen />;
-  }
-
   return (
     <ScreenContainer>
       <HeaderBar title="owo! • Change de devises" />

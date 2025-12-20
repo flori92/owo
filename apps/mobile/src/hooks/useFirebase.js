@@ -19,6 +19,19 @@ export function useAuth() {
   const [error, setError] = useState(null);
 
   const checkAuth = useCallback(async () => {
+    const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+    if (AUTH_BYPASS) {
+      setUser({
+        uid: 'demo',
+        $id: 'demo',
+        email: 'demo@owo.app',
+        displayName: 'Floriace',
+      });
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const { success, user } = await getCurrentUser();

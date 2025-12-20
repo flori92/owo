@@ -52,6 +52,8 @@ export default function AddTransactionScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const theme = useTheme();
 
+  const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+
   // Récupérer l'utilisateur et ses wallets
   const { user } = useAuth();
   const { wallets } = useWallets(user?.$id);
@@ -95,6 +97,11 @@ export default function AddTransactionScreen() {
   }, [wallets, walletId]);
 
   const handleSubmit = useCallback(async () => {
+    if (!user?.$id) {
+      Alert.alert("Mode démo", "Utilisateur indisponible. Relance l'app si le problème persiste.");
+      return;
+    }
+
     // Valider les champs avec Yup
     const validation = await validateForm(transactionSchema, {
       amount: parseFloat(amount) || 0,
@@ -114,6 +121,27 @@ export default function AddTransactionScreen() {
     setIsSubmitting(true);
 
     try {
+      if (AUTH_BYPASS) {
+        Alert.alert(
+          "Succès",
+          "Transaction ajoutée (mode démo).",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                setAmount("");
+                setTitle("");
+                setRecipientPhone("");
+                setRecipientName("");
+                setDescription("");
+                router.back();
+              },
+            },
+          ]
+        );
+        return;
+      }
+
       const transactionData = {
         userId: user.$id,
         walletId: walletId,
@@ -161,10 +189,6 @@ export default function AddTransactionScreen() {
       setIsSubmitting(false);
     }
   }, [amount, title, recipientPhone, recipientName, description, transactionType, walletId, user]);
-
-  if (!fontsLoaded) {
-    return <LoadingScreen />;
-  }
 
   return (
     <ScreenContainer>
