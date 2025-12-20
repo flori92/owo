@@ -20,6 +20,15 @@ import {
  * Migrer toutes les données de démo vers Firestore pour un utilisateur
  */
 export async function migrateDataToFirestore() {
+  const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+  if (AUTH_BYPASS) {
+    return { success: true, skipped: true };
+  }
+
+  if (!auth) {
+    return { success: false, error: 'Auth indisponible' };
+  }
+
   const user = auth.currentUser;
   
   if (!user) {

@@ -39,6 +39,8 @@ export default function DashboardScreen() {
   // Require authentication to access this screen
   useRequireAuth();
 
+  const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const haptics = useHaptics();
@@ -58,7 +60,7 @@ export default function DashboardScreen() {
   const [migrationDone, setMigrationDone] = useState(false);
   
   useEffect(() => {
-    if (TRIGGER_MIGRATION && user && !migrationDone) {
+    if (TRIGGER_MIGRATION && !AUTH_BYPASS && user && !migrationDone) {
       console.log('🔄 Démarrage de la migration...');
       migrateDataToFirestore()
         .then((result) => {
@@ -75,7 +77,7 @@ export default function DashboardScreen() {
           console.error('Erreur migration:', error);
         });
     }
-  }, [user, migrationDone]);
+  }, [AUTH_BYPASS, user, migrationDone]);
 
   // État pour la visibilité du solde
   const [balanceVisible, setBalanceVisible] = useState(true);
