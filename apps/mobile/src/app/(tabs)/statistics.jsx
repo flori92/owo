@@ -60,31 +60,73 @@ export default function StatisticsScreen() {
   // Mode démo : données mock pour les statistiques
   const getMockStatistics = (period) => {
     const multiplier = period === "week" ? 0.25 : period === "month" ? 1 : period === "quarter" ? 3 : 12;
+    const totalIncome = Math.round(450000 * multiplier);
+    const totalExpenses = Math.round(320000 * multiplier);
+    const netSavings = totalIncome - totalExpenses;
     return {
-      totalIncome: Math.round(450000 * multiplier),
-      totalExpenses: Math.round(320000 * multiplier),
-      savingsRate: 28.9,
-      transactionCount: Math.round(45 * multiplier),
-      topCategories: [
-        { name: "Alimentation", amount: Math.round(85000 * multiplier), percentage: 26.5, color: "#FF6B6B" },
-        { name: "Transport", amount: Math.round(65000 * multiplier), percentage: 20.3, color: "#4ECDC4" },
-        { name: "Logement", amount: Math.round(95000 * multiplier), percentage: 29.7, color: "#45B7D1" },
-        { name: "Loisirs", amount: Math.round(45000 * multiplier), percentage: 14.1, color: "#96CEB4" },
-        { name: "Autres", amount: Math.round(30000 * multiplier), percentage: 9.4, color: "#DDA0DD" },
-      ],
-      monthlyTrend: [
-        { month: "Jan", income: 420000, expenses: 310000 },
-        { month: "Fév", income: 380000, expenses: 290000 },
-        { month: "Mar", income: 450000, expenses: 320000 },
-        { month: "Avr", income: 410000, expenses: 350000 },
-        { month: "Mai", income: 480000, expenses: 300000 },
-        { month: "Juin", income: 450000, expenses: 320000 },
-      ],
-      comparison: {
-        incomeChange: 12.5,
-        expenseChange: -5.2,
-        savingsChange: 8.3,
+      summary: {
+        totalIncome,
+        totalExpenses,
+        netSavings,
+        transactionCount: Math.round(45 * multiplier),
       },
+      savingsGoal: {
+        targetAmount: Math.round(900000 * multiplier),
+        currentAmount: Math.round(260000 * multiplier),
+      },
+      categories: [
+        {
+          id: 'food',
+          name: "Alimentation",
+          amount: Math.round(85000 * multiplier),
+          percentage: 26.5,
+          color: "#FF6B6B",
+          transactions: Math.max(1, Math.round(12 * multiplier)),
+          trend: "+2.1%",
+        },
+        {
+          id: 'transport',
+          name: "Transport",
+          amount: Math.round(65000 * multiplier),
+          percentage: 20.3,
+          color: "#4ECDC4",
+          transactions: Math.max(1, Math.round(9 * multiplier)),
+          trend: "-1.4%",
+        },
+        {
+          id: 'housing',
+          name: "Logement",
+          amount: Math.round(95000 * multiplier),
+          percentage: 29.7,
+          color: "#45B7D1",
+          transactions: Math.max(1, Math.round(4 * multiplier)),
+          trend: "+0.0%",
+        },
+        {
+          id: 'leisure',
+          name: "Loisirs",
+          amount: Math.round(45000 * multiplier),
+          percentage: 14.1,
+          color: "#96CEB4",
+          transactions: Math.max(1, Math.round(8 * multiplier)),
+          trend: "+3.3%",
+        },
+        {
+          id: 'other',
+          name: "Autres",
+          amount: Math.round(30000 * multiplier),
+          percentage: 9.4,
+          color: "#DDA0DD",
+          transactions: Math.max(1, Math.round(3 * multiplier)),
+          trend: "-0.7%",
+        },
+      ],
+      weeklyTrend: [
+        { week: "S1", income: Math.round(98000 * multiplier), expenses: Math.round(70000 * multiplier) },
+        { week: "S2", income: Math.round(112000 * multiplier), expenses: Math.round(83000 * multiplier) },
+        { week: "S3", income: Math.round(104000 * multiplier), expenses: Math.round(76000 * multiplier) },
+        { week: "S4", income: Math.round(136000 * multiplier), expenses: Math.round(91000 * multiplier) },
+      ],
     };
   };
 
@@ -92,27 +134,25 @@ export default function StatisticsScreen() {
   const getMockInsights = () => [
     {
       id: 1,
-      type: "savings",
       title: "Excellent taux d'épargne !",
-      description: "Vous épargnez 28.9% de vos revenus ce mois-ci, c'est au-dessus de la moyenne recommandée de 20%.",
-      icon: "trending-up",
-      color: "#4ECDC4",
+      description: "Vous épargnez une part importante de vos revenus sur la période. Continuez ainsi.",
+      priority: "low",
+      estimatedImpact: 0,
     },
     {
       id: 2,
-      type: "expense",
       title: "Dépenses alimentaires stables",
       description: "Vos dépenses en alimentation sont restées constantes. Continuez ainsi !",
-      icon: "check",
-      color: "#45B7D1",
+      priority: "low",
+      category: "Alimentation",
     },
     {
       id: 3,
-      type: "tip",
       title: "Conseil personnalisé",
       description: "En réduisant vos dépenses de transport de 10%, vous pourriez économiser 6 500 FCFA/mois.",
-      icon: "lightbulb",
-      color: "#FFD93D",
+      priority: "medium",
+      category: "Transport",
+      estimatedImpact: 6500,
     },
   ];
 
@@ -156,7 +196,7 @@ export default function StatisticsScreen() {
     // Data will be fetched via useEffect
   };
 
-  if (!fontsLoaded || isLoading) {
+  if (isLoading) {
     return <LoadingScreen message="Chargement des statistiques..." />;
   }
 
