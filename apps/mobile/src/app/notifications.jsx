@@ -204,21 +204,8 @@ export default function NotificationsScreen() {
     }
   };
 
-  if (!fontsLoaded) {
-    return <LoadingScreen />;
-  }
-
   if (loading) {
-    return (
-      <ScreenContainer>
-        <HeaderBar
-          title="Notifications"
-          showBack={true}
-          onBack={() => router.back()}
-        />
-        <LoadingScreen />
-      </ScreenContainer>
-    );
+    return <LoadingScreen />;
   }
 
   return (

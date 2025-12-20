@@ -250,7 +250,7 @@ export default function DashboardScreen() {
 
   console.log('🏠 Home: fontsLoaded=', fontsLoaded, 'userLoading=', userLoading, 'profileLoading=', profileLoading);
   
-  if (!fontsLoaded || userLoading || profileLoading) {
+  if (userLoading || profileLoading) {
     console.log('🏠 Home: Affichage LoadingScreen');
     return <LoadingScreen />;
   }

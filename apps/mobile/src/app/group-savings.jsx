@@ -169,10 +169,6 @@ export default function GroupSavingsScreen() {
     });
   };
 
-  if (!fontsLoaded) {
-    return <LoadingScreen />;
-  }
-
   return (
     <ScreenContainer>
       <HeaderBar

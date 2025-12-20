@@ -198,7 +198,7 @@ export default function GroupSavingDetailScreen() {
     return Math.min((saving.current_amount / saving.target_amount) * 100, 100);
   };
 
-  if (!fontsLoaded || loading) {
+  if (loading) {
     return <LoadingScreen />;
   }
 
