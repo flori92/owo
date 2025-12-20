@@ -93,7 +93,12 @@ export function useWallets(userId) {
   const [error, setError] = useState(null);
 
   const fetchWallets = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setWallets([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -146,7 +151,12 @@ export function useTransactions(userId, limit = 20) {
   const [error, setError] = useState(null);
 
   const fetchTransactions = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setTransactions([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -182,7 +192,12 @@ export function useNotifications(userId) {
   const [loading, setLoading] = useState(true);
 
   const fetchNotifications = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setNotifications([]);
+      setUnreadCount(0);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -221,7 +236,12 @@ export function useProfile(userId) {
   const [error, setError] = useState(null);
 
   const fetchProfile = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setProfile(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
