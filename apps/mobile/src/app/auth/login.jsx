@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -49,6 +49,10 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   const { login, loading } = useAuth();
+
+  useEffect(() => {
+    console.log('📱 Login: mounted');
+  }, []);
 
   const handleLogin = async () => {
     // Valider les champs avec Yup
@@ -208,7 +212,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer style={{ backgroundColor: theme.colors.background }}>
       <HeaderBar title="Connexion" showBack={false} />
 
       <KeyboardAvoidingView
