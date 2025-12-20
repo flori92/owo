@@ -4,13 +4,12 @@ import { fetch as expoFetch } from 'expo/fetch';
 const originalFetch = fetch;
 const authKey = `${process.env.EXPO_PUBLIC_PROJECT_GROUP_ID}-jwt`;
 
-const getURLFromArgs = (...args: Parameters<typeof fetch>) => {
-  const [urlArg] = args;
+const getURLFromArgs = (urlArg: Parameters<typeof expoFetch>[0]) => {
   let url: string | null;
   if (typeof urlArg === 'string') {
     url = urlArg;
-  } else if (typeof urlArg === 'object' && urlArg !== null) {
-    url = urlArg.url;
+  } else if (typeof urlArg === 'object' && urlArg !== null && 'url' in (urlArg as any)) {
+    url = (urlArg as any).url;
   } else {
     url = null;
   }
@@ -20,6 +19,7 @@ const getURLFromArgs = (...args: Parameters<typeof fetch>) => {
 const isFirstPartyURL = (url: string) => {
   return (
     url.startsWith('/') ||
+    (process.env.EXPO_PUBLIC_API_URL && url.startsWith(process.env.EXPO_PUBLIC_API_URL)) ||
     (process.env.EXPO_PUBLIC_BASE_URL && url.startsWith(process.env.EXPO_PUBLIC_BASE_URL))
   );
 };
@@ -30,13 +30,13 @@ const isSecondPartyURL = (url: string) => {
 
 type Params = Parameters<typeof expoFetch>;
 const fetchToWeb = async function fetchWithHeaders(...args: Params) {
-  const firstPartyURL = process.env.EXPO_PUBLIC_BASE_URL;
+  const firstPartyURL = process.env.EXPO_PUBLIC_API_URL || process.env.EXPO_PUBLIC_BASE_URL;
   const secondPartyURL = process.env.EXPO_PUBLIC_PROXY_BASE_URL;
   if (!firstPartyURL || !secondPartyURL) {
     return expoFetch(...args);
   }
   const [input, init] = args;
-  const url = getURLFromArgs(input, init);
+  const url = getURLFromArgs(input);
   if (!url) {
     return expoFetch(input, init);
   }
@@ -52,7 +52,7 @@ const fetchToWeb = async function fetchWithHeaders(...args: Params) {
   if (typeof input === 'string') {
     finalInput = input.startsWith('/') ? `${baseURL}${input}` : input;
   } else {
-    return originalFetch(input, init);
+    return originalFetch(input as any, init as any);
   }
 
   const initHeaders = init?.headers ?? {};

@@ -1,8 +1,10 @@
 import sql from "@/app/api/utils/sql";
+import { isDemoRequest, isMissingDatabaseError } from "@/app/api/utils/demo.js";
 
 // GET /api/transactions - List user transactions with filtering
 export async function GET(request) {
   try {
+    const demo = isDemoRequest(request);
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId") || 1; // Default to test user
     const type = searchParams.get("type"); // 'income' or 'expense'
@@ -89,6 +91,53 @@ export async function GET(request) {
       params.push(offset);
     }
 
+    if (demo) {
+      return Response.json({
+        transactions: [
+          {
+            id: "demo-tx-1",
+            title: "Salaire",
+            description: "Salaire mensuel",
+            amount: 300000,
+            currency: "FCFA",
+            type: "income",
+            reference_number: "OWO-DEMO-001",
+            transaction_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            is_ai_categorized: false,
+            ai_confidence_score: null,
+            category_name: "Salaire",
+            category_color: "#22c55e",
+            category_icon: "briefcase",
+            provider_name: null,
+            provider_phone: null,
+          },
+          {
+            id: "demo-tx-2",
+            title: "Supermarché",
+            description: "Courses",
+            amount: -45000,
+            currency: "FCFA",
+            type: "expense",
+            reference_number: "OWO-DEMO-002",
+            transaction_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+            is_ai_categorized: true,
+            ai_confidence_score: 0.88,
+            category_name: "Alimentation",
+            category_color: "#f97316",
+            category_icon: "shopping-cart",
+            provider_name: "MTN",
+            provider_phone: "+229 90 00 00 00",
+          },
+        ],
+        pagination: {
+          total: 2,
+          limit,
+          offset,
+          hasMore: false,
+        },
+      });
+    }
+
     const transactions = await sql(query, params);
 
     // Get total count for pagination
@@ -149,6 +198,20 @@ export async function GET(request) {
     });
   } catch (error) {
     console.error("Error fetching transactions:", error);
+    if (isMissingDatabaseError(error)) {
+      return Response.json(
+        {
+          transactions: [],
+          pagination: {
+            total: 0,
+            limit: 50,
+            offset: 0,
+            hasMore: false,
+          },
+        },
+        { status: 200 },
+      );
+    }
     return Response.json(
       { error: "Failed to fetch transactions" },
       { status: 500 },

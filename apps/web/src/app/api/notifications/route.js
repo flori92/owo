@@ -1,11 +1,47 @@
 import sql from "@/app/api/utils/sql.js";
 import { auth } from "@/auth.js";
+import { isDemoRequest, isMissingDatabaseError } from "@/app/api/utils/demo.js";
 
 export async function GET(request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const demo = isDemoRequest(request);
+    const session = demo ? null : await auth();
+    if (!demo && !session?.user?.id) {
       return Response.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    if (demo) {
+      const demoNotifications = [
+        {
+          id: "demo-notif-1",
+          type: "transaction_completed",
+          title: "Transaction complétée ",
+          message: "Votre dépôt de 25 000 FCFA a été traité avec succès.",
+          data: { amount: 25000, currency: "FCFA" },
+          isRead: false,
+          priority: "high",
+          actionUrl: "/transactions",
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        },
+        {
+          id: "demo-notif-2",
+          type: "rate_alert",
+          title: "Alerte de taux ",
+          message: "Le taux EUR/XOF a atteint 655.9.",
+          data: { fromCurrency: "EUR", toCurrency: "XOF", rate: 655.9 },
+          isRead: true,
+          priority: "low",
+          actionUrl: "/currency",
+          createdAt: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
+        },
+      ];
+
+      return Response.json({
+        success: true,
+        notifications: demoNotifications,
+        unreadCount: demoNotifications.filter((n) => !n.isRead).length,
+        hasMore: false,
+      });
     }
 
     const { searchParams } = new URL(request.url);
@@ -56,6 +92,17 @@ export async function GET(request) {
     });
   } catch (error) {
     console.error("Erreur récupération notifications:", error);
+    if (isMissingDatabaseError(error)) {
+      return Response.json(
+        {
+          success: true,
+          notifications: [],
+          unreadCount: 0,
+          hasMore: false,
+        },
+        { status: 200 },
+      );
+    }
     return Response.json(
       {
         error: "Erreur lors de la récupération des notifications",
@@ -67,12 +114,17 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const demo = isDemoRequest(request);
+    const session = demo ? null : await auth();
+    if (!demo && !session?.user?.id) {
       return Response.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { action, data } = await request.json();
+
+    if (demo) {
+      return Response.json({ success: true, message: "OK (demo)" });
+    }
 
     switch (action) {
       case "mark-read":
@@ -91,6 +143,9 @@ export async function POST(request) {
     }
   } catch (error) {
     console.error("Erreur API notifications:", error);
+    if (isMissingDatabaseError(error)) {
+      return Response.json({ success: true, message: "OK (no-db)" }, { status: 200 });
+    }
     return Response.json(
       {
         error: "Erreur lors de l'opération notification",

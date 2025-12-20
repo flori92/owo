@@ -1,11 +1,34 @@
 import sql from "@/app/api/utils/sql.js";
 import { auth } from "@/auth.js";
+import { isDemoRequest, isMissingDatabaseError } from "@/app/api/utils/demo.js";
 
 export async function GET(request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const demo = isDemoRequest(request);
+    const session = demo ? null : await auth();
+    if (!demo && !session?.user?.id) {
       return Response.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    if (demo) {
+      return Response.json({
+        success: true,
+        profile: {
+          id: "demo-user",
+          name: "Utilisateur Démo",
+          email: "demo@owo-app.com",
+          currency: "FCFA",
+          language: "fr",
+          timezone: "Africa/Porto-Novo",
+          notifications_enabled: true,
+          biometric_enabled: false,
+          dark_mode_enabled: false,
+          monthly_budget: 250000,
+          first_name: "Demo",
+          last_name: "User",
+          country: "Benin",
+        },
+      });
     }
 
     // Récupérer les informations utilisateur complètes
@@ -51,6 +74,21 @@ export async function GET(request) {
     });
   } catch (error) {
     console.error("Erreur récupération profil:", error);
+    if (isMissingDatabaseError(error)) {
+      return Response.json(
+        {
+          success: true,
+          profile: {
+            id: "demo-user",
+            name: "Utilisateur",
+            email: "user@owo-app.com",
+            currency: "FCFA",
+            language: "fr",
+          },
+        },
+        { status: 200 },
+      );
+    }
     return Response.json(
       {
         error: "Erreur lors de la récupération du profil",
@@ -62,9 +100,17 @@ export async function GET(request) {
 
 export async function PUT(request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const demo = isDemoRequest(request);
+    const session = demo ? null : await auth();
+    if (!demo && !session?.user?.id) {
       return Response.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    if (demo) {
+      return Response.json({
+        success: true,
+        message: "Profil mis à jour avec succès (demo)",
+      });
     }
 
     const {
@@ -181,6 +227,15 @@ export async function PUT(request) {
     });
   } catch (error) {
     console.error("Erreur mise à jour profil:", error);
+    if (isMissingDatabaseError(error)) {
+      return Response.json(
+        {
+          success: true,
+          message: "Profil mis à jour avec succès (no-db)",
+        },
+        { status: 200 },
+      );
+    }
     return Response.json(
       {
         error: "Erreur lors de la mise à jour du profil",

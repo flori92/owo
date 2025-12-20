@@ -1,11 +1,74 @@
 import sql from "@/app/api/utils/sql";
+import { isDemoRequest, isMissingDatabaseError } from "@/app/api/utils/demo.js";
 
 // GET /api/statistics - Get financial statistics for a user
 export async function GET(request) {
   try {
+    const demo = isDemoRequest(request);
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId") || 1; // Default to test user
     const period = searchParams.get("period") || "month"; // 'week', 'month', 'quarter', 'year'
+
+    if (demo) {
+      const now = new Date();
+      const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      return Response.json({
+        period,
+        dateRange: {
+          startDate: startDate.toISOString(),
+          endDate: now.toISOString(),
+        },
+        summary: {
+          totalIncome: 300000,
+          totalExpenses: 45000,
+          netSavings: 255000,
+          totalBalance: 9000,
+          incomeTransactions: 1,
+          expenseTransactions: 1,
+        },
+        categories: [
+          {
+            id: 1,
+            name: "Alimentation",
+            color: "#f97316",
+            icon: "shopping-cart",
+            amount: 45000,
+            percentage: 100,
+            transactions: 1,
+            avgAmount: 45000,
+            trend: "+5%",
+          },
+        ],
+        weeklyTrend: [
+          { week: "S1", income: 300000, expenses: 0 },
+          { week: "S2", income: 0, expenses: 45000 },
+          { week: "S3", income: 0, expenses: 0 },
+          { week: "S4", income: 0, expenses: 0 },
+        ],
+        savingsGoal: {
+          title: "Objectif: Fonds d'urgence",
+          targetAmount: 500000,
+          currentAmount: 125000,
+          progress: 25,
+          targetDate: new Date(now.getFullYear(), now.getMonth() + 6, 1).toISOString(),
+          isCompleted: false,
+        },
+        aiInsights: [
+          {
+            type: "spending_alert",
+            title: "Dépenses Alimentation",
+            description: "Vous avez dépensé 45 000 FCFA en alimentation ce mois-ci.",
+            priority: "medium",
+            category: "Alimentation",
+            amount: 45000,
+            createdAt: now.toISOString(),
+          },
+        ],
+        accountBalances: [
+          { provider: "OWO", balance: 9000, currency: "EUR", phoneNumber: null },
+        ],
+      });
+    }
 
     // Calculate date range based on period
     const now = new Date();
@@ -240,6 +303,28 @@ export async function GET(request) {
     return Response.json(response);
   } catch (error) {
     console.error("Error fetching statistics:", error);
+    if (isMissingDatabaseError(error)) {
+      return Response.json(
+        {
+          period,
+          dateRange: null,
+          summary: {
+            totalIncome: 0,
+            totalExpenses: 0,
+            netSavings: 0,
+            totalBalance: 0,
+            incomeTransactions: 0,
+            expenseTransactions: 0,
+          },
+          categories: [],
+          weeklyTrend: [],
+          savingsGoal: null,
+          aiInsights: [],
+          accountBalances: [],
+        },
+        { status: 200 },
+      );
+    }
     return Response.json(
       { error: "Failed to fetch statistics" },
       { status: 500 },
