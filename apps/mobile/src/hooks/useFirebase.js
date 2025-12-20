@@ -93,7 +93,39 @@ export function useWallets(userId) {
   const [error, setError] = useState(null);
 
   const fetchWallets = useCallback(async () => {
+    const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
     if (!userId) {
+      if (AUTH_BYPASS) {
+        // Compte de test (démo) pour garantir des écrans fonctionnels en bypass.
+        setWallets([
+          {
+            id: 'demo-mm-mtn',
+            $id: 'demo-mm-mtn',
+            userId: 'demo',
+            type: 'mobile_money',
+            provider: 'MTN Mobile Money',
+            currency: 'EUR',
+            balance: 755.75,
+            status: 'active',
+            isPrimary: false,
+          },
+          {
+            id: 'demo-main-eur',
+            $id: 'demo-main-eur',
+            userId: 'demo',
+            type: 'main',
+            provider: 'Compte Principal',
+            currency: 'EUR',
+            balance: 9000,
+            status: 'active',
+            isPrimary: true,
+          },
+        ]);
+        setError(null);
+        setLoading(false);
+        return;
+      }
+
       setWallets([]);
       setError(null);
       setLoading(false);
@@ -151,7 +183,44 @@ export function useTransactions(userId, limit = 20) {
   const [error, setError] = useState(null);
 
   const fetchTransactions = useCallback(async () => {
+    const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
     if (!userId) {
+      if (AUTH_BYPASS) {
+        const now = Date.now();
+        setTransactions([
+          {
+            id: 'demo-tx-1',
+            $id: 'demo-tx-1',
+            userId: 'demo',
+            type: 'receive',
+            amount: 120,
+            description: 'Salaire',
+            createdAt: now - 1000 * 60 * 60 * 24 * 2,
+          },
+          {
+            id: 'demo-tx-2',
+            $id: 'demo-tx-2',
+            userId: 'demo',
+            type: 'send',
+            amount: 35.5,
+            description: 'Courses',
+            createdAt: now - 1000 * 60 * 60 * 24,
+          },
+          {
+            id: 'demo-tx-3',
+            $id: 'demo-tx-3',
+            userId: 'demo',
+            type: 'payment',
+            amount: 12.9,
+            description: 'Abonnement',
+            createdAt: now - 1000 * 60 * 60 * 6,
+          },
+        ].slice(0, limit));
+        setError(null);
+        setLoading(false);
+        return;
+      }
+
       setTransactions([]);
       setError(null);
       setLoading(false);
@@ -192,7 +261,24 @@ export function useNotifications(userId) {
   const [loading, setLoading] = useState(true);
 
   const fetchNotifications = useCallback(async () => {
+    const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
     if (!userId) {
+      if (AUTH_BYPASS) {
+        setNotifications([
+          {
+            id: 'demo-notif-1',
+            $id: 'demo-notif-1',
+            title: 'Bienvenue sur owo!',
+            body: 'Mode démo activé. Certaines données sont simulées.',
+            read: false,
+            createdAt: Date.now() - 1000 * 60 * 60,
+          },
+        ]);
+        setUnreadCount(1);
+        setLoading(false);
+        return;
+      }
+
       setNotifications([]);
       setUnreadCount(0);
       setLoading(false);
@@ -236,7 +322,21 @@ export function useProfile(userId) {
   const [error, setError] = useState(null);
 
   const fetchProfile = useCallback(async () => {
+    const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
     if (!userId) {
+      if (AUTH_BYPASS) {
+        setProfile({
+          id: 'demo',
+          userId: 'demo',
+          displayName: 'Floriace',
+          email: 'demo@owo.app',
+          createdAt: Date.now(),
+        });
+        setError(null);
+        setLoading(false);
+        return;
+      }
+
       setProfile(null);
       setError(null);
       setLoading(false);

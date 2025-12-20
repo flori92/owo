@@ -104,6 +104,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="transactions-new"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="savings-new"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="qr-scanner-new"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="connect-bank"
         options={{
           href: null, // Hidden from tab bar, accessible via router.push()
