@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,13 +10,6 @@ import {
   ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFonts } from "@expo-google-fonts/inter";
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
 import { router } from "expo-router";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as Crypto from "expo-crypto";
@@ -24,7 +17,6 @@ import { useTheme } from "@/utils/useTheme";
 import { useAuth } from "@/hooks/useFirebase";
 import { loginWithGoogle, loginWithApple, resetPassword } from "@/lib/firebase";
 import ScreenContainer from "@/components/ScreenContainer";
-import LoadingScreen from "@/components/LoadingScreen";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
 import { SocialAuthButton, SocialAuthDivider } from "@/components/SocialAuthButton";
@@ -55,21 +47,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [fontFallback, setFontFallback] = useState(false);
 
   const { login, loading } = useAuth();
-
-  const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-  });
-
-  useEffect(() => {
-    const t = setTimeout(() => setFontFallback(true), 2000);
-    return () => clearTimeout(t);
-  }, []);
 
   const handleLogin = async () => {
     // Valider les champs avec Yup
@@ -227,10 +206,6 @@ export default function LoginScreen() {
       Alert.alert("Erreur", "Une erreur est survenue");
     }
   };
-
-  if (!fontsLoaded && !fontFallback) {
-    return <LoadingScreen />;
-  }
 
   return (
     <ScreenContainer>

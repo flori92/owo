@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,18 +10,10 @@ import {
   ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  useFonts,
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
 import { useAuth } from "@/hooks/useFirebase";
 import ScreenContainer from "@/components/ScreenContainer";
-import LoadingScreen from "@/components/LoadingScreen";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
 import { registerSchema, validateForm } from "@/utils/validation";
@@ -36,21 +28,8 @@ export default function RegisterScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [fontFallback, setFontFallback] = useState(false);
 
   const { createAccount, loading } = useAuth();
-
-  const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-  });
-
-  useEffect(() => {
-    const t = setTimeout(() => setFontFallback(true), 2000);
-    return () => clearTimeout(t);
-  }, []);
 
   const handleRegister = async () => {
     // Valider les champs avec Yup
@@ -97,10 +76,6 @@ export default function RegisterScreen() {
       setIsSubmitting(false);
     }
   };
-
-  if (!fontsLoaded && !fontFallback) {
-    return <LoadingScreen />;
-  }
 
   return (
     <ScreenContainer>
