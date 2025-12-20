@@ -46,13 +46,26 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+const isFirebaseConfigured = Boolean(
+  firebaseConfig.apiKey &&
+    firebaseConfig.authDomain &&
+    firebaseConfig.projectId &&
+    firebaseConfig.appId,
+);
+
 // Initialiser Firebase une seule fois
 let app = null;
 let auth = null;
 let db = null;
 let storage = null;
 
-if (getApps().length === 0) {
+if (!isFirebaseConfigured) {
+  if (__DEV__) {
+    console.warn(
+      '⚠️ Firebase désactivé: variables EXPO_PUBLIC_FIREBASE_* manquantes (mode démo).',
+    );
+  }
+} else if (getApps().length === 0) {
   // Première initialisation
   try {
     app = initializeApp(firebaseConfig);
