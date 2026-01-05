@@ -5,6 +5,9 @@
 .env
 .env.*
 .env.local
+.secrets.local
+.secrets
+secrets.local
 .env.development.local
 .env.test.local
 .env.production.local
