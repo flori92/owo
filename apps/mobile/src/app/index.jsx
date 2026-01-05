@@ -24,10 +24,10 @@ export default function Index() {
     return () => clearTimeout(t);
   }, [loading]);
 
-  console.log('📱 Index: loading=', loading, 'isReady=', isReady, 'user=', user?.email);
+  if (__DEV__) console.log('📱 Index: loading=', loading, 'isReady=', isReady, 'user=', user?.email);
 
   if (!isReady || (loading && !ignoreFirebaseLoading)) {
-    console.log('📱 Index: Affichage écran de chargement');
+    if (__DEV__) console.log('📱 Index: Affichage écran de chargement');
     return (
       <View
         style={{
@@ -51,15 +51,15 @@ export default function Index() {
   }
 
   if (AUTH_BYPASS) {
-    console.log('📱 Index: AUTH_BYPASS actif, redirection vers home');
+    if (__DEV__) console.log('📱 Index: AUTH_BYPASS actif, redirection vers home');
     return <Redirect href="/(tabs)/home" />;
   }
 
   if (user) {
-    console.log('📱 Index: Utilisateur connecté, redirection vers home');
+    if (__DEV__) console.log('📱 Index: Utilisateur connecté, redirection vers home');
     return <Redirect href="/(tabs)/home" />;
   }
 
-  console.log('📱 Index: Redirection vers login');
+  if (__DEV__) console.log('📱 Index: Redirection vers login');
   return <Redirect href="/auth/login" />;
 }

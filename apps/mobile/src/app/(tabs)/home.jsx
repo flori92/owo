@@ -34,7 +34,7 @@ import { SavingsSection } from "@/components/Dashboard/SavingsSection";
 import useHaptics from "@/hooks/useHaptics";
 
 export default function DashboardScreen() {
-  console.log('🏠 Home: Rendu du composant');
+  if (__DEV__) console.log('🏠 Home: Rendu du composant');
   
   // Require authentication to access this screen
   useRequireAuth();
@@ -54,14 +54,14 @@ export default function DashboardScreen() {
   const { notifications, unreadCount } = useNotifications(user?.uid);
   const { lockedSavings, totalSaved, loading: savingsLoading } = useSavingsGoals(user?.uid);
 
-  console.log('🏠 Home: userLoading=', userLoading, 'profileLoading=', profileLoading, 'walletsLoading=', walletsLoading);
+  if (__DEV__) console.log('🏠 Home: userLoading=', userLoading, 'profileLoading=', profileLoading, 'walletsLoading=', walletsLoading);
 
   // Migration automatique des données (une seule fois)
   const [migrationDone, setMigrationDone] = useState(false);
   
   useEffect(() => {
     if (TRIGGER_MIGRATION && !AUTH_BYPASS && user && !migrationDone) {
-      console.log('🔄 Démarrage de la migration...');
+      if (__DEV__) console.log('🔄 Démarrage de la migration...');
       migrateDataToFirestore()
         .then((result) => {
           if (result.success) {
@@ -248,14 +248,14 @@ export default function DashboardScreen() {
     },
   ];
 
-  console.log('🏠 Home: fontsLoaded=', fontsLoaded, 'userLoading=', userLoading, 'profileLoading=', profileLoading);
+  if (__DEV__) console.log('🏠 Home: fontsLoaded=', fontsLoaded, 'userLoading=', userLoading, 'profileLoading=', profileLoading);
   
   if (userLoading || profileLoading) {
-    console.log('🏠 Home: Affichage LoadingScreen');
+    if (__DEV__) console.log('🏠 Home: Affichage LoadingScreen');
     return <LoadingScreen />;
   }
   
-  console.log('🏠 Home: Affichage du dashboard');
+  if (__DEV__) console.log('🏠 Home: Affichage du dashboard');
 
   return (
     <ScreenContainer>
