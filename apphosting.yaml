@@ -18,15 +18,19 @@ runConfig:
 
 env:
   # Variables d'environnement pour le build et le runtime
+  # Ces valeurs doivent être configurées via Firebase App Hosting secrets
+  # Voir: https://firebase.google.com/docs/app-hosting/configure#secrets
   - variable: VITE_FIREBASE_PROJECT_ID
-    value: owo-631ab
+    secret: FIREBASE_PROJECT_ID
+  - variable: VITE_FIREBASE_API_KEY
+    secret: FIREBASE_API_KEY
   - variable: VITE_FIREBASE_AUTH_DOMAIN
-    value: owo-631ab.firebaseapp.com
+    secret: FIREBASE_AUTH_DOMAIN
   - variable: VITE_FIREBASE_STORAGE_BUCKET
-    value: owo-631ab.appspot.com
+    secret: FIREBASE_STORAGE_BUCKET
   - variable: VITE_FIREBASE_MESSAGING_SENDER_ID
-    value: "647650316598"
+    secret: FIREBASE_MESSAGING_SENDER_ID
   - variable: VITE_FIREBASE_APP_ID
-    value: "1:647650316598:web:77c5a5f6c240387a61e397"
+    secret: FIREBASE_APP_ID
   - variable: VITE_FIREBASE_MEASUREMENT_ID
-    value: G-1SJPF2FKSQ
+    secret: FIREBASE_MEASUREMENT_ID
