@@ -1,435 +1,237 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   Alert,
+  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import * as AppleAuthentication from "expo-apple-authentication";
-import * as Crypto from "expo-crypto";
-import { useTheme } from "@/utils/useTheme";
 import { useAuth } from "@/hooks/useFirebase";
-import { loginWithGoogle, loginWithApple, resetPassword } from "@/lib/firebase";
-import ScreenContainer from "@/components/ScreenContainer";
-import HeaderBar from "@/components/HeaderBar";
-import ActionButton from "@/components/ActionButton";
-import { SocialAuthButton, SocialAuthDivider } from "@/components/SocialAuthButton";
-import { loginSchema, validateForm } from "@/utils/validation";
-
-const getGoogleSignin = () => {
-  try {
-    // En Expo Go, le module natif RNGoogleSignin n'est pas disponible.
-    // On charge dynamiquement pour éviter un crash à l'import.
-    // eslint-disable-next-line global-require
-    const mod = require('@react-native-google-signin/google-signin');
-    const gs = mod?.GoogleSignin;
-    if (!gs) return null;
-    gs.configure({
-      webClientId: "647650316598-n1nojrun3ki4veveslgvsrtjrsmaurr5.apps.googleusercontent.com",
-      iosClientId: "647650316598-n1nojrun3ki4veveslgvsrtjrsmaurr5.apps.googleusercontent.com",
-    });
-    return gs;
-  } catch (e) {
-    return null;
-  }
-};
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
-  const theme = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { login, loading } = useAuth();
-
-  useEffect(() => {
-    console.log('📱 Login: mounted');
-  }, []);
+  const { login } = useAuth();
 
   const handleLogin = async () => {
-    // Valider les champs avec Yup
-    const validation = await validateForm(loginSchema, { email, password });
-
-    if (!validation.valid) {
-      const firstError = Object.values(validation.errors)[0];
-      Alert.alert("Erreur de validation", firstError);
+    if (!email || !password) {
+      Alert.alert("Erreur", "Veuillez remplir tous les champs");
       return;
     }
 
-    setIsSubmitting(true);
-
+    setIsLoading(true);
     try {
       const result = await login(email, password);
-
       if (result.success) {
-        Alert.alert(
-          "Succès",
-          "Connexion réussie!",
-          [
-            {
-              text: "OK",
-              onPress: () => {
-                router.replace("/(tabs)/");
-              },
-            },
-          ]
-        );
+        router.replace("/(tabs)/home");
       } else {
         Alert.alert("Erreur", result.error || "Échec de la connexion");
       }
     } catch (error) {
-      if (__DEV__) {
-        console.error("Login error:", error);
-      }
-      Alert.alert("Erreur", "Impossible de se connecter. Veuillez réessayer.");
+      Alert.alert("Erreur", "Impossible de se connecter");
     } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Connexion Google
-  const handleGoogleLogin = async () => {
-    try {
-      setIsSubmitting(true);
-
-      const GoogleSignin = getGoogleSignin();
-      if (!GoogleSignin) {
-        Alert.alert(
-          "Indisponible",
-          "Connexion Google indisponible dans Expo Go. Utilise email/mot de passe ou lance une Dev Build."
-        );
-        return;
-      }
-      
-      // Vérifier si Google Play Services est disponible (Android)
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      
-      // Connexion Google
-      const userInfo = await GoogleSignin.signIn();
-      const idToken = userInfo.data?.idToken || userInfo.idToken;
-      
-      if (!idToken) {
-        throw new Error("Impossible d'obtenir le token Google");
-      }
-      
-      // Connexion Firebase avec le token Google
-      const result = await loginWithGoogle(idToken);
-      
-      if (result.success) {
-        router.replace("/(tabs)/");
-      } else {
-        Alert.alert("Erreur", result.error || "Échec de la connexion Google");
-      }
-    } catch (error) {
-      if (__DEV__) {
-        console.error("Google Sign-In error:", error);
-      }
-      
-      // Ignorer l'erreur si l'utilisateur a annulé
-      if (error.code !== "SIGN_IN_CANCELLED" && error.code !== "-5") {
-        Alert.alert("Erreur", "Impossible de se connecter avec Google");
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Connexion Apple
-  const handleAppleLogin = async () => {
-    try {
-      setIsSubmitting(true);
-      
-      // Générer un nonce aléatoire pour la sécurité
-      const nonce = Math.random().toString(36).substring(2, 15);
-      const hashedNonce = await Crypto.digestStringAsync(
-        Crypto.CryptoDigestAlgorithm.SHA256,
-        nonce
-      );
-      
-      // Lancer la connexion Apple
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-        nonce: hashedNonce,
-      });
-      
-      if (!credential.identityToken) {
-        throw new Error("Impossible d'obtenir le token Apple");
-      }
-      
-      // Connexion Firebase avec le token Apple
-      const result = await loginWithApple(credential.identityToken, nonce);
-      
-      if (result.success) {
-        router.replace("/(tabs)/");
-      } else {
-        Alert.alert("Erreur", result.error || "Échec de la connexion Apple");
-      }
-    } catch (error) {
-      if (__DEV__) {
-        console.error("Apple Sign-In error:", error);
-      }
-      
-      // Ignorer l'erreur si l'utilisateur a annulé
-      if (error.code !== "ERR_CANCELED") {
-        Alert.alert("Erreur", "Impossible de se connecter avec Apple");
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Réinitialisation du mot de passe
-  const handleForgotPassword = async () => {
-    if (!email) {
-      Alert.alert("Info", "Veuillez entrer votre email pour réinitialiser votre mot de passe");
-      return;
-    }
-    
-    try {
-      const result = await resetPassword(email);
-      if (result.success) {
-        Alert.alert(
-          "Email envoyé",
-          "Un email de réinitialisation a été envoyé à " + email
-        );
-      } else {
-        Alert.alert("Erreur", result.error || "Impossible d'envoyer l'email");
-      }
-    } catch (error) {
-      Alert.alert("Erreur", "Une erreur est survenue");
+      setIsLoading(false);
     }
   };
 
   return (
-    <ScreenContainer style={{ backgroundColor: theme.colors.background }}>
-      <HeaderBar title="Connexion" showBack={false} />
-
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingHorizontal: 24,
-            paddingVertical: 32,
-            paddingBottom: insets.bottom + 100,
-          }}
-          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          {/* Logo/Title */}
-          <View style={{ alignItems: "center", marginBottom: 48 }}>
-            <View
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: 16,
-                backgroundColor: theme.colors.primary,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontWeight: "bold",
-                  color: "white",
-                }}
-              >
-                owo!
-              </Text>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <View style={styles.logo}>
+              <Text style={styles.logoText}>owo!</Text>
             </View>
-            <Text
-              style={{
-                fontFamily: "Inter_700Bold",
-                fontSize: 24,
-                color: theme.colors.primary,
-              }}
-            >
-              owo!
-            </Text>
-            <Text
-              style={{
-                fontFamily: "Inter_400Regular",
-                fontSize: 14,
-                color: theme.colors.textSecondary,
-                marginTop: 4,
-              }}
-            >
-              Votre finance, simplifiée
-            </Text>
+            <Text style={styles.title}>Bienvenue</Text>
+            <Text style={styles.subtitle}>Connectez-vous à votre compte</Text>
           </View>
 
-          {/* Email Input */}
-          <View style={{ marginBottom: 20 }}>
-            <Text
-              style={{
-                fontFamily: "Inter_600SemiBold",
-                fontSize: 16,
-                color: theme.colors.text,
-                marginBottom: 8,
-              }}
-            >
-              Email
-            </Text>
+          {/* Form */}
+          <View style={styles.form}>
+            <Text style={styles.label}>Email</Text>
             <TextInput
-              style={{
-                backgroundColor: theme.colors.elevated,
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 16,
-                fontSize: 16,
-                color: theme.colors.text,
-                fontFamily: "Inter_400Regular",
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-              }}
+              style={styles.input}
               placeholder="votre@email.com"
-              placeholderTextColor={theme.colors.textSecondary}
+              placeholderTextColor="#888"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
             />
-          </View>
 
-          {/* Password Input */}
-          <View style={{ marginBottom: 32 }}>
-            <Text
-              style={{
-                fontFamily: "Inter_600SemiBold",
-                fontSize: 16,
-                color: theme.colors.text,
-                marginBottom: 8,
-              }}
-            >
-              Mot de passe
-            </Text>
-            <View style={{ position: "relative" }}>
+            <Text style={styles.label}>Mot de passe</Text>
+            <View style={styles.passwordContainer}>
               <TextInput
-                style={{
-                  backgroundColor: theme.colors.elevated,
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 16,
-                  fontSize: 16,
-                  color: theme.colors.text,
-                  fontFamily: "Inter_400Regular",
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                }}
+                style={styles.passwordInput}
                 placeholder="••••••••"
-                placeholderTextColor={theme.colors.textSecondary}
+                placeholderTextColor="#888"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
                 autoComplete="password"
               />
               <TouchableOpacity
+                style={styles.showPassword}
                 onPress={() => setShowPassword(!showPassword)}
-                style={{
-                  position: "absolute",
-                  right: 16,
-                  top: 16,
-                  padding: 4,
-                }}
               >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: theme.colors.primary,
-                    fontFamily: "Inter_500Medium",
-                  }}
-                >
+                <Text style={styles.showPasswordText}>
                   {showPassword ? "Cacher" : "Voir"}
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
 
-          {/* Forgot Password */}
-          <TouchableOpacity
-            style={{ marginBottom: 32 }}
-            onPress={handleForgotPassword}
-          >
-            <Text
-              style={{
-                fontFamily: "Inter_500Medium",
-                fontSize: 14,
-                color: theme.colors.primary,
-                textAlign: "center",
-              }}
+            <TouchableOpacity
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={isLoading}
             >
-              Mot de passe oublié ?
-            </Text>
-          </TouchableOpacity>
-
-          {/* Login Button */}
-          <ActionButton
-            title={isSubmitting ? "Connexion..." : "Se connecter"}
-            onPress={handleLogin}
-            disabled={isSubmitting || loading || !email || !password}
-          />
-
-          {/* Social Login Divider */}
-          <SocialAuthDivider />
-
-          {/* Social Login Buttons */}
-          <View style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}>
-            <SocialAuthButton
-              provider="google"
-              onPress={handleGoogleLogin}
-              disabled={isSubmitting}
-              loading={isSubmitting && email === ""}
-            />
-            
-            <SocialAuthButton
-              provider="apple"
-              onPress={handleAppleLogin}
-              disabled={isSubmitting}
-              loading={isSubmitting && email === ""}
-            />
-          </View>
-
-          {/* Sign Up Link */}
-          <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 24 }}>
-            <Text
-              style={{
-                fontFamily: "Inter_400Regular",
-                fontSize: 14,
-                color: theme.colors.textSecondary,
-              }}
-            >
-              Pas encore de compte ?{" "}
-            </Text>
-            <TouchableOpacity onPress={() => router.push("/auth/register")}>
-              <Text
-                style={{
-                  fontFamily: "Inter_600SemiBold",
-                  fontSize: 14,
-                  color: theme.colors.primary,
-                }}
-              >
-                S'inscrire
-              </Text>
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Se connecter</Text>
+              )}
             </TouchableOpacity>
+
+            <View style={styles.registerContainer}>
+              <Text style={styles.registerText}>Pas encore de compte ? </Text>
+              <TouchableOpacity onPress={() => router.push("/auth/register")}>
+                <Text style={styles.registerLink}>S'inscrire</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </ScreenContainer>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#1a1a2e",
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 40,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 48,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
+    backgroundColor: "#6C5CE7",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  logoText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#888",
+  },
+  form: {
+    flex: 1,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: "#2d2d44",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    fontSize: 16,
+    color: "#fff",
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#3d3d5c",
+  },
+  passwordContainer: {
+    position: "relative",
+    marginBottom: 32,
+  },
+  passwordInput: {
+    backgroundColor: "#2d2d44",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingRight: 70,
+    fontSize: 16,
+    color: "#fff",
+    borderWidth: 1,
+    borderColor: "#3d3d5c",
+  },
+  showPassword: {
+    position: "absolute",
+    right: 16,
+    top: 16,
+  },
+  showPasswordText: {
+    color: "#6C5CE7",
+    fontWeight: "500",
+  },
+  button: {
+    backgroundColor: "#6C5CE7",
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  registerContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  registerText: {
+    color: "#888",
+    fontSize: 14,
+  },
+  registerLink: {
+    color: "#6C5CE7",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+});
