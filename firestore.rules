@@ -85,11 +85,13 @@ service cloud.firestore {
       // Création : uniquement pour soi-même avec validation
       allow create: if isAuthenticated() &&
                        request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.balance == 0 &&
                        isValidWallet(request.resource.data);
 
       // Mise à jour : uniquement ses propres wallets avec validation
       allow update: if isAuthenticated() &&
                        resource.data.userId == request.auth.uid &&
+                       request.resource.data.balance == resource.data.balance &&
                        isValidWallet(request.resource.data);
 
       // Suppression : uniquement ses propres wallets (avec balance = 0)
@@ -125,10 +127,9 @@ service cloud.firestore {
       allow read: if isAuthenticated() &&
                      resource.data.userId == request.auth.uid;
 
-      // Création : uniquement pour soi-même avec validation complète
-      allow create: if isAuthenticated() &&
-                       request.resource.data.userId == request.auth.uid &&
-                       isValidTransaction(request.resource.data);
+      // Toute transaction financière passe par l'API autoritative.
+      // Le SDK Admin du backend n'est pas soumis aux règles clientes.
+      allow create: if false;
 
       // Mise à jour : non autorisée (transactions immuables)
       allow update: if false;

@@ -4,12 +4,12 @@ import {
   Shield,
   Smartphone,
   HelpCircle,
-  MessageCircle,
-  Star,
   Moon,
   Globe,
   Users,
   Lock,
+  Settings,
+  FileText,
 } from "lucide-react-native";
 
 export function getMenuSections({
@@ -37,6 +37,13 @@ export function getMenuSections({
           subtitle: "Nom, email, téléphone",
           icon: User,
           onPress: () => setEditModalVisible(true),
+        },
+        {
+          id: "account-settings",
+          title: "Compte et sécurité",
+          subtitle: "Confidentialité et suppression du compte",
+          icon: Settings,
+          onPress: () => router.push("/account-settings"),
         },
         {
           id: "mobile-money",
@@ -119,24 +126,14 @@ export function getMenuSections({
           title: "Centre d'aide",
           subtitle: "FAQ et guides",
           icon: HelpCircle,
-          onPress: () => router.push("/help"),
+          onPress: () => router.push("/support"),
         },
         {
-          id: "feedback",
-          title: "Donner son avis",
-          subtitle: "Partagez vos suggestions",
-          icon: MessageCircle,
-          onPress: () => router.push("/feedback"),
-        },
-        {
-          id: "rate",
-          title: "Noter l'application",
-          subtitle: "Aidez-nous à nous améliorer",
-          icon: Star,
-          onPress: () => {
-            const { Alert } = require("react-native");
-            Alert.alert("Merci!", "Redirection vers l'App Store...");
-          },
+          id: "legal",
+          title: "Confidentialité et conditions",
+          subtitle: "Consulter les documents légaux",
+          icon: FileText,
+          onPress: () => router.push("/legal"),
         },
       ],
     },

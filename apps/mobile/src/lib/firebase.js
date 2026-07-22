@@ -2,10 +2,12 @@
 // CONFIGURATION FIREBASE
 // ============================================
 import { initializeApp, getApps } from 'firebase/app';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   getAuth,
   initializeAuth,
-  inMemoryPersistence,
+  getReactNativePersistence,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -72,10 +74,10 @@ if (!isFirebaseConfigured) {
 
     try {
       auth = initializeAuth(app, {
-        persistence: inMemoryPersistence,
+        persistence: getReactNativePersistence(AsyncStorage),
       });
     } catch (error) {
-      auth = null;
+      auth = getAuth(app);
     }
 
     db = getFirestore(app);
@@ -172,8 +174,10 @@ export async function createAccount(email, password, name) {
     await setDoc(doc(db, COLLECTIONS.PROFILES, user.uid), {
       userId: user.uid,
       email,
+      name: name || email.split('@')[0],
       displayName: name || email.split('@')[0],
       phone: '',
+      currency: 'XOF',
       avatar: '',
       kycVerified: false,
       kycLevel: 0,
@@ -186,6 +190,7 @@ export async function createAccount(email, password, name) {
       name: 'Wallet Principal',
       type: 'main',
       provider: 'owo',
+      accountNumber: `OWO-${user.uid.slice(0, 12).toUpperCase()}`,
       balance: 0,
       currency: 'XOF',
       status: 'active',
@@ -193,18 +198,8 @@ export async function createAccount(email, password, name) {
       createdAt: serverTimestamp(),
     });
 
-    // Créer une notification de bienvenue
-    await addDoc(collection(db, COLLECTIONS.NOTIFICATIONS), {
-      userId: user.uid,
-      title: 'Bienvenue sur owo!',
-      message: 'Votre compte a été créé avec succès. Commencez par ajouter un mode de paiement.',
-      type: 'system',
-      read: false,
-      createdAt: serverTimestamp(),
-    });
-
     if (__DEV__) {
-      console.log('✅ Compte créé avec profil, wallet et notification');
+      console.log('Compte créé avec profil et portefeuille');
     }
 
     return {
@@ -273,6 +268,31 @@ export async function getCurrentUser() {
   }
 }
 
+export function subscribeToAuthChanges(onChange, onError) {
+  if (!auth) {
+    onChange(null);
+    return () => {};
+  }
+
+  return onAuthStateChanged(
+    auth,
+    (user) => {
+      onChange(
+        user
+          ? {
+              uid: user.uid,
+              $id: user.uid,
+              email: user.email,
+              name: user.displayName,
+              displayName: user.displayName,
+            }
+          : null,
+      );
+    },
+    onError,
+  );
+}
+
 /**
  * Connexion avec Google
  */
@@ -293,11 +313,32 @@ export async function loginWithGoogle(idToken) {
       await setDoc(profileRef, {
         userId: user.uid,
         email: user.email,
+        name: user.displayName || user.email?.split('@')[0] || 'Utilisateur',
         displayName: user.displayName,
+        phone: user.phoneNumber || '',
+        currency: 'XOF',
         photoURL: user.photoURL,
         provider: 'google',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+      });
+    }
+
+    const walletsSnapshot = await getDocs(
+      query(collection(db, COLLECTIONS.WALLETS), where('userId', '==', user.uid), limit(1)),
+    );
+    if (walletsSnapshot.empty) {
+      await addDoc(collection(db, COLLECTIONS.WALLETS), {
+        userId: user.uid,
+        name: 'Wallet Principal',
+        type: 'main',
+        provider: 'owo',
+        accountNumber: `OWO-${user.uid.slice(0, 12).toUpperCase()}`,
+        balance: 0,
+        currency: 'XOF',
+        status: 'active',
+        isPrimary: true,
+        createdAt: serverTimestamp(),
       });
     }
     
@@ -343,10 +384,31 @@ export async function loginWithApple(identityToken, nonce) {
       await setDoc(profileRef, {
         userId: user.uid,
         email: user.email,
+        name: user.displayName || 'Utilisateur Apple',
         displayName: user.displayName || 'Utilisateur Apple',
+        phone: user.phoneNumber || '',
+        currency: 'XOF',
         provider: 'apple',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+      });
+    }
+
+    const walletsSnapshot = await getDocs(
+      query(collection(db, COLLECTIONS.WALLETS), where('userId', '==', user.uid), limit(1)),
+    );
+    if (walletsSnapshot.empty) {
+      await addDoc(collection(db, COLLECTIONS.WALLETS), {
+        userId: user.uid,
+        name: 'Wallet Principal',
+        type: 'main',
+        provider: 'owo',
+        accountNumber: `OWO-${user.uid.slice(0, 12).toUpperCase()}`,
+        balance: 0,
+        currency: 'XOF',
+        status: 'active',
+        isPrimary: true,
+        createdAt: serverTimestamp(),
       });
     }
     
@@ -515,24 +577,6 @@ export async function getTransactions(userId, limitCount = 20) {
       console.error('Erreur getTransactions Firebase:', error);
     }
     return { success: false, transactions: [] };
-  }
-}
-
-/**
- * Créer une transaction
- */
-export async function createTransaction(transactionData) {
-  try {
-    const docRef = await addDoc(collection(db, COLLECTIONS.TRANSACTIONS), {
-      ...transactionData,
-      createdAt: serverTimestamp(),
-    });
-    return { success: true, id: docRef.id, $id: docRef.id };
-  } catch (error) {
-    if (__DEV__) {
-      console.error('Erreur createTransaction Firebase:', error);
-    }
-    return { success: false, error: error.message };
   }
 }
 

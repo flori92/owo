@@ -93,7 +93,6 @@ export default function ProfileScreen() {
         onPress: async () => {
           try {
             await signOut();
-            router.replace("/account/signin");
           } catch (error) {
             console.error("Erreur déconnexion:", error);
             Alert.alert("Erreur", "Impossible de se déconnecter");
@@ -118,12 +117,14 @@ export default function ProfileScreen() {
     }
   };
 
-  // Mock stats - en production, ces données viendraient des APIs
+  const createdAt = userProfile?.createdAt?.toDate?.() || null;
   const userData = {
-    totalSavings: 66250,
-    goalProgress: 66,
-    mobileMoneyAccounts: 3,
-    joinDate: "Novembre 2024",
+    totalSavings: Number(userProfile?.totalSavings || 0),
+    goalProgress: Number(userProfile?.goalProgress || 0),
+    mobileMoneyAccounts: Number(userProfile?.mobileMoneyAccounts || 0),
+    joinDate: createdAt
+      ? createdAt.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+      : 'récemment',
   };
 
   const menuSections = getMenuSections({

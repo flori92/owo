@@ -1,183 +1,54 @@
-# Guide de Build EAS pour owo!
+# Construire et soumettre owo! avec EAS
 
-## ✅ Configuration terminée !
-
-Votre projet est maintenant configuré pour utiliser EAS Build. Voici les prochaines étapes :
-
-## 📱 Étape 1 : Se connecter à EAS
+## 1. Préparer l'environnement
 
 ```bash
-cd /Users/floriace/owo\!/owo/apps/mobile
-eas login
+cd apps/mobile
+npm ci
+cp .env.example .env.production
+# Remplir .env.production avec les valeurs réelles
+npm run release:check
 ```
 
-Utilisez votre compte Expo (email/password). Si vous n'en avez pas, créez-en un sur https://expo.dev
-
-## 🔨 Étape 2 : Créer votre premier build
-
-### Option A : Build pour TestFlight (Recommandé)
+Déclarez ensuite chaque variable `EXPO_PUBLIC_*` dans l'environnement `production` du projet EAS :
 
 ```bash
-eas build --platform ios --profile preview
+npx eas-cli@latest login
+npx eas-cli@latest env:create --environment production --name EXPO_PUBLIC_FIREBASE_API_KEY --value "..." --visibility sensitive
 ```
 
-**Durée** : 10-20 minutes  
-**Résultat** : Un fichier `.ipa` prêt pour TestFlight
+Répétez la commande pour les variables listées dans `.env.example`. Les clés privées, comptes de service et mots de passe ne doivent jamais utiliser le préfixe `EXPO_PUBLIC_`.
 
-### Option B : Build de développement
+Avant le build, déployez `apps/api` sur une URL HTTPS reliée à PostgreSQL, puis définissez `EXPO_PUBLIC_API_URL` avec cette URL dans les environnements EAS `preview` et `production`.
+
+## 2. Valider sur appareils
 
 ```bash
-eas build --platform ios --profile development
+npx eas-cli@latest build --platform all --profile preview
 ```
 
-**Durée** : 10-15 minutes  
-**Résultat** : Un build avec hot reload activé
+Le profil Android `preview` produit un APK installable. Le profil iOS `preview` produit un build interne destiné aux appareils enregistrés. Testez au minimum l'inscription, la reconnexion après redémarrage, le scan QR, les transactions, le support et la suppression de compte.
 
-## 📲 Étape 3 : Installer sur votre iPhone
-
-### Via TestFlight (Option A)
-
-1. Une fois le build terminé, téléchargez le fichier `.ipa` depuis le lien fourni
-2. Allez sur [App Store Connect](https://appstoreconnect.apple.com)
-3. Créez une nouvelle app si nécessaire :
-   - Bundle ID : `com.floriace.owo`
-   - Nom : owo!
-4. Uploadez le build via **Transporter** (app Mac) ou directement via le navigateur
-5. Dans **TestFlight**, ajoutez-vous comme testeur interne
-6. Sur votre iPhone, installez l'app **TestFlight** depuis l'App Store
-7. Acceptez l'invitation et installez owo!
-
-### Via Installation Directe (Option B)
-
-Si vous avez choisi le build de développement :
+## 3. Construire les binaires store
 
 ```bash
-# Après le build, récupérez l'URL du build
-# Scannez le QR code avec l'appareil photo de votre iPhone
-# Ou ouvrez le lien directement
+npm run build:production
 ```
 
-## 🔄 Étape 4 : Mettre à jour l'app
+EAS crée un AAB Android et une archive iOS. Les numéros de build sont gérés à distance et incrémentés automatiquement.
 
-Pour publier une nouvelle version :
+## 4. Soumettre en piste de test
 
 ```bash
-# 1. Mettez à jour la version dans app.json
-# 2. Commitez vos changements
-git add .
-git commit -m "Update to version X.X.X"
-
-# 3. Créez un nouveau build
-eas build --platform ios --profile preview
+npm run submit:production
 ```
 
-## 📋 Profils de build disponibles
+- Android est envoyé en piste `internal` avec une release brouillon.
+- iOS est envoyé à App Store Connect, puis doit être affecté à TestFlight.
+- Le premier upload Google Play doit généralement être initialisé dans Play Console avant l'automatisation par compte de service.
 
-### `development`
-- Hot reload activé
-- Debugging complet
-- Pour le développement quotidien
-- Nécessite Expo Dev Client
+## 5. Publier
 
-### `preview`
-- Build de production
-- Distribution via TestFlight
-- Idéal pour les tests avant release
-- Pas de hot reload
+Complétez les fiches store, la déclaration de confidentialité, les captures, les coordonnées de support, l'URL de suppression de compte et les notes de revue. Fournissez à Apple et Google un compte de démonstration fonctionnel si l'application exige une connexion.
 
-### `production`
-- Build final pour l'App Store
-- Optimisé et minifié
-- Distribution publique
-
-## 🚀 Commandes utiles
-
-```bash
-# Voir l'état de vos builds
-eas build:list
-
-# Voir les détails d'un build
-eas build:view <build-id>
-
-# Soumettre à l'App Store (après TestFlight)
-eas submit --platform ios
-
-# Créer un build Android
-eas build --platform android --profile preview
-
-# Build pour les deux plateformes
-eas build --platform all --profile preview
-```
-
-## 💡 Astuces
-
-### Réduire le temps de build
-- Les builds sont mis en cache
-- Le premier build prend ~20min
-- Les suivants prennent ~10min
-
-### Tester avant de builder
-```bash
-# Simuler le build localement
-expo prebuild
-
-# Lancer en mode production
-npx expo start --no-dev --minify
-```
-
-### Debugging
-
-Si le build échoue :
-
-1. Vérifiez les logs dans le dashboard EAS
-2. Vérifiez que toutes les dépendances sont à jour
-3. Assurez-vous que `app.json` est valide
-
-## 📱 Après installation
-
-1. Ouvrez owo! sur votre iPhone
-2. Créez un compte ou connectez-vous
-3. Testez toutes les fonctionnalités :
-   - Authentification Firebase
-   - Création de wallets
-   - Transactions
-   - Notifications
-
-## 🐛 Problèmes courants
-
-### "Build failed to compile"
-- Vérifiez `package.json` pour les dépendances incompatibles
-- Assurez-vous que Firebase est bien configuré
-
-### "No Apple Developer account"
-- Vous n'avez pas besoin de compte Apple Developer pour TestFlight interne
-- Pour TestFlight externe (100+ testeurs), vous aurez besoin du compte ($99/an)
-
-### "App ne se lance pas"
-- Vérifiez que Firebase est configuré
-- Vérifiez les logs dans Xcode ou via `eas build:view`
-
-## 🎯 Prochaines étapes recommandées
-
-1. ✅ Créer un build preview
-2. ✅ Installer via TestFlight
-3. ✅ Tester sur votre iPhone
-4. 📝 Noter les bugs éventuels
-5. 🔄 Itérer et améliorer
-6. 🚀 Publier sur l'App Store
-
-## 🔗 Liens utiles
-
-- [Documentation EAS Build](https://docs.expo.dev/build/introduction/)
-- [TestFlight Guide](https://developer.apple.com/testflight/)
-- [App Store Connect](https://appstoreconnect.apple.com)
-- [Expo Dashboard](https://expo.dev)
-
-## 📞 Support
-
-Si vous rencontrez des problèmes :
-- Consultez les logs EAS
-- Vérifiez la documentation Expo
-- Demandez de l'aide sur le forum Expo
-
-Bon build ! 🚀
+La checklist complète est dans `../../docs/STORE_RELEASE_CHECKLIST.md`.

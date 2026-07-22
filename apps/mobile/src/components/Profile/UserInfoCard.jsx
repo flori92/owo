@@ -13,7 +13,7 @@ export function UserInfoCard({
     if (userProfile?.first_name) {
       return `${userProfile.first_name} ${userProfile.last_name || ""}`.trim();
     }
-    return user?.name || "Utilisateur";
+    return user?.displayName || user?.name || "Utilisateur";
   };
 
   return (

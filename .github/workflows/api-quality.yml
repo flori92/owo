@@ -1,0 +1,57 @@
+name: API quality
+
+on:
+  pull_request:
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/api-quality.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: owo_test
+          POSTGRES_USER: owo
+          POSTGRES_PASSWORD: owo_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U owo -d owo_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.18.0'
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
+      - run: npm ci
+      - name: Apply PostgreSQL migrations
+        run: npm run migrate
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://owo:owo_test_password@localhost:5432/owo_test
+          DATABASE_SSL: 'false'
+          FIREBASE_PROJECT_ID: test-project
+      - run: npm run typecheck
+      - run: npm test
+        env:
+          TEST_DATABASE_URL: postgresql://owo:owo_test_password@localhost:5432/owo_test
+      - run: npm run build
+      - name: Build production container
+        run: docker build --tag owo-api:ci .

@@ -6,7 +6,7 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "jsx": "react-native",
-    "lib": ["esnext"],
+    "lib": ["esnext", "dom"],
     "moduleResolution": "bundler",
     "noEmit": true,
     "resolveJsonModule": true,
@@ -24,5 +24,13 @@
     "expo-env.d.ts",
     "nativewind-env.d.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "App.tsx",
+    "index.web.tsx",
+    "__create",
+    "src/__create",
+    "polyfills/web",
+    "polyfills/shared"
+  ]
 }

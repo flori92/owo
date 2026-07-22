@@ -11,4 +11,5 @@ export const APP_CONFIG = {
 
 // Flag pour déclencher la migration des données de démo vers Firebase
 // Quand il est à true, l'écran Home appelle migrateDataToFirestore() une fois
-export const TRIGGER_MIGRATION = true;
+export const TRIGGER_MIGRATION =
+  __DEV__ && process.env.EXPO_PUBLIC_ENABLE_DEMO_MIGRATION === 'true';

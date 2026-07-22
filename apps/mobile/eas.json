@@ -1,7 +1,8 @@
 {
   "cli": {
-    "version": ">= 13.2.0",
-    "appVersionSource": "remote"
+    "version": ">= 16.17.0",
+    "appVersionSource": "remote",
+    "requireCommit": true
   },
   "build": {
     "development": {
@@ -13,17 +14,42 @@
     },
     "preview": {
       "distribution": "internal",
+      "environment": "preview",
       "ios": {
         "simulator": false
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_MODE": "production",
+        "EXPO_PUBLIC_AUTH_BYPASS": "false",
+        "EXPO_PUBLIC_ENABLE_DEMO_MIGRATION": "false"
       },
       "channel": "preview"
     },
     "production": {
       "distribution": "store",
+      "environment": "production",
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_APP_MODE": "production",
+        "EXPO_PUBLIC_AUTH_BYPASS": "false",
+        "EXPO_PUBLIC_ENABLE_DEMO_MIGRATION": "false"
+      },
       "channel": "production"
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      },
+      "ios": {
+        "language": "fr-FR",
+        "sku": "owo-mobile"
+      }
+    }
   }
 }

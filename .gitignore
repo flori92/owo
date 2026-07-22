@@ -11,6 +11,8 @@ secrets.local
 .env.development.local
 .env.test.local
 .env.production.local
+!.env.example
+!**/.env.example
 
 # Clés et certificats Firebase/Google
 service-account-key.json
