@@ -403,3 +403,38 @@ exports.validateWalletBalance = functions.firestore
 
     return null;
   });
+
+// ============================================
+// 7. DEMANDE DE SUPPRESSION DE COMPTE
+// Le traitement final reste contrôlé côté serveur afin de respecter les
+// obligations de conservation applicables aux données financières.
+// ============================================
+
+exports.requestAccountDeletion = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'Vous devez être connecté pour demander la suppression du compte.',
+    );
+  }
+
+  const uid = context.auth.uid;
+  const reason = typeof data?.reason === 'string' ? data.reason.trim().slice(0, 500) : '';
+  const requestRef = db.collection('accountDeletionRequests').doc(uid);
+
+  await requestRef.set(
+    {
+      userId: uid,
+      email: context.auth.token.email || null,
+      reason,
+      status: 'pending',
+      requestedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      source: 'mobile-app',
+    },
+    { merge: true },
+  );
+
+  console.log(`Demande de suppression de compte enregistrée pour ${uid}`);
+  return { status: 'pending' };
+});

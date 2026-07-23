@@ -32,7 +32,7 @@ import {
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
 import { useAuth, useWallets } from "@/hooks/useFirebase";
-import { createTransaction } from "@/lib/firebase";
+import { submitTransaction } from "@/services/transactions";
 import ScreenContainer from "@/components/ScreenContainer";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
@@ -145,19 +145,25 @@ export default function AddTransactionScreen() {
       const transactionData = {
         userId: user.$id,
         walletId: walletId,
+        walletReference: wallets.find((wallet) => wallet.$id === walletId)?.accountNumber,
+        currency: wallets.find((wallet) => wallet.$id === walletId)?.currency || 'XOF',
         type: transactionType,
         amount: parseFloat(amount),
+        title,
         recipientPhone: recipientPhone || null,
         recipientName: recipientName || null,
         description: description || null,
       };
 
-      const result = await createTransaction(transactionData);
+      const result = await submitTransaction(transactionData);
 
       if (result.success) {
+        const completed = result.transaction.status === 'completed';
         Alert.alert(
-          "Succès",
-          `Transaction ajoutée avec succès! Référence: ${result.transaction.reference}`,
+          completed ? "Transfert effectué" : "Traitement lancé",
+          completed
+            ? `L'argent a été transféré instantanément. Référence : ${result.transaction.reference}.`
+            : `La demande est prise en charge. Son statut se mettra à jour automatiquement. Référence : ${result.transaction.reference}.`,
           [
             {
               text: "OK",
@@ -188,7 +194,7 @@ export default function AddTransactionScreen() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [amount, title, recipientPhone, recipientName, description, transactionType, walletId, user]);
+  }, [amount, title, recipientPhone, recipientName, description, transactionType, walletId, user, wallets]);
 
   return (
     <ScreenContainer>

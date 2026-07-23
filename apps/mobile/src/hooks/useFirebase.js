@@ -8,7 +8,12 @@ import {
   createAccount as firebaseCreateAccount,
   login as firebaseLogin,
   logout as firebaseLogout,
+  subscribeToAuthChanges,
 } from '@/lib/firebase';
+import { IS_PRODUCTION } from '@/config/appConfig';
+import { getApiWallets } from '@/services/accounts';
+import { listApiTransactions } from '@/services/transactions';
+import { subscribeFinancialDataChanged } from '@/services/financialEvents';
 
 /**
  * Hook pour gérer l'état d'authentification Firebase
@@ -44,9 +49,25 @@ export function useAuth() {
     }
   }, []);
 
-  // Vérifier l'auth au démarrage
   useEffect(() => {
-    checkAuth();
+    if (process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true') {
+      checkAuth();
+      return undefined;
+    }
+
+    setLoading(true);
+    return subscribeToAuthChanges(
+      (nextUser) => {
+        setUser(nextUser);
+        setError(null);
+        setLoading(false);
+      },
+      (subscriptionError) => {
+        setUser(null);
+        setError(subscriptionError.message);
+        setLoading(false);
+      },
+    );
   }, [checkAuth]);
 
   // Créer un compte
@@ -147,9 +168,14 @@ export function useWallets(userId) {
 
     try {
       setLoading(true);
-      const { success, wallets: data } = await getWallets(userId);
+      const { success, wallets: data, error: requestError } = IS_PRODUCTION
+        ? await getApiWallets()
+        : await getWallets(userId);
       if (success) {
         setWallets(data);
+        setError(null);
+      } else if (requestError) {
+        setError(requestError);
       }
     } catch (err) {
       setError(err.message);
@@ -161,6 +187,8 @@ export function useWallets(userId) {
   useEffect(() => {
     fetchWallets();
   }, [fetchWallets]);
+
+  useEffect(() => subscribeFinancialDataChanged(fetchWallets), [fetchWallets]);
 
   const getTotalBalance = useCallback((currency = 'XOF') => {
     return wallets
@@ -195,7 +223,7 @@ export function useTransactions(userId, limit = 20) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchTransactions = useCallback(async () => {
+  const fetchTransactions = useCallback(async (silent = false) => {
     const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
     if (AUTH_BYPASS) {
       const now = Date.now();
@@ -241,21 +269,46 @@ export function useTransactions(userId, limit = 20) {
     }
 
     try {
-      setLoading(true);
-      const { success, transactions: data } = await getTransactions(userId, limit);
+      if (!silent) setLoading(true);
+      const { success, transactions: data, error: requestError } = IS_PRODUCTION
+        ? await listApiTransactions(limit)
+        : await getTransactions(userId, limit);
       if (success) {
         setTransactions(data);
+        setError(null);
+      } else if (requestError) {
+        setError(requestError);
       }
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [userId, limit]);
 
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
+
+  useEffect(
+    () => subscribeFinancialDataChanged(() => fetchTransactions(true)),
+    [fetchTransactions],
+  );
+
+  useEffect(() => {
+    if (!IS_PRODUCTION || !transactions.some((transaction) => ['pending', 'processing'].includes(transaction.status))) {
+      return undefined;
+    }
+    const oldestProcessingAge = Math.max(
+      0,
+      ...transactions
+        .filter((transaction) => ['pending', 'processing'].includes(transaction.status))
+        .map((transaction) => Date.now() - new Date(transaction.createdAt).getTime()),
+    );
+    const pollDelay = oldestProcessingAge < 15_000 ? 1000 : oldestProcessingAge < 60_000 ? 5000 : 30_000;
+    const refreshTimer = setTimeout(() => fetchTransactions(true), pollDelay);
+    return () => clearTimeout(refreshTimer);
+  }, [transactions, fetchTransactions]);
 
   return {
     transactions,

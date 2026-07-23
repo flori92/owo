@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
+import Constants from 'expo-constants';
 
 export function AppVersion({ theme }) {
   return (
@@ -18,7 +19,7 @@ export function AppVersion({ theme }) {
           textAlign: "center",
         }}
       >
-        owo! v1.0.0
+        owo! v{Constants.expoConfig?.version || '1.0.0'}
       </Text>
       <Text
         style={{

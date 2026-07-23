@@ -12,7 +12,8 @@
  */
 
 // Mode de l'application : 'demo' ou 'production'
-export const APP_MODE = process.env.EXPO_PUBLIC_APP_MODE || 'demo';
+export const APP_MODE =
+  process.env.EXPO_PUBLIC_APP_MODE || (__DEV__ ? 'demo' : 'production');
 
 // Vérifier si on est en mode démo
 export const IS_DEMO_MODE = APP_MODE === 'demo';
@@ -22,9 +23,17 @@ export const IS_PRODUCTION = APP_MODE === 'production';
 
 // URLs des APIs
 export const API_CONFIG = {
-  baseUrl: process.env.EXPO_PUBLIC_API_URL || 'https://api.owo-app.com',
+  baseUrl: process.env.EXPO_PUBLIC_API_URL || '',
   authUrl: process.env.EXPO_PUBLIC_BASE_URL || 'https://owo-631ab.web.app',
   proxyUrl: process.env.EXPO_PUBLIC_PROXY_BASE_URL || 'https://owo-631ab.web.app',
+};
+
+export const LEGAL_CONFIG = {
+  privacyPolicyUrl: process.env.EXPO_PUBLIC_PRIVACY_POLICY_URL || '',
+  termsUrl: process.env.EXPO_PUBLIC_TERMS_URL || '',
+  supportUrl: process.env.EXPO_PUBLIC_SUPPORT_URL || '',
+  accountDeletionUrl: process.env.EXPO_PUBLIC_ACCOUNT_DELETION_URL || '',
+  supportEmail: process.env.EXPO_PUBLIC_SUPPORT_EMAIL || '',
 };
 
 // Configuration des fonctionnalités
@@ -78,6 +87,7 @@ export default {
   IS_DEMO_MODE,
   IS_PRODUCTION,
   API_CONFIG,
+  LEGAL_CONFIG,
   FEATURES,
   DEMO_MESSAGES,
   getDemoMessage,

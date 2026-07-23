@@ -1,91 +1,43 @@
 import { router } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { useCallback, useEffect, useMemo } from 'react';
-import { create } from 'zustand';
-import { Modal, View } from 'react-native';
-import { useAuthModal, useAuthStore, authKey } from './store';
+import { useCallback, useEffect } from 'react';
 import { useAuth as useFirebaseAuth } from '@/hooks/useFirebase';
 
-
 /**
- * This hook provides authentication functionality.
- * It may be easier to use the `useAuthModal` or `useRequireAuth` hooks
- * instead as those will also handle showing authentication to the user
- * directly.
+ * Façade d'authentification unique pour l'application.
+ * Firebase est la seule source de vérité afin d'éviter les sessions divergentes.
  */
 export const useAuth = () => {
-  const { isReady, auth, setAuth } = useAuthStore();
-  const { isOpen, close, open } = useAuthModal();
+  const firebaseAuth = useFirebaseAuth();
 
-  const initiate = useCallback(() => {
-    SecureStore.getItemAsync(authKey)
-      .then((auth) => {
-        try {
-          useAuthStore.setState({
-            auth: auth ? JSON.parse(auth) : null,
-            isReady: true,
-          });
-        } catch (error) {
-          console.log('Auth parse error, using null:', error);
-          useAuthStore.setState({
-            auth: null,
-            isReady: true,
-          });
-        }
-      })
-      .catch((error) => {
-        console.log('Auth storage error, using null:', error);
-        useAuthStore.setState({
-          auth: null,
-          isReady: true,
-        });
-      });
-  }, []);
-
-  useEffect(() => {
-    initiate();
-  }, [initiate]);
-
-  const signIn = useCallback(() => {
-    open({ mode: 'signin' });
-  }, [open]);
-  const signUp = useCallback(() => {
-    open({ mode: 'signup' });
-  }, [open]);
-
-  const signOut = useCallback(() => {
-    setAuth(null);
-    close();
-  }, [close]);
+  const signIn = useCallback(() => router.push('/auth/login'), []);
+  const signUp = useCallback(() => router.push('/auth/register'), []);
+  const signOut = useCallback(async () => {
+    const result = await firebaseAuth.logout();
+    router.replace('/auth/login');
+    return result;
+  }, [firebaseAuth.logout]);
 
   return {
-    isReady,
-    isAuthenticated: isReady ? !!auth : null,
+    ...firebaseAuth,
+    isReady: !firebaseAuth.loading,
+    isAuthenticated: firebaseAuth.loading ? null : Boolean(firebaseAuth.user),
+    auth: firebaseAuth.user ? { user: firebaseAuth.user } : null,
     signIn,
-    signOut,
     signUp,
-    auth,
-    setAuth,
-    initiate,
+    signOut,
+    initiate: firebaseAuth.checkAuth,
   };
 };
 
-/**
- * This hook will automatically open the authentication modal if the user is not authenticated.
- */
-export const useRequireAuth = (options) => {
+export const useRequireAuth = () => {
   const { user, loading } = useFirebaseAuth();
-  const { open } = useAuthModal();
-
-  const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
 
   useEffect(() => {
-    if (AUTH_BYPASS) return;
-    if (!loading && !user) {
-      // Rediriger vers la page de login au lieu d'ouvrir un modal
+    const authBypass = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+    if (!authBypass && !loading && !user) {
       router.replace('/auth/login');
     }
-  }, [user, loading, open, options?.mode, AUTH_BYPASS]);
+  }, [user, loading]);
 };
 
 export default useAuth;

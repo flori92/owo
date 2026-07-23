@@ -11,7 +11,7 @@ export function TransactionItem({ theme, transaction }) {
         alignItems: "center",
         paddingVertical: 12,
       }}
-      onPress={() => router.push(`/transaction-details?id=${transaction.id}`)}
+      onPress={() => router.push('/(tabs)/transactions')}
     >
       <View
         style={{

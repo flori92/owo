@@ -1,0 +1,35 @@
+name: Mobile quality
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - 'apps/mobile/**'
+      - '.github/workflows/mobile-quality.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/mobile/**'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.0'
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+      - run: npm ci
+      - run: npm run validate:config
+      - run: npm run typecheck
+      - run: npm test
+      - run: npx expo-doctor@latest
+      - run: npx expo export --platform android --output-dir dist/android
+      - run: npx expo export --platform ios --output-dir dist/ios
