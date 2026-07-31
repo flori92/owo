@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ScreenContainer from "@/components/ScreenContainer";
+import { useMarket } from "@/contexts/MarketContext";
 
 export function EditProfileModal({
   visible,
@@ -19,6 +20,7 @@ export function EditProfileModal({
   saving,
 }) {
   const insets = useSafeAreaInsets();
+  const { market } = useMarket();
 
   return (
     <Modal
@@ -201,7 +203,7 @@ export function EditProfileModal({
                 }}
                 value={formData.phone}
                 onChangeText={formData.setPhone}
-                placeholder="+229 XX XX XX XX"
+                placeholder={`${market.callingCode} ${market.phoneExample}`}
                 placeholderTextColor={theme.colors.textSecondary}
                 keyboardType="phone-pad"
               />

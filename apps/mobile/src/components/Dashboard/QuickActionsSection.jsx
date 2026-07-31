@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { Send, HandCoins, Users, PiggyBank, QrCode } from "lucide-react-native";
+import { Send, HandCoins, Users, PiggyBank, QrCode, Brain, TrendingUp } from "lucide-react-native";
 import { router } from "expo-router";
 import useHaptics from "@/hooks/useHaptics";
 
@@ -47,6 +47,20 @@ export function QuickActionsSection({ theme }) {
       subtitle: "QR Code",
       color: "#EC4899",
       route: "/qr-scanner",
+    },
+    {
+      icon: Brain,
+      title: "Coach",
+      subtitle: "Budget intelligent",
+      color: theme.colors.primary,
+      route: "/(tabs)/coach",
+    },
+    {
+      icon: TrendingUp,
+      title: "Investir",
+      subtitle: "Apprendre & simuler",
+      color: theme.colors.accent,
+      route: "/(tabs)/invest",
     },
   ];
 

@@ -14,6 +14,7 @@ import { IS_PRODUCTION } from '@/config/appConfig';
 import { getApiWallets } from '@/services/accounts';
 import { listApiTransactions } from '@/services/transactions';
 import { subscribeFinancialDataChanged } from '@/services/financialEvents';
+import { useMarket } from '@/contexts/MarketContext';
 
 /**
  * Hook pour gérer l'état d'authentification Firebase
@@ -122,6 +123,7 @@ export function useAuth() {
  * Hook pour gérer les wallets
  */
 export function useWallets(userId) {
+  const { market } = useMarket();
   const [wallets, setWallets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -131,25 +133,26 @@ export function useWallets(userId) {
     if (AUTH_BYPASS) {
       // Compte de test (démo) pour garantir des écrans fonctionnels en bypass.
       setWallets([
-        {
-          id: 'demo-mm-mtn',
-          $id: 'demo-mm-mtn',
+        ...market.operators.map((operator, index) => ({
+          id: `demo-mm-${operator.id}`,
+          $id: `demo-mm-${operator.id}`,
           userId: 'demo',
           type: 'mobile_money',
-          provider: 'MTN Mobile Money',
-          currency: 'EUR',
-          balance: 755.75,
+          provider: operator.name,
+          operatorId: operator.id,
+          currency: market.currency,
+          balance: index === 0 ? 495739 : 0,
           status: 'active',
-          isPrimary: false,
-        },
+          isPrimary: index === 0,
+        })),
         {
-          id: 'demo-main-eur',
-          $id: 'demo-main-eur',
+          id: `demo-main-${market.currency.toLowerCase()}`,
+          $id: `demo-main-${market.currency.toLowerCase()}`,
           userId: 'demo',
           type: 'main',
           provider: 'Compte Principal',
-          currency: 'EUR',
-          balance: 9000,
+          currency: market.currency,
+          balance: 9000000,
           status: 'active',
           isPrimary: true,
         },
@@ -182,7 +185,7 @@ export function useWallets(userId) {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, market]);
 
   useEffect(() => {
     fetchWallets();
@@ -190,11 +193,11 @@ export function useWallets(userId) {
 
   useEffect(() => subscribeFinancialDataChanged(fetchWallets), [fetchWallets]);
 
-  const getTotalBalance = useCallback((currency = 'XOF') => {
+  const getTotalBalance = useCallback((currency = market.currency) => {
     return wallets
       .filter(w => w.currency === currency && w.status === 'active')
       .reduce((sum, w) => sum + (parseFloat(w.balance) || 0), 0);
-  }, [wallets]);
+  }, [wallets, market.currency]);
 
   const getMobileMoneyWallets = useCallback(() => {
     return wallets.filter(w => w.type === 'mobile_money');

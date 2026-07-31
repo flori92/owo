@@ -15,6 +15,7 @@ import {
 } from 'lucide-react-native';
 import { useTheme } from '@/utils/useTheme';
 import { useAuth } from '@/hooks/useFirebase';
+import { router } from 'expo-router';
 
 export function UserMenu({ displayName }) {
   const theme = useTheme();
@@ -47,7 +48,7 @@ export function UserMenu({ displayName }) {
       label: 'Paramètres',
       onPress: () => {
         setShowMenu(false);
-        // TODO: Navigate to settings
+        router.push('/market-settings');
       },
     },
     {

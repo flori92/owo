@@ -3,8 +3,11 @@ import { View, Text } from "react-native";
 import { Smartphone, Building, CreditCard, Zap } from "lucide-react-native";
 import { router } from "expo-router";
 import { AccountCard } from "./AccountCard";
+import { useMarket } from "@/contexts/MarketContext";
+import { formatMarketMoney } from "@/config/markets";
 
 export function AccountsSection({ theme, balance, balanceVisible }) {
+  const { market } = useMarket();
   return (
     <View style={{ marginBottom: 24 }}>
       <Text
@@ -24,9 +27,9 @@ export function AccountsSection({ theme, balance, balanceVisible }) {
           theme={theme}
           icon={Smartphone}
           title="Mobile Money"
-          subtitle="MTN • Moov • Celtiis"
+          subtitle={market.operators.map((operator) => operator.shortName).join(" • ")}
           amount={
-            balanceVisible ? `${balance.total.toLocaleString()} FCFA` : "•••••"
+            balanceVisible ? formatMarketMoney(balance.total, market) : "•••••"
           }
           borderColor={theme.colors.mobileMoneyOrange}
           iconColor={theme.colors.mobileMoneyOrange}
@@ -37,11 +40,11 @@ export function AccountsSection({ theme, balance, balanceVisible }) {
         <AccountCard
           theme={theme}
           icon={Building}
-          title="Banques européennes"
+          title="Comptes bancaires"
           subtitle={balance.europeanBanks.accounts.join(" • ")}
           amount={
             balanceVisible
-              ? `${balance.europeanBanks.total.toLocaleString()} €`
+              ? formatMarketMoney(balance.europeanBanks.total, market)
               : "•••••"
           }
           borderColor={theme.colors.primary}
@@ -57,8 +60,8 @@ export function AccountsSection({ theme, balance, balanceVisible }) {
             padding: 20,
             flexDirection: "row",
             alignItems: "center",
-            borderLeftWidth: 4,
-            borderLeftColor: theme.colors.accent,
+            borderWidth: 2,
+            borderColor: theme.colors.accent,
             shadowColor: theme.colors.shadowColor,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.1,

@@ -7,12 +7,6 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#17A2B8"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.floriace.owo",
@@ -52,7 +46,8 @@
         {
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
-          "resizeMode": "contain"
+          "resizeMode": "contain",
+          "backgroundColor": "#17A2B8"
         }
       ],
       [
@@ -80,7 +75,11 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.647650316598-n1nojrun3ki4veveslgvsrtjrsmaurr5"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-font",
+      "expo-image",
+      "expo-status-bar"
     ],
     "web": {
       "bundler": "metro",

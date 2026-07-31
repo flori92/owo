@@ -35,9 +35,6 @@ export function detectOperator(phoneNumber) {
     return { country, operator: null, isValid: false };
   }
 
-  // Extraire le préfixe (2 premiers chiffres)
-  const prefix = localNumber.substring(0, 2);
-
   // Rechercher l'opérateur
   const operators = OPERATOR_PREFIXES[country];
   if (!operators) {
@@ -45,7 +42,7 @@ export function detectOperator(phoneNumber) {
   }
 
   for (const [operatorCode, prefixes] of Object.entries(operators)) {
-    if (prefixes.includes(prefix)) {
+    if ([...prefixes].sort((a, b) => b.length - a.length).some((prefix) => localNumber.startsWith(prefix))) {
       return {
         country,
         operator: operatorCode,
@@ -81,6 +78,8 @@ export function formatPhoneNumber(phoneNumber) {
 
   // Formatage selon le pays
   switch (country) {
+    case 'CM':
+      return `+${countryCode} ${localNumber.substring(0, 1)} ${localNumber.substring(1, 3)} ${localNumber.substring(3, 5)} ${localNumber.substring(5, 7)} ${localNumber.substring(7, 9)}`;
     case 'BJ':
     case 'TG':
     case 'ML':

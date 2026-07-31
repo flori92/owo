@@ -14,15 +14,18 @@ import {
   IdempotencyConflictError,
   listPaymentIntents,
 } from './services/payment-intents.js';
-import { listAccounts, synchronizeUser } from './services/users.js';
+import { listAccounts, synchronizeUser, updateUserMarket } from './services/users.js';
 import './types.js';
+import { analyzeFinancialProfile, answerCoachQuestion } from './domain/financial-coach.js';
+import { getFinancialProfile, saveFinancialProfile } from './services/financial-profiles.js';
+import { marketCatalog } from './domain/markets.js';
 
 const paymentIntentSchema = z
   .object({
     sourceAccountId: z.string().uuid(),
     type: z.enum(['send', 'receive', 'deposit']),
     amountMinor: z.number().int().positive().max(1_000_000_000_000),
-    currency: z.string().regex(/^[A-Z]{3}$/).default('XOF'),
+    currency: z.enum(['XAF', 'XOF']).default('XAF'),
     title: z.string().trim().min(1).max(120),
     description: z.string().trim().max(500).nullable().optional(),
     recipientName: z.string().trim().max(120).nullable().optional(),
@@ -37,6 +40,28 @@ const paymentIntentSchema = z
       });
     }
   });
+
+const financialProfileSchema = z.object({
+  currency: z.enum(['XAF', 'XOF']).default('XAF'),
+  monthlyIncomeMinor: z.number().int().nonnegative().max(1_000_000_000_000),
+  currentSavingsMinor: z.number().int().nonnegative().max(1_000_000_000_000),
+  debtPaymentsMinor: z.number().int().nonnegative().max(1_000_000_000_000),
+  emergencyFundMonths: z.number().int().min(1).max(12).default(3),
+  dayOfMonth: z.number().int().min(1).max(31),
+  daysInMonth: z.number().int().min(28).max(31),
+  categories: z.array(z.object({
+    code: z.string().trim().min(1).max(40),
+    name: z.string().trim().min(1).max(80),
+    spentMinor: z.number().int().nonnegative().max(1_000_000_000_000),
+    limitMinor: z.number().int().nonnegative().max(1_000_000_000_000),
+    essential: z.boolean().optional(),
+  })).min(1).max(30),
+});
+
+const storedFinancialProfileSchema = financialProfileSchema.omit({
+  dayOfMonth: true,
+  daysInMonth: true,
+});
 
 export type BuildAppOptions = {
   config: AppConfig;
@@ -68,6 +93,7 @@ export async function buildApp(options: BuildAppOptions) {
   const authenticate = createAuthenticator(options.verifyToken);
 
   app.get('/health/live', async () => ({ status: 'ok' }));
+  app.get('/v1/markets', async () => ({ markets: Object.values(marketCatalog) }));
   app.get('/health/ready', async (_request, reply) => {
     try {
       await options.database.query('SELECT 1');
@@ -85,6 +111,20 @@ export async function buildApp(options: BuildAppOptions) {
       email: user.email,
       displayName: user.display_name,
       status: user.status,
+      countryCode: user.country_code,
+      region: user.region_code,
+      preferredCurrency: user.preferred_currency,
+    };
+  });
+
+  app.patch('/v1/me/market', { preHandler: authenticate }, async (request) => {
+    await synchronizeUser(options.database, request.user!);
+    const body = z.object({ countryCode: z.enum(['CM', 'BJ', 'CI', 'SN']) }).parse(request.body);
+    const user = await updateUserMarket(options.database, request.user!.uid, body.countryCode);
+    return {
+      countryCode: user.country_code,
+      region: user.region_code,
+      preferredCurrency: user.preferred_currency,
     };
   });
 
@@ -100,6 +140,39 @@ export async function buildApp(options: BuildAppOptions) {
         balanceMinor: account.balance_minor,
         availableBalanceMinor: account.available_balance_minor,
       })),
+    };
+  });
+
+  app.post('/v1/financial-coach/analyze', { preHandler: authenticate }, async (request) => {
+    await synchronizeUser(options.database, request.user!);
+    const profile = financialProfileSchema.parse(request.body);
+    return analyzeFinancialProfile(profile);
+  });
+
+  app.get('/v1/financial-coach/profile', { preHandler: authenticate }, async (request) => {
+    await synchronizeUser(options.database, request.user!);
+    return { profile: await getFinancialProfile(options.database, request.user!.uid) };
+  });
+
+  app.put('/v1/financial-coach/profile', { preHandler: authenticate }, async (request) => {
+    await synchronizeUser(options.database, request.user!);
+    const profile = storedFinancialProfileSchema.parse(request.body);
+    return {
+      profile: await saveFinancialProfile(options.database, request.user!.uid, profile),
+    };
+  });
+
+  app.post('/v1/financial-coach/chat', { preHandler: authenticate }, async (request) => {
+    await synchronizeUser(options.database, request.user!);
+    const body = z.object({
+      question: z.string().trim().min(2).max(500),
+      profile: financialProfileSchema,
+    }).parse(request.body);
+    const analysis = analyzeFinancialProfile(body.profile);
+    return {
+      answer: answerCoachQuestion(body.question, analysis),
+      analysis,
+      disclaimer: "Les réponses owo! sont éducatives et ne constituent pas un conseil en investissement personnalisé.",
     };
   });
 

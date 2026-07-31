@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import { View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -18,11 +18,13 @@ import { ExchangeRatesOverview } from "@/components/CurrencyExchange/ExchangeRat
 import { CurrencyExchangeForm } from "@/components/CurrencyExchange/CurrencyExchangeForm";
 import { InfoBox } from "@/components/CurrencyExchange/InfoBox";
 import { useCurrencyExchange } from "@/hooks/useCurrencyExchange";
-import { mockAccounts } from "@/utils/currencyData";
+import { getMockAccounts } from "@/utils/currencyData";
+import { useMarket } from "@/contexts/MarketContext";
 
 export default function CurrencyExchangeScreen() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
+  const { market } = useMarket();
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -30,7 +32,7 @@ export default function CurrencyExchangeScreen() {
     Inter_700Bold,
   });
 
-  const [accounts] = useState(mockAccounts);
+  const accounts = useMemo(() => getMockAccounts(market), [market]);
 
   const {
     fromCurrency,
@@ -48,7 +50,7 @@ export default function CurrencyExchangeScreen() {
     setToAccount,
     handleSwapCurrencies,
     handleExchange,
-  } = useCurrencyExchange();
+  } = useCurrencyExchange(market.currency);
 
   return (
     <ScreenContainer>

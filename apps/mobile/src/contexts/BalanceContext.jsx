@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { Alert } from "react-native";
+import { useMarket } from "@/contexts/MarketContext";
 
 // Taux de change EUR/FCFA
 const EXCHANGE_RATE = 655.96;
@@ -8,26 +9,17 @@ const EXCHANGE_RATE = 655.96;
 const BalanceContext = createContext(null);
 
 export function BalanceProvider({ children, theme }) {
+    const { market } = useMarket();
     // Soldes initiaux
     const [balances, setBalances] = useState({
         // Mobile Money en FCFA
-        mobileMoneyAccounts: [
-            {
-                provider: "MTN Mobile Money",
-                balance: 45250,
-                color: theme.colors.mobileMoneyOrange,
-            },
-            {
-                provider: "Moov Money",
-                balance: 25500,
-                color: theme.colors.mobileMoneyBlue,
-            },
-            {
-                provider: "Celtiis Cash",
-                balance: 15000,
-                color: theme.colors.mobileMoneyGreen,
-            },
-        ],
+        mobileMoneyAccounts: market.operators.map((operator, index) => ({
+            provider: operator.name,
+            operatorId: operator.id,
+            balance: index === 0 ? 45250 : 25500,
+            color: operator.color,
+            currency: market.currency,
+        })),
         // Banques européennes en EUR
         europeanBanks: {
             total: 4300,
@@ -39,6 +31,24 @@ export function BalanceProvider({ children, theme }) {
             status: "active",
         },
     });
+
+    useEffect(() => {
+        setBalances((previous) => ({
+            ...previous,
+            mobileMoneyAccounts: market.operators.map((operator, index) => {
+                const existing = previous.mobileMoneyAccounts.find(
+                    (account) => account.operatorId === operator.id,
+                );
+                return {
+                    provider: operator.name,
+                    operatorId: operator.id,
+                    balance: existing?.balance ?? (index === 0 ? 45250 : 25500),
+                    color: operator.color,
+                    currency: market.currency,
+                };
+            }),
+        }));
+    }, [market]);
 
     // Calculer le total Mobile Money en FCFA
     const getTotalMobileMoneyFCFA = useCallback(() => {

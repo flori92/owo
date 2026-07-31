@@ -975,8 +975,8 @@ export default function VirtualCardScreen() {
             backgroundColor: `${theme.colors.primary}15`, // Turquoise Owo! transparent
             borderRadius: 16,
             padding: 20,
-            borderLeftWidth: 4,
-            borderLeftColor: theme.colors.primary,
+            borderWidth: 2,
+            borderColor: theme.colors.primary,
           }}
         >
           <View

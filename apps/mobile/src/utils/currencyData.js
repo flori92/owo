@@ -4,7 +4,8 @@ export const currencies = [
   { code: "USD", name: "Dollar US", symbol: "$", flag: "🇺🇸" },
 ];
 
-export const mockAccounts = {
+export function getMockAccounts(market) {
+  return {
   european_banks: [
     {
       id: 1,
@@ -23,22 +24,13 @@ export const mockAccounts = {
       country: "Allemagne",
     },
   ],
-  mobile_money: [
-    {
-      id: 1,
-      provider: "MTN Mobile Money",
-      phone_number: "+229 XX XX XX 45",
-      currency: "FCFA",
-      balance: 125000,
-    },
-    {
-      id: 2,
-      provider: "Moov Money",
-      phone_number: "+229 XX XX XX 67",
-      currency: "FCFA",
-      balance: 89000,
-    },
-  ],
+  mobile_money: market.operators.map((operator, index) => ({
+    id: index + 1,
+    provider: operator.name,
+    phone_number: `${market.callingCode} •• •• •• ${index === 0 ? "45" : "67"}`,
+    currency: market.currency,
+    balance: index === 0 ? 125000 : 89000,
+  })),
   virtual_cards: [
     {
       id: 1,
@@ -48,4 +40,5 @@ export const mockAccounts = {
       provider: "owo! Visa",
     },
   ],
-};
+  };
+}

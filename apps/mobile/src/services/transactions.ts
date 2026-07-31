@@ -105,7 +105,7 @@ export async function submitTransaction(input: TransactionInput) {
 
   try {
     const { accounts } = await apiRequest<{ accounts: ApiAccount[] }>('/v1/accounts');
-    const currency = (input.currency || 'XOF').toUpperCase();
+    const currency = (input.currency || 'XAF').toUpperCase();
     const source =
       accounts.find((account) => account.id === input.walletId) ??
       accounts.find((account) => account.reference === input.walletReference) ??

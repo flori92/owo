@@ -9,6 +9,8 @@ import {
   Sparkles,
 } from "lucide-react-native";
 import { router } from "expo-router";
+import { useMarket } from "@/contexts/MarketContext";
+import { formatMarketMoney } from "@/config/markets";
 
 export function BalanceOverview({
   theme,
@@ -16,9 +18,8 @@ export function BalanceOverview({
   balanceVisible,
   onToggleVisibility,
 }) {
-  const totalBalance = balance 
-    ? (balance.totalEUR || 0) + (balance.europeanBanks?.total || 0) + (balance.virtualCard?.balance || 0)
-    : 0;
+  const { market } = useMarket();
+  const totalBalance = balance?.totalLocal || 0;
 
   return (
     <View
@@ -86,8 +87,8 @@ export function BalanceOverview({
           }}
         >
           {balanceVisible
-            ? `${totalBalance.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`
-            : "••••• €"}
+            ? formatMarketMoney(totalBalance, market)
+            : `••••• ${market.currencyLabel}`}
         </Text>
         <Text
           style={{
@@ -96,10 +97,10 @@ export function BalanceOverview({
             color: "rgba(255,255,255,0.7)",
           }}
         >
-          Équivalent:{" "}
+          {market.countryName} · {market.currency} · Équivalent EUR :{" "}
           {balanceVisible
-            ? `${Math.round(balance?.totalFCFA || 0).toLocaleString('fr-FR')} FCFA`
-            : "••••• FCFA"}
+            ? `${Number(balance?.euroEquivalent || 0).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €`
+            : "••••• €"}
         </Text>
       </View>
 
