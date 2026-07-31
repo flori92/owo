@@ -34,6 +34,7 @@ import { SavingsSection } from "@/components/Dashboard/SavingsSection";
 import useHaptics from "@/hooks/useHaptics";
 import { useMarket } from "@/contexts/MarketContext";
 import { formatMarketMoney } from "@/config/markets";
+import { isAuthTemporarilyDisabled } from "@/config/auth";
 
 export default function DashboardScreen() {
   if (__DEV__) console.log('🏠 Home: Rendu du composant');
@@ -41,7 +42,7 @@ export default function DashboardScreen() {
   // Require authentication to access this screen
   useRequireAuth();
 
-  const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+  const AUTH_BYPASS = isAuthTemporarilyDisabled();
 
   const insets = useSafeAreaInsets();
   const theme = useTheme();

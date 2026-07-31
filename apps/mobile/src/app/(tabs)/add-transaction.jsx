@@ -40,6 +40,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import KeyboardAvoidingAnimatedView from "@/components/KeyboardAvoidingAnimatedView";
 import { transactionSchema, validateForm } from "@/utils/validation";
 import { useMarket } from "@/contexts/MarketContext";
+import { isAuthTemporarilyDisabled } from "@/config/auth";
 
 export default function AddTransactionScreen() {
   const insets = useSafeAreaInsets();
@@ -54,7 +55,7 @@ export default function AddTransactionScreen() {
   const theme = useTheme();
   const { market } = useMarket();
 
-  const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+  const AUTH_BYPASS = isAuthTemporarilyDisabled();
 
   // Récupérer l'utilisateur et ses wallets
   const { user } = useAuth();

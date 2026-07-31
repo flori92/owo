@@ -3,12 +3,13 @@ import { View, Text } from "react-native";
 import { Redirect } from "expo-router";
 import { useAuth } from "@/utils/auth/useAuth";
 import { useTheme } from "@/utils/useTheme";
+import { isAuthTemporarilyDisabled } from "@/config/auth";
 
 export default function Index() {
   const { isReady, user, loading } = useAuth();
   const theme = useTheme();
 
-  const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+  const AUTH_BYPASS = isAuthTemporarilyDisabled();
 
   if (__DEV__) console.log('📱 Index: loading=', loading, 'isReady=', isReady, 'user=', user?.email);
 

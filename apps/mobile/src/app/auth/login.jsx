@@ -1,237 +1,123 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
   Alert,
-  StyleSheet,
+  Image,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
-  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { useAuth } from "@/hooks/useFirebase";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "@/utils/auth/useAuth";
+import { useTheme } from "@/utils/useTheme";
+import { isAuthTemporarilyDisabled } from "@/config/auth";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const authDisabled = isAuthTemporarilyDisabled();
 
-  const { login } = useAuth();
+  useEffect(() => {
+    if (authDisabled) router.replace("/(tabs)/home");
+  }, [authDisabled]);
+
+  if (authDisabled) return null;
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Erreur", "Veuillez remplir tous les champs");
+    if (!email.trim() || !password) {
+      Alert.alert("Informations manquantes", "Renseignez votre email et votre mot de passe.");
       return;
     }
-
-    setIsLoading(true);
+    setLoading(true);
     try {
-      const result = await login(email, password);
-      if (result.success) {
-        router.replace("/(tabs)/home");
-      } else {
-        Alert.alert("Erreur", result.error || "Échec de la connexion");
-      }
+      await login(email.trim(), password);
+      router.replace("/(tabs)/home");
     } catch (error) {
-      Alert.alert("Erreur", "Impossible de se connecter");
+      Alert.alert("Connexion impossible", error?.message || "Vérifiez vos identifiants.");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 28, paddingBottom: insets.bottom + 28 }]}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Logo */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>owo!</Text>
-            </View>
-            <Text style={styles.title}>Bienvenue</Text>
-            <Text style={styles.subtitle}>Connectez-vous à votre compte</Text>
-          </View>
+        <View style={[styles.brandCard, { backgroundColor: theme.colors.elevated, borderColor: theme.colors.border }]}>
+          <Image
+            source={require("../../../assets/images/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
+            accessibilityLabel="Logo owo!"
+          />
+        </View>
+        <Text style={[styles.title, { color: theme.colors.text }]}>Bienvenue sur owo!</Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>Gérez votre argent simplement et en toute sécurité.</Text>
 
-          {/* Form */}
-          <View style={styles.form}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="votre@email.com"
-              placeholderTextColor="#888"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-            />
+        <View style={styles.form}>
+          <Text style={[styles.label, { color: theme.colors.text }]}>Adresse email</Text>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholder="vous@exemple.com"
+            placeholderTextColor={theme.colors.textSecondary}
+            style={[styles.input, { color: theme.colors.text, backgroundColor: theme.colors.elevated, borderColor: theme.colors.border }]}
+          />
+          <Text style={[styles.label, { color: theme.colors.text }]}>Mot de passe</Text>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            placeholder="Votre mot de passe"
+            placeholderTextColor={theme.colors.textSecondary}
+            style={[styles.input, { color: theme.colors.text, backgroundColor: theme.colors.elevated, borderColor: theme.colors.border }]}
+          />
+          <Pressable
+            onPress={handleLogin}
+            disabled={loading}
+            style={({ pressed }) => [styles.button, { backgroundColor: theme.colors.primary, opacity: pressed || loading ? 0.75 : 1 }]}
+          >
+            <Text style={styles.buttonText}>{loading ? "Connexion..." : "Se connecter"}</Text>
+          </Pressable>
+        </View>
 
-            <Text style={styles.label}>Mot de passe</Text>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={styles.passwordInput}
-                placeholder="••••••••"
-                placeholderTextColor="#888"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoComplete="password"
-              />
-              <TouchableOpacity
-                style={styles.showPassword}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Text style={styles.showPasswordText}>
-                  {showPassword ? "Cacher" : "Voir"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity
-              style={[styles.button, isLoading && styles.buttonDisabled]}
-              onPress={handleLogin}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Se connecter</Text>
-              )}
-            </TouchableOpacity>
-
-            <View style={styles.registerContainer}>
-              <Text style={styles.registerText}>Pas encore de compte ? </Text>
-              <TouchableOpacity onPress={() => router.push("/auth/register")}>
-                <Text style={styles.registerLink}>S'inscrire</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+        <Pressable onPress={() => router.push("/auth/register")} style={styles.registerLink}>
+          <Text style={[styles.registerText, { color: theme.colors.textSecondary }]}>Pas encore de compte ? </Text>
+          <Text style={[styles.registerText, { color: theme.colors.accent, fontWeight: "700" }]}>Créer un compte</Text>
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#1a1a2e",
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 40,
-  },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: 48,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: "#6C5CE7",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  logoText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#888",
-  },
-  form: {
-    flex: 1,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: "#2d2d44",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: "#fff",
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#3d3d5c",
-  },
-  passwordContainer: {
-    position: "relative",
-    marginBottom: 32,
-  },
-  passwordInput: {
-    backgroundColor: "#2d2d44",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingRight: 70,
-    fontSize: 16,
-    color: "#fff",
-    borderWidth: 1,
-    borderColor: "#3d3d5c",
-  },
-  showPassword: {
-    position: "absolute",
-    right: 16,
-    top: 16,
-  },
-  showPasswordText: {
-    color: "#6C5CE7",
-    fontWeight: "500",
-  },
-  button: {
-    backgroundColor: "#6C5CE7",
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  registerContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  registerText: {
-    color: "#888",
-    fontSize: 14,
-  },
-  registerLink: {
-    color: "#6C5CE7",
-    fontSize: 14,
-    fontWeight: "600",
-  },
+  container: { flex: 1 },
+  content: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24 },
+  brandCard: { alignSelf: "center", width: 112, height: 112, borderRadius: 28, borderWidth: 1, justifyContent: "center", alignItems: "center", marginBottom: 22 },
+  logo: { width: 96, height: 96, borderRadius: 22 },
+  title: { textAlign: "center", fontSize: 28, fontWeight: "800", letterSpacing: -0.5 },
+  subtitle: { textAlign: "center", fontSize: 15, lineHeight: 22, marginTop: 8, marginBottom: 30 },
+  form: { width: "100%", maxWidth: 460, alignSelf: "center" },
+  label: { fontSize: 14, fontWeight: "600", marginBottom: 8, marginTop: 14 },
+  input: { minHeight: 52, borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, fontSize: 16 },
+  button: { minHeight: 54, borderRadius: 14, alignItems: "center", justifyContent: "center", marginTop: 24 },
+  buttonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "800" },
+  registerLink: { flexDirection: "row", justifyContent: "center", marginTop: 26 },
+  registerText: { fontSize: 14 },
 });

@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect } from 'react';
 import { useAuth as useFirebaseAuth } from '@/hooks/useFirebase';
+import { isAuthTemporarilyDisabled } from '@/config/auth';
 
 /**
  * Façade d'authentification unique pour l'application.
@@ -13,7 +14,7 @@ export const useAuth = () => {
   const signUp = useCallback(() => router.push('/auth/register'), []);
   const signOut = useCallback(async () => {
     const result = await firebaseAuth.logout();
-    router.replace('/auth/login');
+    router.replace(isAuthTemporarilyDisabled() ? '/(tabs)/home' : '/auth/login');
     return result;
   }, [firebaseAuth.logout]);
 
@@ -33,7 +34,7 @@ export const useRequireAuth = () => {
   const { user, loading } = useFirebaseAuth();
 
   useEffect(() => {
-    const authBypass = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+    const authBypass = isAuthTemporarilyDisabled();
     if (!authBypass && !loading && !user) {
       router.replace('/auth/login');
     }

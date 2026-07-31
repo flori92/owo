@@ -15,6 +15,7 @@ import { getApiWallets } from '@/services/accounts';
 import { listApiTransactions } from '@/services/transactions';
 import { subscribeFinancialDataChanged } from '@/services/financialEvents';
 import { useMarket } from '@/contexts/MarketContext';
+import { isAuthTemporarilyDisabled } from '@/config/auth';
 
 /**
  * Hook pour gérer l'état d'authentification Firebase
@@ -25,7 +26,7 @@ export function useAuth() {
   const [error, setError] = useState(null);
 
   const checkAuth = useCallback(async () => {
-    const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+    const AUTH_BYPASS = isAuthTemporarilyDisabled();
     if (AUTH_BYPASS) {
       setUser({
         uid: 'demo',
@@ -51,7 +52,7 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    if (process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true') {
+    if (isAuthTemporarilyDisabled()) {
       checkAuth();
       return undefined;
     }
@@ -129,7 +130,7 @@ export function useWallets(userId) {
   const [error, setError] = useState(null);
 
   const fetchWallets = useCallback(async () => {
-    const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+    const AUTH_BYPASS = isAuthTemporarilyDisabled();
     if (AUTH_BYPASS) {
       // Compte de test (démo) pour garantir des écrans fonctionnels en bypass.
       setWallets([
@@ -227,7 +228,7 @@ export function useTransactions(userId, limit = 20) {
   const [error, setError] = useState(null);
 
   const fetchTransactions = useCallback(async (silent = false) => {
-    const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+    const AUTH_BYPASS = isAuthTemporarilyDisabled();
     if (AUTH_BYPASS) {
       const now = Date.now();
       setTransactions([
@@ -330,7 +331,7 @@ export function useNotifications(userId) {
   const [loading, setLoading] = useState(true);
 
   const fetchNotifications = useCallback(async () => {
-    const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+    const AUTH_BYPASS = isAuthTemporarilyDisabled();
     if (AUTH_BYPASS) {
       setNotifications([
         {
@@ -391,7 +392,7 @@ export function useProfile(userId) {
   const [error, setError] = useState(null);
 
   const fetchProfile = useCallback(async () => {
-    const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+    const AUTH_BYPASS = isAuthTemporarilyDisabled();
     if (AUTH_BYPASS) {
       setProfile({
         id: 'demo',

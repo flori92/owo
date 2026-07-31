@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   View,
+  Image,
   Text,
   TextInput,
   TouchableOpacity,
@@ -97,27 +98,12 @@ export default function RegisterScreen() {
         >
           {/* Logo/Title */}
           <View style={{ alignItems: "center", marginBottom: 48 }}>
-            <View
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: 16,
-                backgroundColor: theme.colors.primary,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontWeight: "bold",
-                  color: "white",
-                }}
-              >
-                owo!
-              </Text>
-            </View>
+            <Image
+              source={require("../../../assets/images/icon.png")}
+              style={{ width: 80, height: 80, borderRadius: 16, marginBottom: 16 }}
+              resizeMode="contain"
+              accessibilityLabel="Logo owo!"
+            />
             <Text
               style={{
                 fontFamily: "Inter_700Bold",
