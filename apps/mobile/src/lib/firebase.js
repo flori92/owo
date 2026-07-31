@@ -475,6 +475,10 @@ export function getAuthInstance() {
  */
 export async function getProfile(userId) {
   try {
+    // Le mode démonstration peut fonctionner sans configuration Firebase.
+    if (!db || !userId) {
+      return { success: false, profile: null };
+    }
     const profileDoc = await getDoc(doc(db, COLLECTIONS.PROFILES, userId));
     if (profileDoc.exists()) {
       return { success: true, profile: { id: profileDoc.id, ...profileDoc.data() } };

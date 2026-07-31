@@ -29,6 +29,7 @@ import {
   Trophy,
   Target,
   Timer,
+  Settings,
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
