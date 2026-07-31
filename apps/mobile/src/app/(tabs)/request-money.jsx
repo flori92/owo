@@ -31,11 +31,13 @@ import { useTheme } from "@/utils/useTheme";
 import { useBalance } from "@/contexts/BalanceContext";
 import { detectOperator, formatPhoneNumber } from "@/utils/phoneValidator";
 import { OPERATORS, COUNTRY_NAMES } from "@/utils/operators";
+import { useMarket } from "@/contexts/MarketContext";
 import ScreenContainer from "@/components/ScreenContainer";
 import { IS_DEMO_MODE, getDemoMessage } from "@/config/appConfig";
 import * as Clipboard from "expo-clipboard";
 
 export default function RequestMoneyScreen() {
+  const { market } = useMarket();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { EXCHANGE_RATE } = useBalance();
@@ -522,8 +524,8 @@ export default function RequestMoneyScreen() {
             borderRadius: 16,
             padding: 20,
             marginBottom: 32,
-            borderLeftWidth: 4,
-            borderLeftColor: theme.colors.info,
+            borderWidth: 2,
+            borderColor: theme.colors.info,
           }}
         >
           <Text
@@ -573,7 +575,7 @@ export default function RequestMoneyScreen() {
                   paddingVertical: 16,
                   paddingHorizontal: 12,
                 }}
-                placeholder="+229 XX XX XX XX"
+                placeholder={`${market.callingCode} ${market.phoneExample}`}
                 placeholderTextColor={theme.colors.textSecondary}
                 keyboardType="phone-pad"
                 value={phoneNumber}

@@ -23,6 +23,8 @@ import {
   AlertCircle,
   RefreshCw,
   Trash2,
+  MapPin,
+  ChevronRight,
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { useTheme } from "@/utils/useTheme";
@@ -30,6 +32,8 @@ import ScreenContainer from "@/components/ScreenContainer";
 import HeaderBar from "@/components/HeaderBar";
 import ActionButton from "@/components/ActionButton";
 import LoadingScreen from "@/components/LoadingScreen";
+import { useMarket } from "@/contexts/MarketContext";
+import { formatMarketMoney } from "@/config/markets";
 
 export default function PaymentIntegrationScreen() {
   const insets = useSafeAreaInsets();
@@ -38,6 +42,7 @@ export default function PaymentIntegrationScreen() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("");
   const theme = useTheme();
+  const { market } = useMarket();
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -46,52 +51,23 @@ export default function PaymentIntegrationScreen() {
   });
 
   // Mock connected accounts - will be replaced with API calls
-  const connectedAccounts = [
-    {
-      id: 1,
-      provider: "MTN Mobile Money",
-      phoneNumber: "+229 XX XX XX 45",
-      balance: 45250,
-      color: theme.colors.mobileMoneyOrange,
-      status: "connected",
-      lastSync: "5 min",
-    },
-    {
-      id: 2,
-      provider: "Moov Money",
-      phoneNumber: "+229 XX XX XX 67",
-      balance: 25500,
-      color: theme.colors.mobileMoneyBlue,
-      status: "connected",
-      lastSync: "1h",
-    },
-  ];
+  const connectedAccounts = market.operators.slice(0, 1).map((operator, index) => ({
+    id: `${market.countryCode}-${operator.id}`,
+    operatorId: operator.id,
+    provider: operator.name,
+    phoneNumber: `${market.callingCode} •• •• •• ${index === 0 ? "45" : "67"}`,
+    balance: index === 0 ? 45250 : 25500,
+    color: operator.color,
+    currency: market.currency,
+    status: "connected",
+    lastSync: "5 min",
+  }));
 
-  const availableProviders = [
-    {
-      id: "mtn",
-      name: "MTN Mobile Money",
-      color: theme.colors.mobileMoneyOrange,
-      description: "Le service Mobile Money de MTN",
-      connected: connectedAccounts.some(
-        (acc) => acc.provider === "MTN Mobile Money",
-      ),
-    },
-    {
-      id: "moov",
-      name: "Moov Money",
-      color: theme.colors.mobileMoneyBlue,
-      description: "Le service Mobile Money de Moov",
-      connected: connectedAccounts.some((acc) => acc.provider === "Moov Money"),
-    },
-    {
-      id: "celtiis",
-      name: "Celtiis Cash",
-      color: theme.colors.mobileMoneyGreen,
-      description: "Le service Mobile Money de Celtiis",
-      connected: false,
-    },
-  ];
+  const availableProviders = market.operators.map((operator) => ({
+    ...operator,
+    description: `${operator.name} · ${market.countryName}`,
+    connected: connectedAccounts.some((account) => account.operatorId === operator.id),
+  }));
 
   const handleConnectAccount = async () => {
     if (!selectedProvider || !phoneNumber) {
@@ -169,6 +145,30 @@ export default function PaymentIntegrationScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
+        <TouchableOpacity
+          onPress={() => router.push("/market-settings")}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 16,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            backgroundColor: theme.colors.elevated,
+            marginBottom: 16,
+          }}
+        >
+          <MapPin size={20} color={theme.colors.primary} />
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={{ color: theme.colors.text, fontFamily: "Inter_600SemiBold" }}>
+              {market.flag} {market.countryName}
+            </Text>
+            <Text style={{ color: theme.colors.textSecondary, marginTop: 2 }}>
+              {market.currency} · {market.callingCode}
+            </Text>
+          </View>
+          <ChevronRight size={20} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
         {/* Header Info */}
         <View
           style={{
@@ -200,8 +200,8 @@ export default function PaymentIntegrationScreen() {
                 lineHeight: 20,
               }}
             >
-              Connectez vos comptes Mobile Money pour une synchronisation
-              automatique des transactions via KkiaPay et FedaPay.
+              Connectez vos comptes Mobile Money pour synchroniser vos
+              transactions via le partenaire agréé disponible dans votre pays.
             </Text>
           </View>
         </View>
@@ -228,8 +228,8 @@ export default function PaymentIntegrationScreen() {
                     backgroundColor: theme.colors.elevated,
                     borderRadius: 12,
                     padding: 20,
-                    borderLeftWidth: 4,
-                    borderLeftColor: account.color,
+                    borderWidth: 2,
+                    borderColor: account.color,
                   }}
                 >
                   <View
@@ -297,7 +297,7 @@ export default function PaymentIntegrationScreen() {
                           marginBottom: 8,
                         }}
                       >
-                        {account.balance.toLocaleString()} FCFA
+                        {formatMarketMoney(account.balance, market)}
                       </Text>
 
                       <Text
@@ -612,7 +612,7 @@ export default function PaymentIntegrationScreen() {
                     borderWidth: 1,
                     borderColor: theme.colors.border,
                   }}
-                  placeholder="+229 XX XX XX XX"
+                  placeholder={`${market.callingCode} ${market.phoneExample}`}
                   placeholderTextColor={theme.colors.textSecondary}
                   value={phoneNumber}
                   onChangeText={setPhoneNumber}

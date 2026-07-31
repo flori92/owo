@@ -1,5 +1,5 @@
 /**
- * Configuration des opérateurs mobile money en Afrique de l'Ouest
+ * Configuration des opérateurs Mobile Money en Afrique centrale et de l'Ouest.
  */
 
 export const OPERATORS = {
@@ -7,13 +7,13 @@ export const OPERATORS = {
     code: 'MTN',
     name: 'MTN Mobile Money',
     color: '#FFCC00',
-    countries: ['BJ', 'TG', 'CI', 'GN', 'BF', 'NE']
+    countries: ['CM', 'BJ', 'TG', 'CI', 'GN', 'BF', 'NE']
   },
   ORANGE: {
     code: 'ORANGE',
     name: 'Orange Money',
     color: '#FF6600',
-    countries: ['BJ', 'CI', 'SN', 'ML', 'BF', 'NE']
+    countries: ['CM', 'CI', 'SN', 'ML', 'BF', 'NE']
   },
   MOOV: {
     code: 'MOOV',
@@ -51,6 +51,10 @@ export const OPERATORS = {
  * Préfixes des numéros de téléphone par opérateur et pays
  */
 export const OPERATOR_PREFIXES = {
+  CM: {
+    MTN: ['650', '651', '652', '653', '654', '67', '68'],
+    ORANGE: ['655', '656', '657', '658', '659', '69']
+  },
   BJ: {
     MTN: ['96', '97', '61', '62', '63', '64', '65', '66', '67', '01'],
     MOOV: ['98', '99', '60', '68', '69', '01'],
@@ -88,6 +92,7 @@ export const OPERATOR_PREFIXES = {
  * Codes pays par indicatif téléphonique
  */
 export const COUNTRY_CODES = {
+  '237': 'CM', // Cameroun
   '229': 'BJ', // Bénin
   '228': 'TG', // Togo
   '225': 'CI', // Côte d'Ivoire
@@ -102,6 +107,7 @@ export const COUNTRY_CODES = {
  * Noms des pays
  */
 export const COUNTRY_NAMES = {
+  CM: 'Cameroun',
   BJ: 'Bénin',
   TG: 'Togo',
   CI: 'Côte d\'Ivoire',
@@ -116,6 +122,7 @@ export const COUNTRY_NAMES = {
  * Formats de numéro par pays
  */
 export const PHONE_FORMATS = {
+  CM: { length: 9, example: '6 99 12 34 56' },
   BJ: { length: 8, example: '96 12 34 56' },
   TG: { length: 8, example: '90 12 34 56' },
   CI: { length: 10, example: '07 12 34 56 78' },

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Alert } from "react-native";
 
-export function useCurrencyExchange() {
+export function useCurrencyExchange(localCurrency = "XAF") {
   const [fromCurrency, setFromCurrency] = useState("EUR");
-  const [toCurrency, setToCurrency] = useState("FCFA");
+  const [toCurrency, setToCurrency] = useState(localCurrency);
   const [fromAmount, setFromAmount] = useState("");
   const [toAmount, setToAmount] = useState("");
   const [exchangeRate, setExchangeRate] = useState(655.957);
@@ -12,6 +12,10 @@ export function useCurrencyExchange() {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [fromAccount, setFromAccount] = useState(null);
   const [toAccount, setToAccount] = useState(null);
+
+  useEffect(() => {
+    setToCurrency((current) => current === "XAF" || current === "XOF" || current === "FCFA" ? localCurrency : current);
+  }, [localCurrency]);
 
   useEffect(() => {
     if (fromAmount && !isNaN(fromAmount)) {

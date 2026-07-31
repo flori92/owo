@@ -72,6 +72,13 @@ export function getMenuSections({
       title: "Préférences",
       items: [
         {
+          id: "market",
+          title: "Pays et région",
+          subtitle: "CEMAC / UEMOA, devise et opérateurs",
+          icon: Globe,
+          onPress: () => router.push("/market-settings"),
+        },
+        {
           id: "notifications",
           title: "Notifications",
           subtitle: "Alertes et rappels",

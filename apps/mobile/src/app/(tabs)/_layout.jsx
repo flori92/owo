@@ -7,6 +7,7 @@ import {
   PlusCircle,
   Repeat,
   Wallet,
+  Brain,
 } from "lucide-react-native";
 import { useTheme } from "@/utils/useTheme";
 
@@ -49,8 +50,18 @@ export default function TabLayout() {
         name="currency"
         options={{
           title: "Change",
+          href: null,
           tabBarIcon: ({ color, size }) => (
             <Repeat color={color} size={22} strokeWidth={1.5} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="coach"
+        options={{
+          title: "Coach",
+          tabBarIcon: ({ color }) => (
+            <Brain color={color} size={22} strokeWidth={1.5} />
           ),
         }}
       />
@@ -137,6 +148,12 @@ export default function TabLayout() {
         name="request-money"
         options={{
           href: null, // Hidden from tab bar, accessible via router.push()
+        }}
+      />
+      <Tabs.Screen
+        name="invest"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

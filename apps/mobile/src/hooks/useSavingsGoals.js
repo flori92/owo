@@ -17,6 +17,7 @@ import { useState, useEffect, useCallback } from 'react';
 // } from 'firebase/firestore';
 // import { db } from '@/lib/firebase';
 import { USE_MOCK, MOCK_SESSION_KEY } from '@/lib/config';
+import { useMarket } from '@/contexts/MarketContext';
 
 // ============================================
 // HOOK POUR LES ÉPARGNES BLOQUÉES (OBJECTIFS INDIVIDUELS)
@@ -28,6 +29,7 @@ import { USE_MOCK, MOCK_SESSION_KEY } from '@/lib/config';
  * @returns {Object} { savings, loading, getTotalSaved, getProgress }
  */
 export function useLockedSavings(userId) {
+  const { market } = useMarket();
   const [savings, setSavings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,9 +50,9 @@ export function useLockedSavings(userId) {
             userId,
             name: 'Nouveau MacBook Pro',
             description: 'MacBook Pro M3 16 pouces pour le développement',
-            targetAmount: 2000.00,
-            currentAmount: 850.00,
-            currency: 'EUR',
+            targetAmount: 2000000,
+            currentAmount: 850000,
+            currency: market.currency,
             category: 'tech',
             icon: 'Laptop',
             color: '#3B82F6',
@@ -58,7 +60,7 @@ export function useLockedSavings(userId) {
             targetDate: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 240).toISOString(), // Dans 240 jours
             frequency: 'monthly', // daily, weekly, monthly
             autoDebit: true,
-            autoDebitAmount: 200.00,
+            autoDebitAmount: 200000,
             autoDebitDay: 5, // Jour du mois
             walletId: 'w1', // Wallet source
             locked: true, // Argent verrouillé jusqu'à l'objectif
@@ -72,9 +74,9 @@ export function useLockedSavings(userId) {
             userId,
             name: 'Voyage à Paris',
             description: 'Vacances d\'été 2025 avec la famille',
-            targetAmount: 3500.00,
-            currentAmount: 1250.00,
-            currency: 'EUR',
+            targetAmount: 3500000,
+            currentAmount: 1250000,
+            currency: market.currency,
             category: 'travel',
             icon: 'Plane',
             color: '#10B981',
@@ -82,7 +84,7 @@ export function useLockedSavings(userId) {
             targetDate: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 180).toISOString(), // Dans 180 jours
             frequency: 'weekly',
             autoDebit: true,
-            autoDebitAmount: 50.00,
+            autoDebitAmount: 50000,
             autoDebitDay: 1, // Lundi
             walletId: 'w1',
             locked: true,
@@ -96,9 +98,9 @@ export function useLockedSavings(userId) {
             userId,
             name: 'Fonds d\'urgence',
             description: 'Épargne de sécurité pour imprévus',
-            targetAmount: 5000.00,
-            currentAmount: 3200.00,
-            currency: 'EUR',
+            targetAmount: 5000000,
+            currentAmount: 3200000,
+            currency: market.currency,
             category: 'emergency',
             icon: 'Shield',
             color: '#EF4444',
@@ -106,7 +108,7 @@ export function useLockedSavings(userId) {
             targetDate: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 365).toISOString(), // Dans 1 an
             frequency: 'monthly',
             autoDebit: true,
-            autoDebitAmount: 150.00,
+            autoDebitAmount: 150000,
             autoDebitDay: 1,
             walletId: 'w1',
             locked: false, // Accessible en cas d'urgence
@@ -120,9 +122,9 @@ export function useLockedSavings(userId) {
             userId,
             name: 'Nouvelle voiture',
             description: 'Apport pour voiture électrique',
-            targetAmount: 8000.00,
-            currentAmount: 1500.00,
-            currency: 'EUR',
+            targetAmount: 8000000,
+            currentAmount: 1500000,
+            currency: market.currency,
             category: 'vehicle',
             icon: 'Car',
             color: '#F59E0B',
@@ -167,7 +169,7 @@ export function useLockedSavings(userId) {
     };
 
     fetchLockedSavings();
-  }, [userId]);
+  }, [userId, market.currency]);
 
   // Calculer le total épargné
   const getTotalSaved = useCallback(() => {
@@ -194,6 +196,7 @@ export function useLockedSavings(userId) {
  * @returns {Object} { groupSavings, loading, getUserContribution }
  */
 export function useGroupSavings(userId) {
+  const { market } = useMarket();
   const [groupSavings, setGroupSavings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -213,9 +216,9 @@ export function useGroupSavings(userId) {
             id: 'gs1',
             name: 'Épargne Famille 2025',
             description: 'Épargne collective pour le projet familial',
-            targetAmount: 10000.00,
-            currentAmount: 4500.00,
-            currency: 'EUR',
+            targetAmount: 10000000,
+            currentAmount: 4500000,
+            currency: market.currency,
             category: 'family',
             icon: 'Users',
             color: '#8B5CF6',
@@ -225,10 +228,10 @@ export function useGroupSavings(userId) {
             startDate: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 90).toISOString(),
             targetDate: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 275).toISOString(),
             contributionRules: {
-              minAmount: 50.00,
+              minAmount: 50000,
               frequency: 'monthly',
               equalSplit: true, // Tous contribuent le même montant
-              suggestedAmount: 250.00,
+              suggestedAmount: 250000,
             },
             distributionRules: {
               type: 'equal', // equal, proportional, custom
@@ -241,19 +244,19 @@ export function useGroupSavings(userId) {
             updatedAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2).toISOString(),
             // Contributions par membre
             contributions: [
-              { userId: userId, amount: 1500.00, percentage: 33.33 },
-              { userId: 'user2', amount: 1200.00, percentage: 26.67 },
-              { userId: 'user3', amount: 1000.00, percentage: 22.22 },
-              { userId: 'user4', amount: 800.00, percentage: 17.78 },
+              { userId: userId, amount: 1500000, percentage: 33.33 },
+              { userId: 'user2', amount: 1200000, percentage: 26.67 },
+              { userId: 'user3', amount: 1000000, percentage: 22.22 },
+              { userId: 'user4', amount: 800000, percentage: 17.78 },
             ],
           },
           {
             id: 'gs2',
             name: 'Projet Communautaire',
             description: 'Construction du centre communautaire',
-            targetAmount: 15000.00,
-            currentAmount: 8750.00,
-            currency: 'EUR',
+            targetAmount: 15000000,
+            currentAmount: 8750000,
+            currency: market.currency,
             category: 'community',
             icon: 'Building2',
             color: '#06B6D4',
@@ -263,10 +266,10 @@ export function useGroupSavings(userId) {
             startDate: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 120).toISOString(),
             targetDate: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 365).toISOString(),
             contributionRules: {
-              minAmount: 100.00,
+              minAmount: 100000,
               frequency: 'flexible',
               equalSplit: false,
-              suggestedAmount: 200.00,
+              suggestedAmount: 200000,
             },
             distributionRules: {
               type: 'proportional',
@@ -278,12 +281,12 @@ export function useGroupSavings(userId) {
             createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 120).toISOString(),
             updatedAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 7).toISOString(),
             contributions: [
-              { userId: 'user5', amount: 2500.00, percentage: 28.57 },
-              { userId: userId, amount: 1800.00, percentage: 20.57 },
-              { userId: 'user6', amount: 1500.00, percentage: 17.14 },
-              { userId: 'user7', amount: 1200.00, percentage: 13.71 },
-              { userId: 'user8', amount: 1000.00, percentage: 11.43 },
-              { userId: 'user9', amount: 750.00, percentage: 8.57 },
+              { userId: 'user5', amount: 2500000, percentage: 28.57 },
+              { userId: userId, amount: 1800000, percentage: 20.57 },
+              { userId: 'user6', amount: 1500000, percentage: 17.14 },
+              { userId: 'user7', amount: 1200000, percentage: 13.71 },
+              { userId: 'user8', amount: 1000000, percentage: 11.43 },
+              { userId: 'user9', amount: 750000, percentage: 8.57 },
             ],
           },
         ];
@@ -314,7 +317,7 @@ export function useGroupSavings(userId) {
     };
 
     fetchGroupSavings();
-  }, [userId]);
+  }, [userId, market.currency]);
 
   // Obtenir la contribution d'un utilisateur dans un groupe
   const getUserContribution = useCallback((groupId) => {

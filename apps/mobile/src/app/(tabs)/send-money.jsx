@@ -16,11 +16,13 @@ import { useBalance } from "@/contexts/BalanceContext";
 import { detectOperator, formatPhoneNumber } from "@/utils/phoneValidator";
 import { OPERATORS, COUNTRY_NAMES } from "@/utils/operators";
 import ScreenContainer from "@/components/ScreenContainer";
+import { useMarket } from "@/contexts/MarketContext";
 
 export default function SendMoneyScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { balances, getTotalMobileMoneyFCFA, EXCHANGE_RATE } = useBalance();
+  const { market } = useMarket();
 
   const [phoneNumber, setPhoneNumber] = useState("");
   const [amount, setAmount] = useState("");
@@ -148,8 +150,8 @@ export default function SendMoneyScreen() {
             borderRadius: 16,
             padding: 16,
             marginBottom: 16,
-            borderLeftWidth: 4,
-            borderLeftColor: "#10B981",
+            borderWidth: 2,
+            borderColor: "#10B981",
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
@@ -249,7 +251,7 @@ export default function SendMoneyScreen() {
                   paddingVertical: 16,
                   paddingHorizontal: 12,
                 }}
-                placeholder="+229 XX XX XX XX"
+                placeholder={`${market.callingCode} ${market.phoneExample}`}
                 placeholderTextColor={theme.colors.textSecondary}
                 keyboardType="phone-pad"
                 value={phoneNumber}

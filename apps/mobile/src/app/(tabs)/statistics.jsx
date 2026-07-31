@@ -791,8 +791,8 @@ export default function StatisticsScreen() {
                     backgroundColor: theme.colors.elevated,
                     borderRadius: 12,
                     padding: 16,
-                    borderLeftWidth: 4,
-                    borderLeftColor:
+                    borderWidth: 2,
+                    borderColor:
                       insight.priority === "high"
                         ? theme.colors.error
                         : insight.priority === "medium"

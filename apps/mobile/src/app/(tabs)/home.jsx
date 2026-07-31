@@ -32,6 +32,8 @@ import { QuickStatsSection } from "@/components/Dashboard/QuickStatsSection";
 import { RecentTransactionsSection } from "@/components/Dashboard/RecentTransactionsSection";
 import { SavingsSection } from "@/components/Dashboard/SavingsSection";
 import useHaptics from "@/hooks/useHaptics";
+import { useMarket } from "@/contexts/MarketContext";
+import { formatMarketMoney } from "@/config/markets";
 
 export default function DashboardScreen() {
   if (__DEV__) console.log('🏠 Home: Rendu du composant');
@@ -43,6 +45,7 @@ export default function DashboardScreen() {
 
   const insets = useSafeAreaInsets();
   const theme = useTheme();
+  const { market } = useMarket();
   const haptics = useHaptics();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -126,22 +129,20 @@ export default function DashboardScreen() {
     return "Floriace";
   };
 
-  // Créer l'objet balance pour les composants depuis Firebase
-  // Les wallets sont déjà en EUR (pas en FCFA)
+  // Créer l'objet balance dans la devise du marché actif.
   const mobileMoneyWallets = wallets.filter(w => w.type === 'mobile_money');
   const mainWallets = wallets.filter(w => w.type === 'main');
 
   const mobileMoneyTotal = mobileMoneyWallets.reduce((sum, w) => sum + (w.balance || 0), 0);
   const europeanBanksTotal = mainWallets.reduce((sum, w) => sum + (w.balance || 0), 0);
 
-  // Total des wallets = 9755.75 EUR
-  const totalWalletsEUR = mobileMoneyTotal + europeanBanksTotal;
+  const totalWalletsLocal = mobileMoneyTotal + europeanBanksTotal;
 
   const balance = {
-    // Pour BalanceOverview - il additionne totalEUR + europeanBanks.total + virtualCard.balance
-    totalEUR: mobileMoneyTotal, // Mobile Money seulement (MTN + Moov + Wave)
-    total: mobileMoneyTotal * 655.957, // Mobile Money en FCFA (pour AccountsSection)
-    totalFCFA: totalWalletsEUR * 655.957, // Total complet en FCFA
+    total: mobileMoneyTotal,
+    totalLocal: totalWalletsLocal,
+    euroEquivalent: totalWalletsLocal / 655.957,
+    currency: market.currency,
 
     // Pour AccountsSection
     mobileMoneyTotal: mobileMoneyTotal,
@@ -153,7 +154,7 @@ export default function DashboardScreen() {
 
     europeanBanks: {
       accounts: ['Compte Principal'],
-      total: europeanBanksTotal, // Compte Principal en EUR
+      total: europeanBanksTotal,
     },
 
     virtualCard: {
@@ -235,14 +236,14 @@ export default function DashboardScreen() {
     {
       icon: 'PiggyBank',
       title: 'Épargne totale',
-      value: `${wallets.reduce((sum, w) => sum + (w.balance || 0), 0).toLocaleString('fr-FR')} FCFA`,
+      value: formatMarketMoney(wallets.reduce((sum, w) => sum + (w.balance || 0), 0), market),
       change: '+8%',
       color: theme.colors.success,
     },
     {
       icon: 'CreditCard',
       title: 'Dépenses',
-      value: `${transactions.filter(t => t.type === 'send').reduce((sum, t) => sum + (t.amount || 0), 0).toLocaleString('fr-FR')} FCFA`,
+      value: formatMarketMoney(transactions.filter(t => t.type === 'send').reduce((sum, t) => sum + (t.amount || 0), 0), market),
       change: '-3%',
       color: theme.colors.error,
     },

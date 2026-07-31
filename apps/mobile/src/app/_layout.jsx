@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import SplashScreen from '@/components/SplashScreen';
 import { BalanceProvider } from '@/contexts/BalanceContext';
+import { MarketProvider } from '@/contexts/MarketContext';
 import { useTheme } from '@/utils/useTheme';
 
 ExpoSplashScreen.preventAutoHideAsync().catch(() => {});
@@ -34,8 +35,9 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BalanceProvider theme={theme}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
+      <MarketProvider>
+        <BalanceProvider theme={theme}>
+          <GestureHandlerRootView style={{ flex: 1 }}>
           <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
             <Stack.Screen name="index" />
             <Stack.Screen name="auth" />
@@ -44,13 +46,15 @@ export default function RootLayout() {
             <Stack.Screen name="support" />
             <Stack.Screen name="legal" />
             <Stack.Screen name="payment-integration" />
+            <Stack.Screen name="market-settings" />
             <Stack.Screen name="group-savings" />
             <Stack.Screen name="locked-savings" />
             <Stack.Screen name="notifications" />
             <Stack.Screen name="+not-found" />
           </Stack>
-        </GestureHandlerRootView>
-      </BalanceProvider>
+          </GestureHandlerRootView>
+        </BalanceProvider>
+      </MarketProvider>
     </QueryClientProvider>
   );
 }

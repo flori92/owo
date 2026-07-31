@@ -39,6 +39,7 @@ import ActionButton from "@/components/ActionButton";
 import LoadingScreen from "@/components/LoadingScreen";
 import KeyboardAvoidingAnimatedView from "@/components/KeyboardAvoidingAnimatedView";
 import { transactionSchema, validateForm } from "@/utils/validation";
+import { useMarket } from "@/contexts/MarketContext";
 
 export default function AddTransactionScreen() {
   const insets = useSafeAreaInsets();
@@ -51,6 +52,7 @@ export default function AddTransactionScreen() {
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const theme = useTheme();
+  const { market } = useMarket();
 
   const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
 
@@ -146,7 +148,7 @@ export default function AddTransactionScreen() {
         userId: user.$id,
         walletId: walletId,
         walletReference: wallets.find((wallet) => wallet.$id === walletId)?.accountNumber,
-        currency: wallets.find((wallet) => wallet.$id === walletId)?.currency || 'XOF',
+        currency: wallets.find((wallet) => wallet.$id === walletId)?.currency || market.currency,
         type: transactionType,
         amount: parseFloat(amount),
         title,

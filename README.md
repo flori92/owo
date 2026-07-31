@@ -1,5 +1,7 @@
 # owo!
 
+La configuration multi-marchés CEMAC/UEMOA est décrite dans [docs/REGIONAL_MARKETS_FR.md](docs/REGIONAL_MARKETS_FR.md).
+
 owo! est une application financière mobile construite avec Expo/React Native. Le dépôt contient l'application iOS/Android, une API TypeScript transactionnelle, une application web, les Cloud Functions historiques et les règles Firebase.
 
 ## Architecture
@@ -10,6 +12,8 @@ owo! est une application financière mobile construite avec Expo/React Native. L
 - `functions` : tâches Firebase asynchrones historiques en cours de migration ;
 - `docs/PRODUCT_ARCHITECTURE_FR.md` : description fonctionnelle, architecture cible et feuille de route.
 - `docs/INSTANT_PAYMENTS_FR.md` : fast path interne, réservations externes, budgets de latence et règlement idempotent.
+- `docs/FINANCIAL_COACH_FR.md` : moteur budgétaire, Coach owo!, investissement éducatif et fonctions réglementées verrouillées.
+- `docs/EXPO_SDK_57_MIGRATION_FR.md` : migration Expo/React Native, nettoyage des dépendances et résultats de validation.
 
 Le mobile ne fait plus d'écriture financière directe : en production, il transmet une demande idempotente à l'API. Firestore reste utilisable pour les profils, projections et notifications, mais PostgreSQL devient l'autorité des soldes.
 

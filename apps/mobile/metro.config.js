@@ -8,11 +8,9 @@ const webAliases = {
   'expo-secure-store': path.resolve(__dirname, './polyfills/web/secureStore.web.ts'),
   'react-native-webview': path.resolve(__dirname, './polyfills/web/webview.web.tsx'),
   'react-native-safe-area-context': path.resolve(__dirname, './polyfills/web/safeAreaContext.web.jsx'),
-  'react-native-maps': path.resolve(__dirname, './polyfills/web/maps.web.jsx'),
   'react-native-web/dist/exports/SafeAreaView': path.resolve(__dirname, './polyfills/web/SafeAreaView.web.jsx'),
   'react-native-web/dist/exports/Alert': path.resolve(__dirname, './polyfills/web/alerts.web.tsx'),
   'react-native-web/dist/exports/RefreshControl': path.resolve(__dirname, './polyfills/web/refreshControl.web.tsx'),
-  'expo-status-bar': path.resolve(__dirname, './polyfills/web/statusBar.web.jsx'),
   'expo-location': path.resolve(__dirname, './polyfills/web/location.web.ts'),
   './layouts/Tabs': path.resolve(__dirname, './polyfills/web/tabbar.web.jsx'),
   'expo-notifications': path.resolve(__dirname, './polyfills/web/notifications.web.tsx'),
@@ -32,7 +30,15 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     return context.resolveRequest(context, '@expo-google-fonts/dev', platform);
   }
   if (platform === 'web' && webAliases[moduleName]) {
-    return context.resolveRequest(context, webAliases[moduleName], platform);
+    const aliasTarget = path.normalize(webAliases[moduleName]);
+    const requestingModule = path.normalize(context.originModulePath || '');
+
+    // A web polyfill may import the original implementation it wraps. In that
+    // case, resolving the alias again would point the module back to itself and
+    // create a require cycle (notably for ScrollView/Reanimated).
+    if (requestingModule !== aliasTarget) {
+      return context.resolveRequest(context, aliasTarget, platform);
+    }
   }
   if (platform !== 'web' && nativeAliases[moduleName]) {
     return context.resolveRequest(context, nativeAliases[moduleName], platform);

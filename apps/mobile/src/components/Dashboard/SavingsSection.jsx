@@ -3,8 +3,11 @@ import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { Target, ChevronRight, Plus } from 'lucide-react-native';
 import * as Icons from 'lucide-react-native';
+import { useMarket } from '@/contexts/MarketContext';
+import { formatMarketMoney } from '@/config/markets';
 
 export function SavingsSection({ theme, savings, totalSaved }) {
+  const { market } = useMarket();
   if (!savings || savings.length === 0) {
     return (
       <View style={{ marginBottom: 24 }}>
@@ -152,11 +155,7 @@ export function SavingsSection({ theme, savings, totalSaved }) {
             letterSpacing: -1,
           }}
         >
-          {totalSaved.toLocaleString('fr-FR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}{' '}
-          €
+          {formatMarketMoney(totalSaved, market)}
         </Text>
         <Text
           style={{
@@ -260,11 +259,7 @@ export function SavingsSection({ theme, savings, totalSaved }) {
                       color: theme.colors.text,
                     }}
                   >
-                    {goal.currentAmount.toLocaleString('fr-FR', {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })}{' '}
-                    €
+                    {formatMarketMoney(goal.currentAmount, market)}
                   </Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
@@ -285,11 +280,7 @@ export function SavingsSection({ theme, savings, totalSaved }) {
                       color: theme.colors.textSecondary,
                     }}
                   >
-                    {goal.targetAmount.toLocaleString('fr-FR', {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })}{' '}
-                    €
+                    {formatMarketMoney(goal.targetAmount, market)}
                   </Text>
                 </View>
               </View>

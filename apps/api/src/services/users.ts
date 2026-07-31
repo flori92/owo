@@ -1,6 +1,7 @@
 import type { Database, Queryable } from '../database.js';
 import { normalizeE164 } from '../domain/phone.js';
 import type { AuthenticatedUser } from '../types.js';
+import { getMarket, type MarketCode } from '../domain/markets.js';
 
 type UserRow = {
   id: string;
@@ -9,6 +10,9 @@ type UserRow = {
   display_name: string | null;
   phone_e164: string | null;
   status: string;
+  country_code: string;
+  region_code: string;
+  preferred_currency: string;
 };
 
 type AccountRow = {
@@ -29,7 +33,8 @@ async function upsertUser(client: Queryable, user: AuthenticatedUser): Promise<U
            display_name = COALESCE(EXCLUDED.display_name, app_users.display_name),
            phone_e164 = COALESCE(EXCLUDED.phone_e164, app_users.phone_e164),
            updated_at = now()
-     RETURNING id, firebase_uid, email, display_name, phone_e164, status`,
+     RETURNING id, firebase_uid, email, display_name, phone_e164, status,
+               country_code, region_code, preferred_currency`,
     [user.uid, user.email ?? null, user.name ?? null, normalizeE164(user.phone)],
   );
   return result.rows[0]!;
@@ -40,11 +45,35 @@ export async function synchronizeUser(database: Database, user: AuthenticatedUse
     const persisted = await upsertUser(client, user);
     await client.query(
       `INSERT INTO accounts (owner_user_id, public_reference, account_type, currency, normal_side, is_primary)
-       VALUES ($1, 'OWO-' || upper(substr(encode(digest($2, 'sha256'), 'hex'), 1, 12)), 'wallet', 'XOF', 'debit', true)
+       VALUES ($1, 'OWO-' || upper(substr(encode(digest($2, 'sha256'), 'hex'), 1, 12)) || '-' || $3, 'wallet', $3, 'debit', true)
        ON CONFLICT (owner_user_id, currency) WHERE is_primary DO NOTHING`,
-      [persisted.id, user.uid],
+      [persisted.id, user.uid, persisted.preferred_currency],
     );
     return persisted;
+  });
+}
+
+export async function updateUserMarket(database: Database, firebaseUid: string, countryCode: MarketCode) {
+  const market = getMarket(countryCode);
+  if (!market) throw new Error('unsupported_market');
+  return database.transaction(async (client) => {
+    const result = await client.query<UserRow>(
+      `UPDATE app_users
+          SET country_code = $2, region_code = $3, preferred_currency = $4, updated_at = now()
+        WHERE firebase_uid = $1
+        RETURNING id, firebase_uid, email, display_name, phone_e164, status,
+                  country_code, region_code, preferred_currency`,
+      [firebaseUid, market.countryCode, market.region, market.currency],
+    );
+    const user = result.rows[0];
+    if (!user) throw new Error('market_user_not_found');
+    await client.query(
+      `INSERT INTO accounts (owner_user_id, public_reference, account_type, currency, normal_side, is_primary)
+       VALUES ($1, 'OWO-' || upper(substr(encode(digest($2, 'sha256'), 'hex'), 1, 12)) || '-' || $3, 'wallet', $3, 'debit', true)
+       ON CONFLICT (owner_user_id, currency) WHERE is_primary DO NOTHING`,
+      [user.id, firebaseUid, market.currency],
+    );
+    return user;
   });
 }
 
